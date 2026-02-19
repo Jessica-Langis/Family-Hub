@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What The Fuck Is It Now?</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2332;
+    --border: #2a3045;
+    --accent: #e8b86d;
+    --accent2: #7eb8d4;
+    --accent3: #a8d5a2;
+    --text: #e8eaf0;
+    --muted: #8891a8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 20px;
+  }
+
+  .home-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  .clock-block { text-align: center; }
+
+  #clock {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 2rem;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+
+  #date {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .weather-block {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .weather-day {
+    text-align: center;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 70px;
+  }
+
+  .weather-day .day-name {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .weather-day .temp {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--accent2);
+    margin: 4px 0 2px;
+  }
+
+  .weather-day .condition {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  .weather-day .icon {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+
+  .section-badge {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* LEFT — CALENDAR */
+  .calendar-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .calendar-embed {
+    flex: 1;
+    width: 100%;
+    border: none;
+    filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.8);
+    min-height: 0;
+  }
+
+  /* MIDDLE — CHORES */
+  .chores-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .chore-list {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .chore-list::-webkit-scrollbar { width: 4px; }
+  .chore-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .chore-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .chore-item:hover { border-color: var(--accent); }
+  .chore-item.done { opacity: 0.4; }
+  .chore-item.done .chore-name { text-decoration: line-through; }
+
+  .chore-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    transition: all 0.2s;
+  }
+
+  .chore-item.done .chore-check {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: #0f1117;
+  }
+
+  .chore-name {
+    font-size: 0.87rem;
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  .chore-who {
+    font-size: 0.72rem;
+    color: var(--accent2);
+    background: rgba(126,184,212,0.1);
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* RIGHT — STACKED PANELS */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .reminder-list {
+    padding: 8px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .reminder-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .reminder-item:last-child { border-bottom: none; }
+
+  .reminder-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .reminder-text {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .grocery-grid {
+    padding: 8px 16px 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 10px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .grocery-item {
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .grocery-item::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent3);
+    flex-shrink: 0;
+  }
+
+  .meal-list {
+    padding: 8px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .meal-item {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .meal-item:last-child { border-bottom: none; }
+
+  .meal-day {
+    color: var(--accent);
+    font-weight: 500;
+    min-width: 32px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .meal-name { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="home-title">🏡 What In The Fuck Is Going On Today?</div>
+  <div class="clock-block">
+    <div id="clock">--:--</div>
+    <div id="date">Loading...</div>
+  </div>
+  <div class="weather-block" id="weather">
+    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+  </div>
+</div>
+
+<!-- LEFT: CALENDAR (month view) -->
+<div class="calendar-section">
+  <div class="section-header">
+    <span class="section-title">📅 Family Calendar</span>
+    <span class="section-badge">Month View</span>
+  </div>
+  <iframe class="calendar-embed"
+    src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+    frameborder="0" scrolling="no">
+  </iframe>
+</div>
+
+<!-- MIDDLE: CHORES -->
+<div class="chores-section">
+  <div class="section-header">
+    <span class="section-title">✅ Chores</span>
+    <span class="section-badge">Tap to check off</span>
+  </div>
+  <div class="chore-list">
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Dishes</span>
+      <span class="chore-who">Idc</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Clean kitchen counters</span>
+      <span class="chore-who">Anyone</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Take out trash & recycling</span>
+      <span class="chore-who">Donovan</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Wipe down bathrooms</span>
+      <span class="chore-who">Mom</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Feed & water pets</span>
+      <span class="chore-who">Everyone</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Sweep kitchen floor</span>
+      <span class="chore-who">Idc</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Pick up after dogs</span>
+      <span class="chore-who">Donovan</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Clean bathroom</span>
+      <span class="chore-who">Kids</span>
+    </div>
+    <div class="chore-item" onclick="toggleChore(this)">
+      <div class="chore-check">✓</div>
+      <span class="chore-name">Other Stuff</span>
+      <span class="chore-who">Whoever</span>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT: REMINDERS / GROCERY / MEAL -->
+<div class="right-col">
+
+  <div class="panel">
+    <div class="section-header">
+      <span class="section-title">📌 Reminders</span>
+    </div>
+    <div class="reminder-list">
+      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Schedule Kids Dentist Appt</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Renew Care Tabs</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Something else</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Cool shit</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-header">
+      <span class="section-title">🛒 Grocery List</span>
+      <span class="section-badge">Edit in Google Keep</span>
+    </div>
+    <div class="grocery-grid">
+      <div class="grocery-item">Milk</div>
+      <div class="grocery-item">Eggs</div>
+      <div class="grocery-item">Bread</div>
+      <div class="grocery-item">Chicken breast</div>
+      <div class="grocery-item">Apples</div>
+      <div class="grocery-item">Greek yogurt</div>
+      <div class="grocery-item">Pasta</div>
+      <div class="grocery-item">Olive oil</div>
+      <div class="grocery-item">Cheese</div>
+      <div class="grocery-item">Coffee</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-header">
+      <span class="section-title">🍽️ This Week's Menu</span>
+    </div>
+    <div class="meal-list">
+      <div class="meal-item"><span class="meal-day">Mon</span><span class="meal-name">Probably Ribeye</span></div>
+      <div class="meal-item"><span class="meal-day">Tue</span><span class="meal-name">Idk yet</span></div>
+      <div class="meal-item"><span class="meal-day">Wed</span><span class="meal-name">MF Ribeye</span></div>
+      <div class="meal-item"><span class="meal-day">Thu</span><span class="meal-name">Steak Wraps</span></div>
+      <div class="meal-item"><span class="meal-day">Fri</span><span class="meal-name">It's state, idk</span></div>
+      <div class="meal-item"><span class="meal-day">Sat</span><span class="meal-name">Same, probably UberEats</span></div>
+      <div class="meal-item"><span class="meal-day">Sun</span><span class="meal-name">Not cooking at all today</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// CLOCK
+  function updateClock() {
+    const now = new Date();
+    const rawH = now.getHours();
+    const h = (rawH % 12 || 12).toString().padStart(2,'0');
+    const m = now.getMinutes().toString().padStart(2,'0');
+    const ampm = rawH >= 12 ? 'PM' : 'AM';
+    document.getElementById('clock').textContent = `${h}:${m} ${ampm}`;
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('date').textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // CHORE TOGGLE
+  function toggleChore(el) {
+    el.classList.toggle('done');
+  }
+
+  // WEATHER — Chelan County, WA
+  async function loadWeather() {
+    try {
+      const lat = 47.5221, lon = -120.4699;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=3`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const icons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',99:'⛈️'};
+      const conditions = {0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',71:'Light Snow',73:'Snow',75:'Heavy Snow',80:'Showers',81:'Heavy Showers',82:'Violent Showers',95:'Thunderstorm',99:'Heavy Storm'};
+      const wb = document.getElementById('weather');
+      wb.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const d = new Date(data.daily.time[i]);
+        const code = data.daily.weathercode[i];
+        const max = Math.round(data.daily.temperature_2m_max[i]);
+        const min = Math.round(data.daily.temperature_2m_min[i]);
+        wb.innerHTML += `<div class="weather-day">
+          <div class="day-name">${days[d.getDay()]}</div>
+          <div class="icon">${icons[code]||'🌡️'}</div>
+          <div class="temp">${max}° / ${min}°</div>
+          <div class="condition">${conditions[code]||'Mixed'}</div>
+        </div>`;
+      }
+    } catch(e) {
+      document.getElementById('weather').innerHTML = '<div style="color:var(--muted);font-size:0.8rem">Weather unavailable</div>';
+    }
+  }
+  loadWeather();
+  setInterval(loadWeather, 30 * 60 * 1000);
+</script>
+</body>
+</html>
