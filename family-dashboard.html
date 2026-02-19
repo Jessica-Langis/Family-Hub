@@ -20,6 +20,100 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* PIN SCREEN */
+  #pin-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    gap: 32px;
+  }
+
+  #pin-screen.hidden { display: none; }
+
+  .pin-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+
+  .pin-subtitle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: -20px;
+    text-align: center;
+  }
+
+  .pin-dots {
+    display: flex;
+    gap: 16px;
+  }
+
+  .pin-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: all 0.15s;
+  }
+
+  .pin-dot.filled {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .pin-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 72px);
+    grid-template-rows: repeat(4, 72px);
+    gap: 12px;
+  }
+
+  .pin-key {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+
+  .pin-key:hover { background: var(--surface2); border-color: var(--accent); }
+  .pin-key:active { transform: scale(0.93); }
+  .pin-key.empty { background: transparent; border-color: transparent; cursor: default; }
+  .pin-key.delete { font-size: 1rem; color: var(--muted); }
+
+  .pin-error {
+    font-size: 0.8rem;
+    color: #e07070;
+    height: 1rem;
+    text-align: center;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+  }
+
+  .pin-dots.shake { animation: shake 0.4s ease; }
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -330,9 +424,110 @@
   }
 
   .meal-name { color: var(--muted); }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    body {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      height: auto;
+      overflow: auto;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    .topbar {
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+      padding: 14px 16px;
+    }
+
+    .home-title { font-size: 1.1rem; }
+
+    #clock { font-size: 1.6rem; }
+
+    .weather-block {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .weather-day { min-width: 80px; flex: 1; }
+
+    .calendar-section {
+      height: 420px;
+    }
+
+    .calendar-embed {
+      height: 100%;
+    }
+
+    .chores-section {
+      height: auto;
+      overflow: visible;
+    }
+
+    .chore-list {
+      overflow: visible;
+      height: auto;
+    }
+
+    .right-col {
+      overflow: visible;
+      height: auto;
+    }
+
+    .panel {
+      height: auto;
+      flex: none;
+      min-height: 120px;
+    }
+
+    .reminder-list,
+    .grocery-grid,
+    .meal-list {
+      overflow: visible;
+      flex: none;
+    }
+
+    .pin-keypad {
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(4, 80px);
+    }
+
+    .pin-key { font-size: 1.6rem; border-radius: 14px; }
+  }
 </style>
 </head>
 <body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-title">🏡 Home Hub</div>
+  <div class="pin-subtitle">Enter your PIN to continue</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <div class="pin-keypad">
+    <div class="pin-key" onclick="pinPress('1')">1</div>
+    <div class="pin-key" onclick="pinPress('2')">2</div>
+    <div class="pin-key" onclick="pinPress('3')">3</div>
+    <div class="pin-key" onclick="pinPress('4')">4</div>
+    <div class="pin-key" onclick="pinPress('5')">5</div>
+    <div class="pin-key" onclick="pinPress('6')">6</div>
+    <div class="pin-key" onclick="pinPress('7')">7</div>
+    <div class="pin-key" onclick="pinPress('8')">8</div>
+    <div class="pin-key" onclick="pinPress('9')">9</div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinPress('0')">0</div>
+    <div class="pin-key delete" onclick="pinDelete()">⌫</div>
+  </div>
+</div>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -409,8 +604,8 @@
     </div>
     <div class="chore-item" onclick="toggleChore(this)">
       <div class="chore-check">✓</div>
-      <span class="chore-name">Other Stuff</span>
-      <span class="chore-who">Whoever</span>
+      <span class="chore-name">Mow lawn</span>
+      <span class="chore-who">Dad</span>
     </div>
   </div>
 </div>
@@ -467,7 +662,58 @@
 </div>
 
 <script>
-// CLOCK
+  // PIN — change '1234' to whatever 4-digit PIN you want
+  const CORRECT_PIN = '1234';
+  let pinEntry = '';
+
+  function pinPress(digit) {
+    if (pinEntry.length >= 4) return;
+    pinEntry += digit;
+    updatePinDots();
+    if (pinEntry.length === 4) checkPin();
+  }
+
+  function pinDelete() {
+    pinEntry = pinEntry.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pin-error').textContent = '';
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('d' + i).classList.toggle('filled', i < pinEntry.length);
+    }
+  }
+
+  function checkPin() {
+    if (pinEntry === CORRECT_PIN) {
+      localStorage.setItem('hh_auth', 'true');
+      document.getElementById('pin-screen').classList.add('hidden');
+    } else {
+      const dots = document.getElementById('pin-dots');
+      dots.classList.add('shake');
+      document.getElementById('pin-error').textContent = 'Incorrect PIN, try again';
+      setTimeout(() => {
+        dots.classList.remove('shake');
+        pinEntry = '';
+        updatePinDots();
+      }, 450);
+    }
+  }
+
+  // Check if already authenticated this session
+  if (localStorage.getItem('hh_auth') === 'true') {
+    document.getElementById('pin-screen').classList.add('hidden');
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', (e) => {
+    if (document.getElementById('pin-screen').classList.contains('hidden')) return;
+    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+    if (e.key === 'Backspace') pinDelete();
+  });
+
+  // CLOCK
   function updateClock() {
     const now = new Date();
     const rawH = now.getHours();
