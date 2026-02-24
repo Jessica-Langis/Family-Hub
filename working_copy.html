@@ -184,10 +184,23 @@
   .weather-day .condition { font-size: 0.65rem; color: var(--muted); }
   .weather-day .icon { font-size: 1.3rem; margin-bottom: 2px; }
 
-  /* CONTENT — 3 columns: 3fr 1fr 1fr */
+  /* CONTENT — 2 rows: top panels, bottom agenda+chores */
   .content {
     display: grid;
-    grid-template-columns: 3fr 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
     gap: 10px;
     min-height: 0;
   }
@@ -309,15 +322,6 @@
     white-space: nowrap;
   }
 
-  /* RIGHT — STACKED PANELS */
-  .right-col {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 0;
-    overflow: hidden;
-  }
-
   .panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -326,7 +330,6 @@
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    flex: 1;
   }
 
   .reminder-list {
@@ -551,8 +554,6 @@
   /* MOBILE */
   @media (max-width: 768px) {
     body {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
       height: auto;
       overflow: auto;
       padding: 10px;
@@ -560,6 +561,15 @@
     }
 
     .content {
+      grid-template-rows: auto;
+      height: auto;
+    }
+
+    .top-row {
+      grid-template-columns: 1fr;
+    }
+
+    .bottom-row {
       grid-template-columns: 1fr;
       height: auto;
     }
@@ -580,11 +590,9 @@
     .agenda-section { height: 420px; }
     .chores-section { height: auto; overflow: visible; }
     .chore-list { overflow: visible; height: auto; }
-    .right-col { overflow: visible; height: auto; }
 
     .panel {
       height: auto;
-      flex: none;
       min-height: 120px;
     }
 
@@ -647,6 +655,44 @@
 <!-- CONTENT -->
 <div class="content">
 
+  <!-- TOP ROW: REMINDERS / GROCERY / MEALS -->
+  <div class="top-row">
+
+    <div class="panel">
+      <div class="section-header">
+        <span class="section-title">📌 Reminders</span>
+        <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+      </div>
+      <div class="reminder-list" id="reminder-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-header">
+        <span class="section-title">🛒 Grocery List</span>
+        <button class="add-btn" onclick="openGroceryForm()">+ Add Item</button>
+      </div>
+      <div class="grocery-grid" id="grocery-list">
+        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-header">
+        <span class="section-title">🍽️ This Week's Menu</span>
+        <button class="add-btn" onclick="openMealForm()">+ Edit</button>
+      </div>
+      <div class="meal-list" id="meal-list">
+        <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM ROW: AGENDA + CHORES -->
+  <div class="bottom-row">
+
   <!-- LEFT: AGENDA -->
   <div class="agenda-section">
     <div class="section-header">
@@ -670,90 +716,55 @@
     </div>
   </div>
 
-  <!-- RIGHT: REMINDERS / GROCERY / MEAL -->
-  <div class="right-col">
+  </div><!-- end bottom-row -->
 
-    <div class="panel">
-      <div class="section-header">
-        <span class="section-title">📌 Reminders</span>
-        <button class="add-btn" onclick="openReminderForm()">+ Add</button>
-      </div>
-      <div class="reminder-list" id="reminder-list">
-        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-      </div>
+</div>
+
+<!-- OVERLAYS (outside content grid) -->
+<div id="reminder-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">📌 Add Reminder</div>
+    <input type="text" id="reminder-input" class="overlay-input" placeholder="e.g. Call the dentist" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeReminderForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitReminder()">Add</button>
     </div>
-
-    <!-- REMINDER FORM OVERLAY -->
-    <div id="reminder-overlay" class="overlay hidden">
-      <div class="overlay-box">
-        <div class="overlay-title">📌 Add Reminder</div>
-        <input type="text" id="reminder-input" class="overlay-input" placeholder="e.g. Call the dentist" autocomplete="off" />
-        <div class="overlay-actions">
-          <button class="overlay-btn cancel" onclick="closeReminderForm()">Cancel</button>
-          <button class="overlay-btn submit" onclick="submitReminder()">Add</button>
-        </div>
-        <div class="overlay-status" id="reminder-status"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="section-header">
-        <span class="section-title">🛒 Grocery List</span>
-        <button class="add-btn" onclick="openGroceryForm()">+ Add Item</button>
-      </div>
-      <div class="grocery-grid" id="grocery-list">
-        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
-      </div>
-    </div>
-
-    <!-- GROCERY FORM OVERLAY -->
-    <div id="grocery-overlay" class="overlay hidden">
-      <div class="overlay-box">
-        <div class="overlay-title">🛒 Add Grocery Item</div>
-        <input type="text" id="grocery-input" class="overlay-input" placeholder="e.g. Orange juice" autocomplete="off" />
-        <div class="overlay-actions">
-          <button class="overlay-btn cancel" onclick="closeGroceryForm()">Cancel</button>
-          <button class="overlay-btn submit" onclick="submitGroceryItem()">Add</button>
-        </div>
-        <div class="overlay-status" id="grocery-status"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="section-header">
-        <span class="section-title">🍽️ This Week's Menu</span>
-        <button class="add-btn" onclick="openMealForm()">+ Edit</button>
-      </div>
-      <div class="meal-list" id="meal-list">
-        <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
-      </div>
-    </div>
-
-    <!-- MEAL FORM OVERLAY -->
-    <div id="meal-overlay" class="overlay hidden">
-      <div class="overlay-box">
-        <div class="overlay-title">🍽️ Set a Meal</div>
-        <select id="meal-day-select" class="overlay-input">
-          <option value="">Select a day...</option>
-          <option>Monday</option>
-          <option>Tuesday</option>
-          <option>Wednesday</option>
-          <option>Thursday</option>
-          <option>Friday</option>
-          <option>Saturday</option>
-          <option>Sunday</option>
-        </select>
-        <input type="text" id="meal-input" class="overlay-input" placeholder="e.g. Tacos" autocomplete="off" />
-        <div class="overlay-actions">
-          <button class="overlay-btn cancel" onclick="closeMealForm()">Cancel</button>
-          <button class="overlay-btn submit" onclick="submitMeal()">Save</button>
-        </div>
-        <div class="overlay-status" id="meal-status"></div>
-      </div>
-    </div>
-
+    <div class="overlay-status" id="reminder-status"></div>
   </div>
+</div>
 
+<div id="grocery-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">🛒 Add Grocery Item</div>
+    <input type="text" id="grocery-input" class="overlay-input" placeholder="e.g. Orange juice" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeGroceryForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitGroceryItem()">Add</button>
+    </div>
+    <div class="overlay-status" id="grocery-status"></div>
+  </div>
+</div>
+
+<div id="meal-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">🍽️ Set a Meal</div>
+    <select id="meal-day-select" class="overlay-input">
+      <option value="">Select a day...</option>
+      <option>Monday</option>
+      <option>Tuesday</option>
+      <option>Wednesday</option>
+      <option>Thursday</option>
+      <option>Friday</option>
+      <option>Saturday</option>
+      <option>Sunday</option>
+    </select>
+    <input type="text" id="meal-input" class="overlay-input" placeholder="e.g. Tacos" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeMealForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitMeal()">Save</button>
+    </div>
+    <div class="overlay-status" id="meal-status"></div>
+  </div>
 </div>
 
 
