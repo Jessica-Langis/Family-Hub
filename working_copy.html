@@ -685,16 +685,16 @@
 <!-- CONTENT -->
 <div class="content">
 
-  <!-- TOP ROW: MENU / GROCERY / CHORES -->
+  <!-- TOP ROW: CHORES / GROCERY / MENU -->
   <div class="top-row">
 
-    <div class="panel">
+    <div class="chores-section">
       <div class="section-header">
-        <span class="section-title">🍽️ This Week's Menu</span>
-        <button class="add-btn" onclick="openMealForm()">+ Edit</button>
+        <span class="section-title">✅ Chores</span>
+        <span class="section-badge" id="chore-reset-badge"></span>
       </div>
-      <div class="meal-list" id="meal-list">
-        <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+      <div class="chore-list" id="chore-list">
+        <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
       </div>
     </div>
 
@@ -708,13 +708,13 @@
       </div>
     </div>
 
-    <div class="chores-section">
+    <div class="panel">
       <div class="section-header">
-        <span class="section-title">✅ Chores</span>
-        <span class="section-badge" id="chore-reset-badge"></span>
+        <span class="section-title">🍽️ This Week's Menu</span>
+        <button class="add-btn" onclick="openMealForm()">+ Edit</button>
       </div>
-      <div class="chore-list" id="chore-list">
-        <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+      <div class="meal-list" id="meal-list">
+        <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
       </div>
     </div>
 
