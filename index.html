@@ -202,7 +202,7 @@
   .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 3fr 7fr;
     gap: 10px;
     min-height: 0;
   }
@@ -250,7 +250,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 320px;
+    min-height: 0;
   }
 
   .agenda-embed {
@@ -356,10 +356,12 @@
 
   .reminder-list {
     padding: 8px 16px 10px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 10px;
     overflow-y: auto;
     flex: 1;
+    align-content: start;
   }
 
   .reminder-item {
