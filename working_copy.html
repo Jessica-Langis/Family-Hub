@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>What The Fuck Is It Now?</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -50,10 +51,7 @@
     text-align: center;
   }
 
-  .pin-dots {
-    display: flex;
-    gap: 16px;
-  }
+  .pin-dots { display: flex; gap: 16px; }
 
   .pin-dot {
     width: 18px;
@@ -64,10 +62,7 @@
     transition: all 0.15s;
   }
 
-  .pin-dot.filled {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
 
   .pin-keypad {
     display: grid;
@@ -114,6 +109,7 @@
 
   .pin-dots.shake { animation: shake 0.4s ease; }
 
+  /* MAIN LAYOUT */
   body {
     background: var(--bg);
     color: var(--text);
@@ -121,15 +117,14 @@
     height: 100vh;
     overflow: hidden;
     display: grid;
-    grid-template-columns: 3fr 1fr 1fr;
+    grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
   }
 
   /* TOP BAR */
   .topbar {
-    grid-column: 1 / -1;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -142,6 +137,7 @@
   .home-title {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 1.4rem;
+    font-weight: 600;
     color: var(--accent);
     letter-spacing: 0.04em;
   }
@@ -161,11 +157,7 @@
     margin-top: 2px;
   }
 
-  .weather-block {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
+  .weather-block { display: flex; gap: 12px; align-items: center; }
 
   .weather-day {
     text-align: center;
@@ -189,28 +181,30 @@
     margin: 4px 0 2px;
   }
 
-  .weather-day .condition {
-    font-size: 0.65rem;
-    color: var(--muted);
-  }
+  .weather-day .condition { font-size: 0.65rem; color: var(--muted); }
+  .weather-day .icon { font-size: 1.3rem; margin-bottom: 2px; }
 
-  .weather-day .icon {
-    font-size: 1.3rem;
-    margin-bottom: 2px;
+  /* CONTENT — 3 columns: 3fr 1fr 1fr */
+  .content {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
   }
 
   .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px 10px;
+    padding: 10px 16px 8px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
 
   .section-title {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--accent);
     letter-spacing: 0.03em;
   }
@@ -222,8 +216,8 @@
     letter-spacing: 0.1em;
   }
 
-  /* LEFT — CALENDAR */
-  .calendar-section {
+  /* LEFT — AGENDA */
+  .agenda-section {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -233,7 +227,7 @@
     min-height: 0;
   }
 
-  .calendar-embed {
+  .agenda-embed {
     flex: 1;
     width: 100%;
     border: none;
@@ -319,7 +313,7 @@
   .right-col {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     min-height: 0;
     overflow: hidden;
   }
@@ -365,7 +359,38 @@
   .reminder-text {
     font-size: 0.8rem;
     line-height: 1.4;
+    flex: 1;
   }
+
+  .reminder-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .reminder-delete:hover { color: #e07070; }
+
+  .grocery-text { flex: 1; }
+
+  .grocery-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .grocery-delete:hover { color: #e07070; }
 
   .grocery-grid {
     padding: 8px 16px 10px;
@@ -425,6 +450,104 @@
 
   .meal-name { color: var(--muted); }
 
+  /* ADD ITEM BUTTON */
+  .add-btn {
+    background: var(--accent);
+    color: #0f1117;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .add-btn:hover { opacity: 0.85; }
+
+  /* OVERLAY */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 8888;
+  }
+
+  .overlay.hidden { display: none; }
+
+  .overlay-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .overlay-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .overlay-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .overlay-input:focus { border-color: var(--accent); }
+
+  .overlay-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .overlay-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+  }
+
+  .overlay-btn.cancel {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .overlay-btn.submit {
+    background: var(--accent);
+    color: #0f1117;
+  }
+
+  .overlay-btn:hover { opacity: 0.85; }
+
+  .overlay-status {
+    font-size: 0.78rem;
+    color: var(--accent3);
+    min-height: 1rem;
+    text-align: center;
+  }
+
   /* MOBILE */
   @media (max-width: 768px) {
     body {
@@ -436,6 +559,11 @@
       gap: 10px;
     }
 
+    .content {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
     .topbar {
       flex-direction: column;
       gap: 12px;
@@ -444,39 +572,15 @@
     }
 
     .home-title { font-size: 1.1rem; }
-
     #clock { font-size: 1.6rem; }
 
-    .weather-block {
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
+    .weather-block { justify-content: center; flex-wrap: wrap; gap: 8px; }
     .weather-day { min-width: 80px; flex: 1; }
 
-    .calendar-section {
-      height: 420px;
-    }
-
-    .calendar-embed {
-      height: 100%;
-    }
-
-    .chores-section {
-      height: auto;
-      overflow: visible;
-    }
-
-    .chore-list {
-      overflow: visible;
-      height: auto;
-    }
-
-    .right-col {
-      overflow: visible;
-      height: auto;
-    }
+    .agenda-section { height: 420px; }
+    .chores-section { height: auto; overflow: visible; }
+    .chore-list { overflow: visible; height: auto; }
+    .right-col { overflow: visible; height: auto; }
 
     .panel {
       height: auto;
@@ -486,10 +590,7 @@
 
     .reminder-list,
     .grocery-grid,
-    .meal-list {
-      overflow: visible;
-      flex: none;
-    }
+    .meal-list { overflow: visible; flex: none; }
 
     .pin-keypad {
       grid-template-columns: repeat(3, 80px);
@@ -543,127 +644,129 @@
   </div>
 </div>
 
-<!-- LEFT: CALENDAR (month view) -->
-<div class="calendar-section">
-  <div class="section-header">
-    <span class="section-title">📅 Family Calendar</span>
-    <span class="section-badge">Month View</span>
-  </div>
-  <iframe class="calendar-embed"
-    src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-    frameborder="0" scrolling="no">
-  </iframe>
-</div>
+<!-- CONTENT -->
+<div class="content">
 
-<!-- MIDDLE: CHORES -->
-<div class="chores-section">
-  <div class="section-header">
-    <span class="section-title">✅ Chores</span>
-    <span class="section-badge">Tap to check off</span>
-  </div>
-  <div class="chore-list">
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Dishes</span>
-      <span class="chore-who">Idc</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Clean kitchen counters</span>
-      <span class="chore-who">Anyone</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Take out trash & recycling</span>
-      <span class="chore-who">Donovan</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Wipe down bathrooms</span>
-      <span class="chore-who">Mom</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Feed & water pets</span>
-      <span class="chore-who">Everyone</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Sweep kitchen floor</span>
-      <span class="chore-who">Idc</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Pick up after dogs</span>
-      <span class="chore-who">Donovan</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Clean bathroom</span>
-      <span class="chore-who">Kids</span>
-    </div>
-    <div class="chore-item" onclick="toggleChore(this)">
-      <div class="chore-check">✓</div>
-      <span class="chore-name">Mow lawn</span>
-      <span class="chore-who">Dad</span>
-    </div>
-  </div>
-</div>
-
-<!-- RIGHT: REMINDERS / GROCERY / MEAL -->
-<div class="right-col">
-
-  <div class="panel">
+  <!-- LEFT: AGENDA -->
+  <div class="agenda-section">
     <div class="section-header">
-      <span class="section-title">📌 Reminders</span>
+      <span class="section-title">📅 Agenda</span>
+      <span class="section-badge">Upcoming Events</span>
     </div>
-    <div class="reminder-list">
-      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Schedule Kids Dentist Appt</span></div>
-      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Renew Care Tabs</span></div>
-      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Something else</span></div>
-      <div class="reminder-item"><div class="reminder-dot"></div><span class="reminder-text">Cool shit</span></div>
+    <iframe class="agenda-embed"
+      src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+      frameborder="0" scrolling="no">
+    </iframe>
+  </div>
+
+  <!-- MIDDLE: CHORES -->
+  <div class="chores-section">
+    <div class="section-header">
+      <span class="section-title">✅ Chores</span>
+      <span class="section-badge" id="chore-reset-badge">Tap to check off</span>
+    </div>
+    <div class="chore-list" id="chore-list">
+      <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="section-header">
-      <span class="section-title">🛒 Grocery List</span>
-      <span class="section-badge">Edit in Google Keep</span>
-    </div>
-    <div class="grocery-grid">
-      <div class="grocery-item">Milk</div>
-      <div class="grocery-item">Eggs</div>
-      <div class="grocery-item">Bread</div>
-      <div class="grocery-item">Chicken breast</div>
-      <div class="grocery-item">Apples</div>
-      <div class="grocery-item">Greek yogurt</div>
-      <div class="grocery-item">Pasta</div>
-      <div class="grocery-item">Olive oil</div>
-      <div class="grocery-item">Cheese</div>
-      <div class="grocery-item">Coffee</div>
-    </div>
-  </div>
+  <!-- RIGHT: REMINDERS / GROCERY / MEAL -->
+  <div class="right-col">
 
-  <div class="panel">
-    <div class="section-header">
-      <span class="section-title">🍽️ This Week's Menu</span>
+    <div class="panel">
+      <div class="section-header">
+        <span class="section-title">📌 Reminders</span>
+        <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+      </div>
+      <div class="reminder-list" id="reminder-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+      </div>
     </div>
-    <div class="meal-list">
-      <div class="meal-item"><span class="meal-day">Mon</span><span class="meal-name">Probably Ribeye</span></div>
-      <div class="meal-item"><span class="meal-day">Tue</span><span class="meal-name">Idk yet</span></div>
-      <div class="meal-item"><span class="meal-day">Wed</span><span class="meal-name">MF Ribeye</span></div>
-      <div class="meal-item"><span class="meal-day">Thu</span><span class="meal-name">Steak Wraps</span></div>
-      <div class="meal-item"><span class="meal-day">Fri</span><span class="meal-name">It's state, idk</span></div>
-      <div class="meal-item"><span class="meal-day">Sat</span><span class="meal-name">Same, probably UberEats</span></div>
-      <div class="meal-item"><span class="meal-day">Sun</span><span class="meal-name">Not cooking at all today</span></div>
+
+    <!-- REMINDER FORM OVERLAY -->
+    <div id="reminder-overlay" class="overlay hidden">
+      <div class="overlay-box">
+        <div class="overlay-title">📌 Add Reminder</div>
+        <input type="text" id="reminder-input" class="overlay-input" placeholder="e.g. Call the dentist" autocomplete="off" />
+        <div class="overlay-actions">
+          <button class="overlay-btn cancel" onclick="closeReminderForm()">Cancel</button>
+          <button class="overlay-btn submit" onclick="submitReminder()">Add</button>
+        </div>
+        <div class="overlay-status" id="reminder-status"></div>
+      </div>
     </div>
+
+    <div class="panel">
+      <div class="section-header">
+        <span class="section-title">🛒 Grocery List</span>
+        <button class="add-btn" onclick="openGroceryForm()">+ Add Item</button>
+      </div>
+      <div class="grocery-grid" id="grocery-list">
+        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+      </div>
+    </div>
+
+    <!-- GROCERY FORM OVERLAY -->
+    <div id="grocery-overlay" class="overlay hidden">
+      <div class="overlay-box">
+        <div class="overlay-title">🛒 Add Grocery Item</div>
+        <input type="text" id="grocery-input" class="overlay-input" placeholder="e.g. Orange juice" autocomplete="off" />
+        <div class="overlay-actions">
+          <button class="overlay-btn cancel" onclick="closeGroceryForm()">Cancel</button>
+          <button class="overlay-btn submit" onclick="submitGroceryItem()">Add</button>
+        </div>
+        <div class="overlay-status" id="grocery-status"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-header">
+        <span class="section-title">🍽️ This Week's Menu</span>
+        <button class="add-btn" onclick="openMealForm()">+ Edit</button>
+      </div>
+      <div class="meal-list" id="meal-list">
+        <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+      </div>
+    </div>
+
+    <!-- MEAL FORM OVERLAY -->
+    <div id="meal-overlay" class="overlay hidden">
+      <div class="overlay-box">
+        <div class="overlay-title">🍽️ Set a Meal</div>
+        <select id="meal-day-select" class="overlay-input">
+          <option value="">Select a day...</option>
+          <option>Monday</option>
+          <option>Tuesday</option>
+          <option>Wednesday</option>
+          <option>Thursday</option>
+          <option>Friday</option>
+          <option>Saturday</option>
+          <option>Sunday</option>
+        </select>
+        <input type="text" id="meal-input" class="overlay-input" placeholder="e.g. Tacos" autocomplete="off" />
+        <div class="overlay-actions">
+          <button class="overlay-btn cancel" onclick="closeMealForm()">Cancel</button>
+          <button class="overlay-btn submit" onclick="submitMeal()">Save</button>
+        </div>
+        <div class="overlay-status" id="meal-status"></div>
+      </div>
+    </div>
+
   </div>
 
 </div>
+
 
 <script>
-  // PIN — change '1234' to whatever 4-digit PIN you want
-  const CORRECT_PIN = '1470';
+  // ── CONSTANTS (all declared first, before any function references them) ──
+  const GROCERY_SCRIPT   = 'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec';
+  const REMINDERS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxwkMmwNzRlSupy2aoP-crQaqjeqJ0r0M0VHxseiLmSwzqMUYq8nJ-NF7i4phs2_Zwz/exec';
+  const CHORES_SCRIPT    = 'https://script.google.com/macros/s/AKfycbwB9HNfYxuI8o07uag1AtLTl1O9Ujyc_KaDndJq0Eb0Znjui2CqpLoUjBq0FvpIPuiv/exec';
+  const MEAL_SCRIPT      = 'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec';
+  const DAYS_ORDER       = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const CORRECT_PIN      = '1234';
+
+  // ── PIN ──
   let pinEntry = '';
 
   function pinPress(digit) {
@@ -701,24 +804,16 @@
     }
   }
 
-  // Check if already authenticated this session
   if (localStorage.getItem('hh_auth') === 'true') {
     document.getElementById('pin-screen').classList.add('hidden');
   }
 
-  // Keyboard support
-  document.addEventListener('keydown', (e) => {
-    if (document.getElementById('pin-screen').classList.contains('hidden')) return;
-    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-    if (e.key === 'Backspace') pinDelete();
-  });
-
-  // CLOCK
+  // ── CLOCK ──
   function updateClock() {
     const now = new Date();
     const rawH = now.getHours();
-    const h = (rawH % 12 || 12).toString().padStart(2,'0');
-    const m = now.getMinutes().toString().padStart(2,'0');
+    const h = (rawH % 12 || 12).toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
     const ampm = rawH >= 12 ? 'PM' : 'AM';
     document.getElementById('clock').textContent = `${h}:${m} ${ampm}`;
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -728,12 +823,7 @@
   updateClock();
   setInterval(updateClock, 30000);
 
-  // CHORE TOGGLE
-  function toggleChore(el) {
-    el.classList.toggle('done');
-  }
-
-  // WEATHER — Chelan County, WA
+  // ── WEATHER ──
   async function loadWeather() {
     try {
       const lat = 47.5221, lon = -120.4699;
@@ -752,17 +842,272 @@
         const min = Math.round(data.daily.temperature_2m_min[i]);
         wb.innerHTML += `<div class="weather-day">
           <div class="day-name">${days[d.getDay()]}</div>
-          <div class="icon">${icons[code]||'🌡️'}</div>
+          <div class="icon">${icons[code] || '🌡️'}</div>
           <div class="temp">${max}° / ${min}°</div>
-          <div class="condition">${conditions[code]||'Mixed'}</div>
+          <div class="condition">${conditions[code] || 'Mixed'}</div>
         </div>`;
       }
-    } catch(e) {
+    } catch (e) {
       document.getElementById('weather').innerHTML = '<div style="color:var(--muted);font-size:0.8rem">Weather unavailable</div>';
     }
   }
   loadWeather();
   setInterval(loadWeather, 30 * 60 * 1000);
+
+  // ── CHORES ──
+  async function loadChores() {
+    try {
+      const res = await fetch(CHORES_SCRIPT);
+      const data = await res.json();
+      const list = document.getElementById('chore-list');
+      const resetDay = data.resetDay || 'Sunday';
+      document.getElementById('chore-reset-badge').textContent = '';
+
+      const now = new Date();
+      const todayDate = now.toDateString();
+      const todayDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
+
+      for (const [choreId, val] of Object.entries(data.chores)) {
+        const freq = val.frequency || 'weekly';
+        const key = `chore_reset_${choreId}`;
+        const last = localStorage.getItem(key);
+        let shouldReset = false;
+
+        if (freq === 'daily' && last !== todayDate) {
+          shouldReset = true;
+          localStorage.setItem(key, todayDate);
+        } else if (freq === 'weekly' && todayDay === resetDay && last !== todayDate) {
+          shouldReset = true;
+          localStorage.setItem(key, todayDate);
+        } else if (freq === 'monthly' && last !== thisMonth) {
+          shouldReset = true;
+          localStorage.setItem(key, thisMonth);
+        }
+
+        if (shouldReset && val.done) {
+          const fd = new FormData();
+          fd.append('choreId', choreId);
+          fd.append('done', 'false');
+          await fetch(CHORES_SCRIPT, { method: 'POST', body: fd });
+          data.chores[choreId] = { ...val, done: false };
+        }
+      }
+
+      list.innerHTML = Object.entries(data.chores).map(([name, val]) => {
+        const done = val.done;
+        const who = val.who || '';
+        return `<div class="chore-item ${done ? 'done' : ''}" onclick="toggleChore(this, '${name.replace(/'/g, "\\'")}')">
+          <div class="chore-check">✓</div>
+          <span class="chore-name">${name}</span>
+          ${who ? `<span class="chore-who">${who}</span>` : ''}
+        </div>`;
+      }).join('');
+    } catch (e) {
+      document.getElementById('chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function toggleChore(el, choreId) {
+    el.classList.toggle('done');
+    const done = el.classList.contains('done');
+    const fd = new FormData();
+    fd.append('choreId', choreId);
+    fd.append('done', done.toString());
+    try { await fetch(CHORES_SCRIPT, { method: 'POST', body: fd }); } catch (e) {}
+  }
+
+  loadChores();
+
+  // ── REMINDERS ──
+  async function loadReminders() {
+    try {
+      const res = await fetch(REMINDERS_SCRIPT);
+      const items = await res.json();
+      const list = document.getElementById('reminder-list');
+      if (items.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No reminders</div>';
+      } else {
+        list.innerHTML = items.map(text => `
+          <div class="reminder-item">
+            <div class="reminder-dot"></div>
+            <span class="reminder-text">${text}</span>
+            <button class="reminder-delete" onclick="deleteReminder('${text.replace(/'/g, "\\'")}', this)" title="Remove">×</button>
+          </div>`).join('');
+      }
+    } catch (e) {
+      document.getElementById('reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  function openReminderForm() {
+    document.getElementById('reminder-overlay').classList.remove('hidden');
+    document.getElementById('reminder-input').focus();
+    document.getElementById('reminder-status').textContent = '';
+    document.getElementById('reminder-input').value = '';
+  }
+
+  function closeReminderForm() {
+    document.getElementById('reminder-overlay').classList.add('hidden');
+  }
+
+  async function submitReminder() {
+    const input = document.getElementById('reminder-input');
+    const text = input.value.trim();
+    if (!text) return;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('text', text);
+      await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
+    } catch (e) {}
+    input.value = '';
+    closeReminderForm();
+    loadReminders();
+  }
+
+  async function deleteReminder(text, btn) {
+    btn.disabled = true;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('text', text);
+      await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
+      await loadReminders();
+    } catch (e) { btn.disabled = false; }
+  }
+
+  loadReminders();
+  setInterval(loadReminders, 5 * 60 * 1000);
+
+  // ── GROCERY ──
+  async function loadGroceryList() {
+    try {
+      const res = await fetch(GROCERY_SCRIPT);
+      const items = await res.json();
+      const grid = document.getElementById('grocery-list');
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">No items yet</div>';
+      } else {
+        grid.innerHTML = items.map(item => `<div class="grocery-item"><span class="grocery-text">${item}</span><button class="grocery-delete" onclick="deleteGroceryItem('${item.replace(/'/g, "\\'")}', this)" title="Remove">×</button></div>`).join('');
+      }
+    } catch (e) {
+      document.getElementById('grocery-list').innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">Unavailable</div>';
+    }
+  }
+
+  function openGroceryForm() {
+    document.getElementById('grocery-overlay').classList.remove('hidden');
+    document.getElementById('grocery-input').focus();
+    document.getElementById('grocery-status').textContent = '';
+  }
+
+  function closeGroceryForm() {
+    document.getElementById('grocery-overlay').classList.add('hidden');
+    document.getElementById('grocery-input').value = '';
+    document.getElementById('grocery-status').textContent = '';
+  }
+
+  async function submitGroceryItem() {
+    const input = document.getElementById('grocery-input');
+    const status = document.getElementById('grocery-status');
+    const item = input.value.trim();
+    if (!item) return;
+    status.textContent = 'Adding...';
+    try {
+      const fd = new FormData();
+      fd.append('item', item);
+      await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
+    } catch (e) {}
+    input.value = '';
+    closeGroceryForm();
+    loadGroceryList();
+  }
+
+  async function deleteGroceryItem(item, btn) {
+    btn.disabled = true;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('item', item);
+      await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
+      await loadGroceryList();
+    } catch (e) { btn.disabled = false; }
+  }
+
+  loadGroceryList();
+  setInterval(loadGroceryList, 60 * 1000);
+
+  // ── MEAL PLANNER ──
+  async function loadMealPlan() {
+    try {
+      const res = await fetch(MEAL_SCRIPT);
+      const meals = await res.json();
+      const list = document.getElementById('meal-list');
+      list.innerHTML = DAYS_ORDER.map(day => `
+        <div class="meal-item">
+          <span class="meal-day">${day.slice(0, 3)}</span>
+          <span class="meal-name">${meals[day] || '—'}</span>
+        </div>`).join('');
+    } catch (e) {
+      document.getElementById('meal-list').innerHTML = '<div style="color:var(--muted);font-size:0.78rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  function openMealForm() {
+    document.getElementById('meal-overlay').classList.remove('hidden');
+    document.getElementById('meal-status').textContent = '';
+    document.getElementById('meal-day-select').value = '';
+    document.getElementById('meal-input').value = '';
+  }
+
+  function closeMealForm() {
+    document.getElementById('meal-overlay').classList.add('hidden');
+  }
+
+  async function submitMeal() {
+    const day = document.getElementById('meal-day-select').value;
+    const meal = document.getElementById('meal-input').value.trim();
+    const status = document.getElementById('meal-status');
+    if (!day) { status.textContent = 'Please select a day'; return; }
+    if (!meal) { status.textContent = 'Please enter a meal'; return; }
+    try {
+      const fd = new FormData();
+      fd.append('day', day);
+      fd.append('meal', meal);
+      await fetch(MEAL_SCRIPT, { method: 'POST', body: fd });
+    } catch (e) {}
+    closeMealForm();
+    loadMealPlan();
+  }
+
+  loadMealPlan();
+  setInterval(loadMealPlan, 5 * 60 * 1000);
+
+  // ── SINGLE KEYDOWN HANDLER ──
+  document.addEventListener('keydown', (e) => {
+    // Overlays take priority
+    if (!document.getElementById('grocery-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitGroceryItem();
+      if (e.key === 'Escape') closeGroceryForm();
+      return;
+    }
+    if (!document.getElementById('meal-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitMeal();
+      if (e.key === 'Escape') closeMealForm();
+      return;
+    }
+    if (!document.getElementById('reminder-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitReminder();
+      if (e.key === 'Escape') closeReminderForm();
+      return;
+    }
+    // PIN screen
+    if (!document.getElementById('pin-screen').classList.contains('hidden')) {
+      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+      if (e.key === 'Backspace') pinDelete();
+    }
+  });
 </script>
 </body>
 </html>
