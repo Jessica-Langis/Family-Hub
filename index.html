@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>What's The Plan Stan</title>
+<title>Family Hub</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -822,7 +822,7 @@
 
 <!-- ── HOME PIN ── -->
 <div class="pin-overlay" id="pin-home">
-  <div class="pin-title">🏡 What's The Plan Stan</div>
+  <div class="pin-title">🏡 Family Hub</div>
   <div class="pin-subtitle">Enter PIN to continue</div>
   <div class="pin-dots" id="pin-dots-home">
     <div class="pin-dot" id="home-d0"></div>
@@ -930,7 +930,7 @@
 
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
-  <div class="home-title" id="topbar-title">🏡 What's The Plan Stan</div>
+  <div class="home-title" id="topbar-title">🏡 What Is It Today?</div>
   <div class="clock-block">
     <div id="clock">--:--</div>
     <div id="date">Loading...</div>
@@ -958,7 +958,7 @@
             <span class="section-badge" id="chore-count-badge"></span>
           </div>
           <div class="section-header-actions">
-            <button class="add-btn" onclick="openSharedChoreForm()">+ Add</button>
+            <button class="add-btn" onclick="openPersonalChoreForm('home')">+ Add</button>
           </div>
         </div>
         <div class="chore-list" id="chore-list">
@@ -1052,7 +1052,7 @@
             <span class="section-badge" id="parent-chore-badge"></span>
           </div>
           <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent2)" onclick="openSharedChoreForm()">+ Add</button>
+            <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
           </div>
         </div>
         <div class="chore-list" id="parent-chore-list">
@@ -1439,7 +1439,7 @@
   const MONTHS     = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   // PIN per tab — update these to change PINs
-  const TAB_PINS = { home: '1234', parentals: '1234', tori: '1234', nova: '1234' };
+  const TAB_PINS = { home: '1470', parentals: '1470', tori: '1470', nova: '0258' };
 
   const TAB_TITLES = {
     home:      "🏡 What's The Plan Stan",
@@ -1822,7 +1822,7 @@
     const list = document.getElementById('chore-list');
     if (!list) return;
     try {
-      const res    = await apiFetch(SCRIPTS.CHORES);
+      const res    = await apiFetch(SCRIPTS.CHORES + '?type=chores');
       const chores = await res.json();
       renderPersonalChoreList(chores, 'chore-list', 'chore-count-badge', 'home');
     } catch (e) {
@@ -1834,7 +1834,7 @@
     const list = document.getElementById('parent-chore-list');
     if (!list) return;
     try {
-      const res    = await apiFetch(SCRIPTS.CHORES);
+      const res    = await apiFetch(SCRIPTS.CHORES + '?type=chores');
       const chores = await res.json();
       const filtered = chores.filter(c => {
         const who = (c.who || '').toLowerCase();
@@ -2021,16 +2021,20 @@
     }
 
     setLoading(btn);
-    const script = person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+    const script = person === 'home' ? SCRIPTS.CHORES
+                 : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
     try {
       const fd = new FormData();
       fd.append('action', 'add');
-      fd.append('type',   'chores');
-      fd.append('name',   name);
+      if (person !== 'home') fd.append('type', 'chores');
+      fd.append('choreId', name);
+      fd.append('name',    name);
       await apiFetch(script, { method: 'POST', body: fd });
       clearLoading(btn);
       closePersonalChoreForm();
-      person === 'tori' ? await loadToriChores() : await loadNovaChores();
+      if (person === 'home') { await loadChores(); loadParentChores(); }
+      else if (person === 'tori') await loadToriChores();
+      else await loadNovaChores();
     } catch (e) {
       clearLoading(btn);
       err('submitPersonalChore failed:', e.message);
