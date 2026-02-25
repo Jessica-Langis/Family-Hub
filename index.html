@@ -822,7 +822,7 @@
 
 <!-- ── HOME PIN ── -->
 <div class="pin-overlay" id="pin-home">
-  <div class="pin-title">🏡 What Is It Now?</div>
+  <div class="pin-title">🏡 Family Hub</div>
   <div class="pin-subtitle">Enter PIN to continue</div>
   <div class="pin-dots" id="pin-dots-home">
     <div class="pin-dot" id="home-d0"></div>
@@ -930,7 +930,7 @@
 
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
-  <div class="home-title" id="topbar-title">🏡 What's The Plan Stan</div>
+  <div class="home-title" id="topbar-title">🏡 What Is It Now?</div>
   <div class="clock-block">
     <div id="clock">--:--</div>
     <div id="date">Loading...</div>
@@ -956,6 +956,9 @@
           <div class="section-header-left">
             <span class="section-title">✅ Chores</span>
             <span class="section-badge" id="chore-count-badge"></span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openSharedChoreForm()">+ Add</button>
           </div>
         </div>
         <div class="chore-list" id="chore-list">
@@ -1047,6 +1050,9 @@
           <div class="section-header-left">
             <span class="section-title" style="color:var(--accent2)">✅ Your Chores</span>
             <span class="section-badge" id="parent-chore-badge"></span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent2)" onclick="openSharedChoreForm()">+ Add</button>
           </div>
         </div>
         <div class="chore-list" id="parent-chore-list">
@@ -1301,6 +1307,25 @@
       <button class="overlay-btn submit" onclick="submitMeal()">Save</button>
     </div>
     <div class="overlay-status" id="meal-status"></div>
+  </div>
+</div>
+
+<!-- SHARED CHORE OVERLAY -->
+<div id="shared-chore-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">✅ Add Chore</div>
+    <input type="text" id="shared-chore-input" class="overlay-input" placeholder="e.g. Vacuum living room" autocomplete="off" />
+    <input type="text" id="shared-chore-who" class="overlay-input" placeholder="Assigned to (e.g. Dad, Mom, Everyone)" autocomplete="off" />
+    <select id="shared-chore-freq" class="overlay-input">
+      <option value="weekly">Weekly</option>
+      <option value="daily">Daily</option>
+      <option value="monthly">Monthly</option>
+    </select>
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeSharedChoreForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitSharedChore()">Add</button>
+    </div>
+    <div class="overlay-status" id="shared-chore-status"></div>
   </div>
 </div>
 
@@ -1820,6 +1845,36 @@
     const badgeMap = { 'chore-list': 'chore-count-badge', 'parent-chore-list': 'parent-chore-badge', 'tori-chore-list': 'tori-chore-badge', 'nova-chore-list': 'nova-chore-badge' };
     const badge = document.getElementById(badgeMap[listId]);
     if (badge) badge.textContent = `${doneCount} / ${total}`;
+  }
+
+  function openSharedChoreForm() {
+    document.getElementById('shared-chore-overlay').classList.remove('hidden');
+    document.getElementById('shared-chore-input').value = '';
+    document.getElementById('shared-chore-who').value = '';
+    document.getElementById('shared-chore-freq').value = 'weekly';
+    document.getElementById('shared-chore-status').textContent = '';
+    document.getElementById('shared-chore-input').focus();
+  }
+  function closeSharedChoreForm() { document.getElementById('shared-chore-overlay').classList.add('hidden'); }
+  async function submitSharedChore() {
+    const _btn = getSubmitBtn('shared-chore-overlay'); setLoading(_btn);
+    const name = document.getElementById('shared-chore-input').value.trim();
+    const who = document.getElementById('shared-chore-who').value.trim();
+    const freq = document.getElementById('shared-chore-freq').value;
+    if (!name) { clearLoading(_btn); document.getElementById('shared-chore-status').textContent = 'Please enter a chore name'; return; }
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('choreId', name);
+      fd.append('who', who);
+      fd.append('frequency', freq);
+      await fetch(CHORES_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    choreCache = null;
+    clearLoading(_btn);
+    closeSharedChoreForm();
+    await loadChores();
+    loadParentChores();
   }
 
   async function deleteSharedChore(choreId, listId) {
@@ -2460,6 +2515,11 @@
     if (!document.getElementById('nova-events-overlay').classList.contains('hidden')) {
       if (e.key === 'Enter') submitNovaEvent();
       if (e.key === 'Escape') closeNovaEventsForm();
+      return;
+    }
+    if (!document.getElementById('shared-chore-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitSharedChore();
+      if (e.key === 'Escape') closeSharedChoreForm();
       return;
     }
     if (!document.getElementById('tori-reminder-overlay').classList.contains('hidden')) {
