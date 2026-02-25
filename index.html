@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Famly Hub</title>
+<title>Family Hub</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -580,6 +580,24 @@
   .overlay-btn.cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
   .overlay-btn.submit { background: var(--accent); color: #0f1117; }
   .overlay-btn:hover { opacity: 0.85; }
+  .overlay-btn.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+    position: relative;
+  }
+  .overlay-btn.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .overlay-status { font-size: 0.78rem; color: var(--accent3); min-height: 1rem; text-align: center; }
 
@@ -804,7 +822,7 @@
 
 <!-- ── HOME PIN ── -->
 <div class="pin-overlay" id="pin-home">
-  <div class="pin-title">🏡 Family Hub</div>
+  <div class="pin-title">🏡 What Is It Now?</div>
   <div class="pin-subtitle">Enter PIN to continue</div>
   <div class="pin-dots" id="pin-dots-home">
     <div class="pin-dot" id="home-d0"></div>
@@ -912,7 +930,7 @@
 
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
-  <div class="home-title" id="topbar-title">🏡 What Is Going On </div>
+  <div class="home-title" id="topbar-title">🏡 What's The Plan Stan</div>
   <div class="clock-block">
     <div id="clock">--:--</div>
     <div id="date">Loading...</div>
@@ -1404,6 +1422,23 @@
 
 
 
+  // ── SUBMIT LOADING HELPERS ──
+  function setLoading(btn, label) {
+    btn.dataset.originalText = btn.textContent;
+    btn.textContent = label || btn.textContent;
+    btn.classList.add('loading');
+    btn.disabled = true;
+  }
+  function clearLoading(btn) {
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+  // Get the submit btn from the nearest overlay-box
+  function getSubmitBtn(overlayId) {
+    return document.querySelector(`#${overlayId} .overlay-btn.submit`);
+  }
+
   // ── PIN SYSTEM ── 
   const pinEntries = { home: '', parentals: '', tori: '', nova: '' };
 
@@ -1627,10 +1662,12 @@
     listEl.innerHTML = entries.map(([name, val]) => {
       const isDone = val.done;
       const who = val.who || '';
-      return `<div class="chore-item ${isDone ? 'done' : ''}" onclick="toggleChore(this, '${name.replace(/'/g, "\\'")}', '${listEl.id}')">
+      const safeName = name.replace(/'/g, "\\'");
+      return `<div class="chore-item ${isDone ? 'done' : ''}" onclick="toggleChore(this, '${safeName}', '${listEl.id}')">
         <div class="chore-check">✓</div>
         <span class="chore-name">${name}</span>
         ${who ? `<span class="chore-who">${who}</span>` : ''}
+        <button class="hw-delete" onclick="event.stopPropagation();deleteSharedChore('${safeName}','${listEl.id}')" title="Remove">×</button>
       </div>`;
     }).join('');
   }
@@ -1689,6 +1726,7 @@
   }
   function closePersonalChoreForm() { document.getElementById('personal-chore-overlay').classList.add('hidden'); }
   async function submitPersonalChore() {
+    const _btn = getSubmitBtn('personal-chore-overlay'); setLoading(_btn);
     const name = document.getElementById('personal-chore-input').value.trim();
     const person = document.getElementById('personal-chore-overlay').dataset.person;
     if (!name) return;
@@ -1698,6 +1736,7 @@
       fd.append('action', 'add'); fd.append('type', 'chores'); fd.append('name', name);
       await fetch(script, { method: 'POST', body: fd });
     } catch(e) {}
+    clearLoading(_btn);
     closePersonalChoreForm();
     person === 'tori' ? await loadToriChores() : await loadNovaChores();
   }
@@ -1781,6 +1820,19 @@
     const badgeMap = { 'chore-list': 'chore-count-badge', 'parent-chore-list': 'parent-chore-badge', 'tori-chore-list': 'tori-chore-badge', 'nova-chore-list': 'nova-chore-badge' };
     const badge = document.getElementById(badgeMap[listId]);
     if (badge) badge.textContent = `${doneCount} / ${total}`;
+  }
+
+  async function deleteSharedChore(choreId, listId) {
+    choreCache = null;
+    try {
+      const fd = new FormData();
+      fd.append('choreId', choreId);
+      fd.append('action', 'delete');
+      await fetch(CHORES_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    // Reload the right list
+    if (listId === 'chore-list') await loadChores();
+    else if (listId === 'parent-chore-list') loadParentChores();
   }
 
   // ── REMINDERS ──
@@ -1904,6 +1956,7 @@
   function closeToriReminderForm() { document.getElementById('tori-reminder-overlay').classList.add('hidden'); }
 
   async function submitToriReminder() {
+    const _btn = getSubmitBtn('tori-reminder-overlay'); setLoading(_btn);
     const text = document.getElementById('tori-reminder-input').value.trim();
     const date = document.getElementById('tori-reminder-date').value;
     if (!text) return;
@@ -1914,6 +1967,7 @@
       if (date) fd.append('date', date);
       await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
     } catch(e) {}
+    clearLoading(_btn);
     closeToriReminderForm();
     loadToriReminders();
   }
@@ -1941,6 +1995,7 @@
   }
 
   async function submitReminder() {
+    const _btn = getSubmitBtn('reminder-overlay'); setLoading(_btn);
     const input = document.getElementById('reminder-input');
     const dateInput = document.getElementById('reminder-date');
     const text = input.value.trim();
@@ -1952,6 +2007,7 @@
       if (dateInput.value) fd.append('date', dateInput.value);
       await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
     } catch (e) {}
+    clearLoading(_btn);
     closeReminderForm();
     loadReminders(); loadParentReminders();
   }
@@ -2035,6 +2091,7 @@
   }
 
   async function submitGroceryItem() {
+    const _btn = getSubmitBtn('grocery-overlay'); setLoading(_btn);
     const input = document.getElementById('grocery-input');
     const item = input.value.trim();
     if (!item) return;
@@ -2042,6 +2099,7 @@
       const fd = new FormData(); fd.append('item', item);
       await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
     } catch (e) {}
+    clearLoading(_btn);
     closeGroceryForm();
     loadGroceryList();
   }
@@ -2095,6 +2153,7 @@
   function closeMealForm() { document.getElementById('meal-overlay').classList.add('hidden'); }
 
   async function submitMeal() {
+    const _btn = getSubmitBtn('meal-overlay'); setLoading(_btn);
     const day = document.getElementById('meal-day-select').value;
     const meal = document.getElementById('meal-input').value.trim();
     const status = document.getElementById('meal-status');
@@ -2104,6 +2163,7 @@
       const fd = new FormData(); fd.append('day', day); fd.append('meal', meal);
       await fetch(MEAL_SCRIPT, { method: 'POST', body: fd });
     } catch (e) {}
+    clearLoading(_btn);
     closeMealForm();
     loadMealPlan();
   }
@@ -2169,6 +2229,7 @@
   }
   function closeToriScheduleForm() { document.getElementById('tori-schedule-overlay').classList.add('hidden'); }
   async function submitToriSchedule() {
+    const _btn = getSubmitBtn('tori-schedule-overlay'); setLoading(_btn);
     const day = document.getElementById('tori-schedule-day').value;
     const cls = document.getElementById('tori-schedule-class').value.trim();
     const time = document.getElementById('tori-schedule-time').value.trim();
@@ -2181,6 +2242,7 @@
       fd.append('day', day); fd.append('class', cls); fd.append('time', time);
       await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
     } catch(e) {}
+    clearLoading(_btn);
     closeToriScheduleForm();
     loadToriSchedule();
   }
@@ -2205,6 +2267,7 @@
   }
   function closeToriEventsForm() { document.getElementById('tori-events-overlay').classList.add('hidden'); }
   async function submitToriEvent() {
+    const _btn = getSubmitBtn('tori-events-overlay'); setLoading(_btn);
     const name = document.getElementById('tori-event-name').value.trim();
     const evtType = document.getElementById('tori-event-type').value;
     const date = document.getElementById('tori-event-date').value;
@@ -2219,6 +2282,7 @@
       fd.append('date', date); fd.append('location', location);
       await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
     } catch(e) {}
+    clearLoading(_btn);
     closeToriEventsForm();
     loadToriEvents();
   }
@@ -2243,6 +2307,7 @@
   }
   function closeNovaEventsForm() { document.getElementById('nova-events-overlay').classList.add('hidden'); }
   async function submitNovaEvent() {
+    const _btn = getSubmitBtn('nova-events-overlay'); setLoading(_btn);
     const name = document.getElementById('nova-event-name').value.trim();
     const evtType = document.getElementById('nova-event-type').value.trim();
     const date = document.getElementById('nova-event-date').value;
@@ -2257,6 +2322,7 @@
       fd.append('date', date); fd.append('location', location);
       await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
     } catch(e) {}
+    clearLoading(_btn);
     closeNovaEventsForm();
     loadNovaEvents();
   }
@@ -2343,6 +2409,7 @@
   function closeHomeworkForm() { document.getElementById('hw-overlay').classList.add('hidden'); }
 
   async function submitHomework() {
+    const _btn = getSubmitBtn('hw-overlay'); setLoading(_btn);
     const name = document.getElementById('hw-input').value.trim();
     const subject = document.getElementById('hw-subject-input').value.trim();
     if (!name) return;
@@ -2353,6 +2420,7 @@
       fd.append('subject', subject);
       await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
     } catch(e) {}
+    clearLoading(_btn);
     closeHomeworkForm();
     await loadHomework();
   }
