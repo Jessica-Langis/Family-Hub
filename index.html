@@ -754,6 +754,26 @@
   .next-up-countdown.today-color { color: var(--accent3); }
   .next-up-unit { font-size: 0.75rem; color: var(--muted); font-family: 'DM Sans', sans-serif; }
 
+  .next-up-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 0 8px;
+  }
+  .next-up-second {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .next-up-second-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .next-up-second-type { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .next-up-second-name { font-size: 0.88rem; font-weight: 600; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .next-up-second-date { font-size: 0.68rem; color: var(--muted); }
+
   /* ── MOBILE ── */
   @media (max-width: 768px) {
     body { padding: 8px 8px 0; gap: 8px; padding-bottom: calc(var(--nav-h) + 8px); }
@@ -784,7 +804,7 @@
 
 <!-- ── HOME PIN ── -->
 <div class="pin-overlay" id="pin-home">
-  <div class="pin-title">🏡 Family Hub</div>
+  <div class="pin-title">🏡 What's The Plan Stan</div>
   <div class="pin-subtitle">Enter PIN to continue</div>
   <div class="pin-dots" id="pin-dots-home">
     <div class="pin-dot" id="home-d0"></div>
@@ -892,7 +912,7 @@
 
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
-  <div class="home-title" id="topbar-title">🏡 What's Going On?</div>
+  <div class="home-title" id="topbar-title">🏡 What's The Plan Stan</div>
   <div class="clock-block">
     <div id="clock">--:--</div>
     <div id="date">Loading...</div>
@@ -1369,10 +1389,10 @@
 
   // PIN per tab — change these to update PINs
   const TAB_PINS = {
-    home:      '1470',
-    parentals: '1470',
-    tori:      '1470',
-    nova:      '0258'
+    home:      '1234',
+    parentals: '1234',
+    tori:      '1234',
+    nova:      '1234'
   };
 
   const TAB_TITLES = {
@@ -1557,18 +1577,36 @@
       el.innerHTML = '<div class="next-up-label">No upcoming events</div>';
       return;
     }
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const next = upcoming[0];
     const diff = getDayDiff(next.date);
     const d = new Date(next.date + 'T00:00:00');
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const isToday = diff === 0;
-    el.innerHTML = `
+    let html = `
       <div class="next-up-label">${next.type}</div>
       <div class="next-up-name">${next.name}</div>
       <div class="next-up-sub">${months[d.getMonth()]} ${d.getDate()}${next.location ? ' · ' + next.location : ''}</div>
       <div class="next-up-countdown ${isToday ? 'today-color' : ''}">${isToday ? 'TODAY' : diff}</div>
       <div class="next-up-unit">${isToday ? '' : 'days away'}</div>
     `;
+    if (upcoming.length > 1) {
+      const second = upcoming[1];
+      const diff2 = getDayDiff(second.date);
+      const d2 = new Date(second.date + 'T00:00:00');
+      const badge2 = countdownBadge(diff2);
+      html += `
+        <div class="next-up-divider"></div>
+        <div class="next-up-second">
+          <div class="next-up-second-info">
+            <span class="next-up-second-type">${second.type}</span>
+            <span class="next-up-second-name">${second.name}</span>
+            <span class="next-up-second-date">${months[d2.getMonth()]} ${d2.getDate()}${second.location ? ' · ' + second.location : ''}</span>
+          </div>
+          <div class="countdown-badge ${badge2.cls}">${badge2.text}</div>
+        </div>
+      `;
+    }
+    el.innerHTML = html;
   }
 
   // ── CHORES (shared loader with optional assignee filter) ──
