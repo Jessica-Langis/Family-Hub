@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>What's The Plan Fam</title>
+<title>What's The Plan Stan</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -15,14 +15,17 @@
     --accent: #e8b86d;
     --accent2: #7eb8d4;
     --accent3: #a8d5a2;
+    --accent4: #c9a0e8;
+    --accent5: #e88d8d;
     --text: #e8eaf0;
     --muted: #8891a8;
+    --nav-h: 60px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* PIN SCREEN */
-  #pin-screen {
+  /* ── PIN OVERLAY ── */
+  .pin-overlay {
     position: fixed;
     inset: 0;
     background: var(--bg);
@@ -31,10 +34,9 @@
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    gap: 32px;
+    gap: 28px;
   }
-
-  #pin-screen.hidden { display: none; }
+  .pin-overlay.hidden { display: none; }
 
   .pin-title {
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -47,21 +49,19 @@
   .pin-subtitle {
     font-size: 0.85rem;
     color: var(--muted);
-    margin-top: -20px;
+    margin-top: -18px;
     text-align: center;
   }
 
   .pin-dots { display: flex; gap: 16px; }
 
   .pin-dot {
-    width: 18px;
-    height: 18px;
+    width: 18px; height: 18px;
     border-radius: 50%;
     border: 2px solid var(--border);
     background: transparent;
     transition: all 0.15s;
   }
-
   .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
 
   .pin-keypad {
@@ -81,22 +81,17 @@
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     user-select: none;
   }
-
   .pin-key:hover { background: var(--surface2); border-color: var(--accent); }
   .pin-key:active { transform: scale(0.93); }
   .pin-key.empty { background: transparent; border-color: transparent; cursor: default; }
   .pin-key.delete { font-size: 1rem; color: var(--muted); }
 
   .pin-error {
-    font-size: 0.8rem;
-    color: #e07070;
-    height: 1rem;
-    text-align: center;
+    font-size: 0.8rem; color: #e07070;
+    height: 1rem; text-align: center;
   }
 
   @keyframes shake {
@@ -106,10 +101,9 @@
     60% { transform: translateX(-8px); }
     80% { transform: translateX(8px); }
   }
-
   .pin-dots.shake { animation: shake 0.4s ease; }
 
-  /* MAIN LAYOUT */
+  /* ── BODY / LAYOUT ── */
   body {
     background: var(--bg);
     color: var(--text);
@@ -117,13 +111,13 @@
     min-height: 100vh;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
     gap: 10px;
-    padding: 10px;
+    padding: 10px 10px 0;
+    padding-bottom: calc(var(--nav-h) + 10px);
   }
 
-  /* TOP BAR */
+  /* ── TOP BAR ── */
   .topbar {
     display: flex;
     align-items: center;
@@ -151,11 +145,7 @@
     letter-spacing: 0.05em;
   }
 
-  #date {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 2px;
-  }
+  #date { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 
   .weather-block { display: flex; gap: 12px; align-items: center; }
 
@@ -166,26 +156,123 @@
     padding: 8px 12px;
     min-width: 70px;
   }
-
-  .weather-day .day-name {
-    font-size: 0.7rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .weather-day .temp {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--accent2);
-    margin: 4px 0 2px;
-  }
-
+  .weather-day .day-name { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .weather-day .temp { font-size: 1.1rem; font-weight: 500; color: var(--accent2); margin: 4px 0 2px; }
   .weather-day .condition { font-size: 0.65rem; color: var(--muted); }
   .weather-day .icon { font-size: 1.3rem; margin-bottom: 2px; }
 
-  /* CONTENT — top row + main grid */
-  .content {
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 1000;
+  }
+
+  .nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    padding: 8px 4px;
+    position: relative;
+  }
+
+  .nav-tab:hover { background: var(--surface2); }
+
+  .nav-tab.active { color: var(--accent); }
+
+  .nav-tab.active::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 2px 2px;
+  }
+
+  .nav-tab .nav-icon { font-size: 1.3rem; }
+  .nav-tab .nav-label { font-weight: 500; }
+
+  /* Nav tab accent colors */
+  .nav-tab[data-tab="parentals"].active { color: var(--accent2); }
+  .nav-tab[data-tab="parentals"].active::after { background: var(--accent2); }
+  .nav-tab[data-tab="tori"].active { color: var(--accent4); }
+  .nav-tab[data-tab="tori"].active::after { background: var(--accent4); }
+  .nav-tab[data-tab="nova"].active { color: var(--accent3); }
+  .nav-tab[data-tab="nova"].active::after { background: var(--accent3); }
+
+  /* ── TAB PANELS ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION COMMON ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .section-badge {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .section-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── HOME TAB LAYOUT ── */
+  .home-content {
     display: grid;
     grid-template-rows: auto 1fr;
     gap: 10px;
@@ -198,7 +285,6 @@
     gap: 10px;
   }
 
-  /* Main grid: agenda spans both rows on left, reminders+month on right */
   .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -207,30 +293,7 @@
     min-height: 0;
   }
 
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px 8px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .section-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.03em;
-  }
-
-  .section-badge {
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
+  /* ── AGENDA ── */
   .agenda-section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -243,6 +306,12 @@
     grid-row: 1 / 3;
   }
 
+  .agenda-embed, .month-embed {
+    flex: 1; width: 100%; border: none;
+    filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.8);
+    min-height: 0;
+  }
+
   .month-section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -253,23 +322,7 @@
     min-height: 0;
   }
 
-  .agenda-embed {
-    flex: 1;
-    width: 100%;
-    border: none;
-    filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.8);
-    min-height: 0;
-  }
-
-  .month-embed {
-    flex: 1;
-    width: 100%;
-    border: none;
-    filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.8);
-    min-height: 0;
-  }
-
-  /* MIDDLE — CHORES */
+  /* ── CHORES ── */
   .chores-section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -289,7 +342,6 @@
     flex: 1;
     align-content: start;
   }
-
   .chore-list::-webkit-scrollbar { width: 4px; }
   .chore-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
@@ -304,36 +356,22 @@
     font-size: 0.78rem;
     color: var(--muted);
   }
-
   .chore-item:hover { border-color: var(--accent); }
   .chore-item.done { opacity: 0.4; }
   .chore-item.done .chore-name { text-decoration: line-through; }
 
   .chore-check {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     border-radius: 50%;
     border: 2px solid var(--border);
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-size: 0.55rem;
     transition: all 0.2s;
   }
+  .chore-item.done .chore-check { background: var(--accent3); border-color: var(--accent3); color: #0f1117; }
 
-  .chore-item.done .chore-check {
-    background: var(--accent3);
-    border-color: var(--accent3);
-    color: #0f1117;
-  }
-
-  .chore-name {
-    font-size: 0.78rem;
-    flex: 1;
-    line-height: 1.3;
-    color: var(--muted);
-  }
+  .chore-name { font-size: 0.78rem; flex: 1; line-height: 1.3; color: var(--muted); }
 
   .chore-who {
     font-size: 0.65rem;
@@ -344,81 +382,7 @@
     white-space: nowrap;
   }
 
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .reminder-list {
-    padding: 8px 16px 10px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 10px;
-    overflow-y: auto;
-    flex: 1;
-    align-content: start;
-  }
-
-  .reminder-item {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .reminder-item:last-child { border-bottom: none; }
-
-  .reminder-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-    margin-top: 5px;
-  }
-
-  .reminder-text {
-    font-size: 0.8rem;
-    line-height: 1.4;
-    flex: 1;
-  }
-
-  .reminder-delete {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0 2px;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: color 0.15s;
-  }
-
-  .reminder-delete:hover { color: #e07070; }
-
-  .grocery-text { flex: 1; }
-
-  .grocery-delete {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0 2px;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: color 0.15s;
-  }
-
-  .grocery-delete:hover { color: #e07070; }
-
+  /* ── GROCERY ── */
   .grocery-grid {
     padding: 8px 16px 10px;
     display: grid;
@@ -438,16 +402,69 @@
     align-items: center;
     gap: 6px;
   }
-
+  .grocery-item.bought { opacity: 0.4; }
+  .grocery-item.bought .grocery-text { text-decoration: line-through; }
   .grocery-item::before {
     content: '';
-    width: 5px;
-    height: 5px;
+    width: 5px; height: 5px;
     border-radius: 50%;
     background: var(--accent3);
     flex-shrink: 0;
+    cursor: pointer;
+  }
+  .grocery-item.bought::before { background: var(--muted); }
+  .grocery-text { flex: 1; cursor: pointer; }
+  .grocery-delete {
+    background: none; border: none;
+    color: var(--muted); font-size: 1rem;
+    cursor: pointer; padding: 0 2px;
+    line-height: 1; flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .grocery-delete:hover { color: #e07070; }
+
+  /* ── REMINDERS ── */
+  .reminder-list {
+    padding: 8px 16px 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 10px;
+    overflow-y: auto;
+    flex: 1;
+    align-content: start;
   }
 
+  .reminder-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .reminder-item:last-child { border-bottom: none; }
+
+  .reminder-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .reminder-body { flex: 1; min-width: 0; }
+  .reminder-text { font-size: 0.8rem; line-height: 1.4; display: block; }
+  .reminder-date-tag { font-size: 0.65rem; color: var(--accent2); margin-top: 2px; display: block; }
+
+  .reminder-delete {
+    background: none; border: none;
+    color: var(--muted); font-size: 1rem;
+    cursor: pointer; padding: 0 2px;
+    line-height: 1; flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .reminder-delete:hover { color: #e07070; }
+
+  /* ── MEALS ── */
   .meal-list {
     padding: 8px 16px 10px;
     display: flex;
@@ -458,27 +475,24 @@
   }
 
   .meal-item {
-    display: flex;
-    gap: 8px;
+    display: flex; gap: 8px;
     align-items: baseline;
     font-size: 0.78rem;
     padding: 4px 0;
     border-bottom: 1px solid var(--border);
   }
-
   .meal-item:last-child { border-bottom: none; }
-
-  .meal-day {
-    color: var(--accent);
-    font-weight: 500;
-    min-width: 32px;
-    font-size: 0.72rem;
-    text-transform: uppercase;
+  .meal-day { color: var(--accent); font-weight: 500; min-width: 32px; font-size: 0.72rem; text-transform: uppercase; }
+  .meal-name { color: var(--muted); flex: 1; }
+  .meal-clear {
+    background: none; border: none;
+    color: var(--muted); font-size: 0.75rem;
+    cursor: pointer; padding: 0;
+    transition: color 0.15s; flex-shrink: 0;
   }
+  .meal-clear:hover { color: #e07070; }
 
-  .meal-name { color: var(--muted); }
-
-  /* ADD ITEM BUTTON */
+  /* ── BUTTONS ── */
   .add-btn {
     background: var(--accent);
     color: #0f1117;
@@ -490,21 +504,33 @@
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.15s;
+    white-space: nowrap;
   }
-
   .add-btn:hover { opacity: 0.85; }
 
-  /* OVERLAY */
+  .clear-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .clear-btn:hover { border-color: #e07070; color: #e07070; }
+
+  /* ── OVERLAY ── */
   .overlay {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: rgba(0,0,0,0.7);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 8888;
   }
-
   .overlay.hidden { display: none; }
 
   .overlay-box {
@@ -535,15 +561,11 @@
     font-size: 0.9rem;
     outline: none;
     transition: border-color 0.2s;
+    width: 100%;
   }
-
   .overlay-input:focus { border-color: var(--accent); }
 
-  .overlay-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
+  .overlay-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
   .overlay-btn {
     padding: 8px 20px;
@@ -555,123 +577,322 @@
     border: none;
     transition: opacity 0.15s;
   }
+  .overlay-btn.cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .overlay-btn.submit { background: var(--accent); color: #0f1117; }
+  .overlay-btn:hover { opacity: 0.85; }
 
-  .overlay-btn.cancel {
+  .overlay-status { font-size: 0.78rem; color: var(--accent3); min-height: 1rem; text-align: center; }
+
+  /* ── PERSONAL TAB LAYOUTS ── */
+  .personal-content {
+    display: grid;
+    gap: 10px;
+  }
+
+  .personal-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .personal-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ── COUNTDOWN WIDGET ── */
+  .countdown-list {
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .countdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
     background: var(--surface2);
-    color: var(--muted);
+    border-radius: 8px;
     border: 1px solid var(--border);
   }
 
-  .overlay-btn.submit {
-    background: var(--accent);
-    color: #0f1117;
+  .countdown-info { flex: 1; min-width: 0; }
+  .countdown-name { font-size: 0.82rem; color: var(--text); font-weight: 500; }
+  .countdown-sub { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+  .countdown-badge {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .countdown-badge.soon { background: rgba(232,184,109,0.15); color: var(--accent); }
+  .countdown-badge.upcoming { background: rgba(126,184,212,0.12); color: var(--accent2); }
+  .countdown-badge.today { background: rgba(168,213,162,0.15); color: var(--accent3); }
+  .countdown-badge.past { background: rgba(136,145,168,0.1); color: var(--muted); }
+
+  /* ── CLASS SCHEDULE ── */
+  .schedule-list {
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    flex: 1;
   }
 
-  .overlay-btn:hover { opacity: 0.85; }
-
-  .overlay-status {
+  .schedule-item {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
     font-size: 0.78rem;
-    color: var(--accent3);
-    min-height: 1rem;
-    text-align: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .schedule-item:last-child { border-bottom: none; }
+  .schedule-day { color: var(--accent4); font-weight: 600; min-width: 28px; font-size: 0.7rem; text-transform: uppercase; }
+  .schedule-class { color: var(--text); flex: 1; }
+  .schedule-time { color: var(--muted); font-size: 0.68rem; white-space: nowrap; }
+
+  /* ── HOMEWORK CHECKLIST ── */
+  .homework-list {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
   }
 
-  /* MOBILE */
+  .hw-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  .hw-item.done { opacity: 0.4; }
+  .hw-item.done .hw-name { text-decoration: line-through; color: var(--muted); }
+
+  .hw-check {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    transition: all 0.2s;
+  }
+  .hw-item.done .hw-check { background: var(--accent3); border-color: var(--accent3); color: #0f1117; }
+  .hw-name { flex: 1; }
+  .hw-subject {
+    font-size: 0.62rem;
+    color: var(--accent3);
+    background: rgba(168,213,162,0.1);
+    padding: 2px 6px;
+    border-radius: 20px;
+  }
+  .hw-delete {
+    background: none; border: none;
+    color: var(--muted); font-size: 0.9rem;
+    cursor: pointer; padding: 0 2px;
+    transition: color 0.15s;
+  }
+  .hw-delete:hover { color: #e07070; }
+
+  /* ── PERSONAL REMINDER LIST (single col) ── */
+  .reminder-list-single {
+    padding: 8px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  /* ── NEXT UP HERO ── */
+  .next-up-hero {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .next-up-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .next-up-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .next-up-sub { font-size: 0.78rem; color: var(--muted); }
+  .next-up-countdown {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent4);
+    margin-top: 4px;
+    line-height: 1;
+  }
+  .next-up-countdown.today-color { color: var(--accent3); }
+  .next-up-unit { font-size: 0.75rem; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+
+  /* ── MOBILE ── */
   @media (max-width: 768px) {
-    body {
-      height: auto;
-      overflow: auto;
-      padding: 10px;
-      gap: 10px;
-    }
+    body { padding: 8px 8px 0; gap: 8px; padding-bottom: calc(var(--nav-h) + 8px); }
 
-    .content {
-      grid-template-rows: auto;
-      height: auto;
-    }
-
-    .top-row {
-      grid-template-columns: 1fr;
-    }
-
-    .main-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
-    }
-
-    .agenda-section {
-      grid-column: 1;
-      grid-row: auto;
-    }
-
-    .topbar {
-      flex-direction: column;
-      gap: 12px;
-      text-align: center;
-      padding: 14px 16px;
-    }
-
-    .home-title { font-size: 1.1rem; }
-    #clock { font-size: 1.6rem; }
-
-    .weather-block { justify-content: center; flex-wrap: wrap; gap: 8px; }
-    .weather-day { min-width: 80px; flex: 1; }
-
-    .agenda-section { height: 420px; }
+    .home-content { grid-template-rows: auto; height: auto; }
+    .top-row { grid-template-columns: 1fr; gap: 8px; }
+    .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
+    .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
     .month-section { height: 320px; }
-    .chores-section { height: auto; overflow: visible; }
-    .chore-list { overflow: visible; height: auto; }
-
-    .panel {
-      height: auto;
-      min-height: 120px;
-    }
-
-    .reminder-list,
-    .grocery-grid,
+    .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
+    .panel { height: auto; min-height: 100px; }
+    .reminder-list, .grocery-grid { overflow: visible; flex: none; grid-template-columns: 1fr; }
     .meal-list { overflow: visible; flex: none; }
+    .personal-grid-2, .personal-grid-3 { grid-template-columns: 1fr; }
 
-    .pin-keypad {
-      grid-template-columns: repeat(3, 80px);
-      grid-template-rows: repeat(4, 80px);
-    }
+    .topbar { flex-direction: column; gap: 10px; text-align: center; padding: 12px 14px; }
+    .home-title { font-size: 1rem; }
+    #clock { font-size: 1.5rem; }
+    .weather-block { justify-content: center; flex-wrap: wrap; gap: 6px; }
+    .weather-day { min-width: 60px; flex: 1; padding: 6px 8px; }
 
+    .pin-keypad { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(4, 80px); }
     .pin-key { font-size: 1.6rem; border-radius: 14px; }
   }
 </style>
 </head>
 <body>
 
-<!-- PIN SCREEN -->
-<div id="pin-screen">
-  <div class="pin-title">🏡 Home Hub</div>
-  <div class="pin-subtitle">Enter your PIN to continue</div>
-  <div class="pin-dots" id="pin-dots">
-    <div class="pin-dot" id="d0"></div>
-    <div class="pin-dot" id="d1"></div>
-    <div class="pin-dot" id="d2"></div>
-    <div class="pin-dot" id="d3"></div>
+<!-- ── HOME PIN ── -->
+<div class="pin-overlay" id="pin-home">
+  <div class="pin-title">🏡 What's The Plan Stan</div>
+  <div class="pin-subtitle">Enter PIN to continue</div>
+  <div class="pin-dots" id="pin-dots-home">
+    <div class="pin-dot" id="home-d0"></div>
+    <div class="pin-dot" id="home-d1"></div>
+    <div class="pin-dot" id="home-d2"></div>
+    <div class="pin-dot" id="home-d3"></div>
   </div>
-  <div class="pin-error" id="pin-error"></div>
-  <div class="pin-keypad">
-    <div class="pin-key" onclick="pinPress('1')">1</div>
-    <div class="pin-key" onclick="pinPress('2')">2</div>
-    <div class="pin-key" onclick="pinPress('3')">3</div>
-    <div class="pin-key" onclick="pinPress('4')">4</div>
-    <div class="pin-key" onclick="pinPress('5')">5</div>
-    <div class="pin-key" onclick="pinPress('6')">6</div>
-    <div class="pin-key" onclick="pinPress('7')">7</div>
-    <div class="pin-key" onclick="pinPress('8')">8</div>
-    <div class="pin-key" onclick="pinPress('9')">9</div>
+  <div class="pin-error" id="pin-error-home"></div>
+  <div class="pin-keypad" id="pin-keypad-home">
+    <div class="pin-key" onclick="pinPress('home','1')">1</div>
+    <div class="pin-key" onclick="pinPress('home','2')">2</div>
+    <div class="pin-key" onclick="pinPress('home','3')">3</div>
+    <div class="pin-key" onclick="pinPress('home','4')">4</div>
+    <div class="pin-key" onclick="pinPress('home','5')">5</div>
+    <div class="pin-key" onclick="pinPress('home','6')">6</div>
+    <div class="pin-key" onclick="pinPress('home','7')">7</div>
+    <div class="pin-key" onclick="pinPress('home','8')">8</div>
+    <div class="pin-key" onclick="pinPress('home','9')">9</div>
     <div class="pin-key empty"></div>
-    <div class="pin-key" onclick="pinPress('0')">0</div>
-    <div class="pin-key delete" onclick="pinDelete()">⌫</div>
+    <div class="pin-key" onclick="pinPress('home','0')">0</div>
+    <div class="pin-key delete" onclick="pinDelete('home')">⌫</div>
   </div>
 </div>
 
-<!-- TOP BAR -->
+<!-- ── PARENTALS PIN ── -->
+<div class="pin-overlay hidden" id="pin-parentals">
+  <div class="pin-title">👨‍👩‍👧‍👦 Parentals</div>
+  <div class="pin-subtitle">Enter PIN to continue</div>
+  <div class="pin-dots" id="pin-dots-parentals">
+    <div class="pin-dot" id="parentals-d0"></div>
+    <div class="pin-dot" id="parentals-d1"></div>
+    <div class="pin-dot" id="parentals-d2"></div>
+    <div class="pin-dot" id="parentals-d3"></div>
+  </div>
+  <div class="pin-error" id="pin-error-parentals"></div>
+  <div class="pin-keypad">
+    <div class="pin-key" onclick="pinPress('parentals','1')">1</div>
+    <div class="pin-key" onclick="pinPress('parentals','2')">2</div>
+    <div class="pin-key" onclick="pinPress('parentals','3')">3</div>
+    <div class="pin-key" onclick="pinPress('parentals','4')">4</div>
+    <div class="pin-key" onclick="pinPress('parentals','5')">5</div>
+    <div class="pin-key" onclick="pinPress('parentals','6')">6</div>
+    <div class="pin-key" onclick="pinPress('parentals','7')">7</div>
+    <div class="pin-key" onclick="pinPress('parentals','8')">8</div>
+    <div class="pin-key" onclick="pinPress('parentals','9')">9</div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinPress('parentals','0')">0</div>
+    <div class="pin-key delete" onclick="pinDelete('parentals')">⌫</div>
+  </div>
+</div>
+
+<!-- ── TORI PIN ── -->
+<div class="pin-overlay hidden" id="pin-tori">
+  <div class="pin-title">🤼‍♀️ Tori</div>
+  <div class="pin-subtitle">Enter PIN to continue</div>
+  <div class="pin-dots" id="pin-dots-tori">
+    <div class="pin-dot" id="tori-d0"></div>
+    <div class="pin-dot" id="tori-d1"></div>
+    <div class="pin-dot" id="tori-d2"></div>
+    <div class="pin-dot" id="tori-d3"></div>
+  </div>
+  <div class="pin-error" id="pin-error-tori"></div>
+  <div class="pin-keypad">
+    <div class="pin-key" onclick="pinPress('tori','1')">1</div>
+    <div class="pin-key" onclick="pinPress('tori','2')">2</div>
+    <div class="pin-key" onclick="pinPress('tori','3')">3</div>
+    <div class="pin-key" onclick="pinPress('tori','4')">4</div>
+    <div class="pin-key" onclick="pinPress('tori','5')">5</div>
+    <div class="pin-key" onclick="pinPress('tori','6')">6</div>
+    <div class="pin-key" onclick="pinPress('tori','7')">7</div>
+    <div class="pin-key" onclick="pinPress('tori','8')">8</div>
+    <div class="pin-key" onclick="pinPress('tori','9')">9</div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinPress('tori','0')">0</div>
+    <div class="pin-key delete" onclick="pinDelete('tori')">⌫</div>
+  </div>
+</div>
+
+<!-- ── NOVA PIN ── -->
+<div class="pin-overlay hidden" id="pin-nova">
+  <div class="pin-title">🚲 Nova</div>
+  <div class="pin-subtitle">Enter PIN to continue</div>
+  <div class="pin-dots" id="pin-dots-nova">
+    <div class="pin-dot" id="nova-d0"></div>
+    <div class="pin-dot" id="nova-d1"></div>
+    <div class="pin-dot" id="nova-d2"></div>
+    <div class="pin-dot" id="nova-d3"></div>
+  </div>
+  <div class="pin-error" id="pin-error-nova"></div>
+  <div class="pin-keypad">
+    <div class="pin-key" onclick="pinPress('nova','1')">1</div>
+    <div class="pin-key" onclick="pinPress('nova','2')">2</div>
+    <div class="pin-key" onclick="pinPress('nova','3')">3</div>
+    <div class="pin-key" onclick="pinPress('nova','4')">4</div>
+    <div class="pin-key" onclick="pinPress('nova','5')">5</div>
+    <div class="pin-key" onclick="pinPress('nova','6')">6</div>
+    <div class="pin-key" onclick="pinPress('nova','7')">7</div>
+    <div class="pin-key" onclick="pinPress('nova','8')">8</div>
+    <div class="pin-key" onclick="pinPress('nova','9')">9</div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinPress('nova','0')">0</div>
+    <div class="pin-key delete" onclick="pinDelete('nova')">⌫</div>
+  </div>
+</div>
+
+<!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
-  <div class="home-title">🏡 What In The Fuck Is Going On Today?</div>
+  <div class="home-title" id="topbar-title">🏡 What's The Plan Stan</div>
   <div class="clock-block">
     <div id="clock">--:--</div>
     <div id="date">Loading...</div>
@@ -680,90 +901,334 @@
     <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
     <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
     <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
   </div>
 </div>
 
-<!-- CONTENT -->
-<div class="content">
+<!-- ── TAB PANELS ── -->
 
-  <!-- TOP ROW: CHORES / GROCERY / MENU -->
-  <div class="top-row">
+<!-- HOME -->
+<div class="tab-panel active" id="tab-home">
+  <div class="home-content">
+    <div class="top-row">
 
-    <div class="chores-section">
-      <div class="section-header">
-        <span class="section-title">✅ Chores</span>
-        <span class="section-badge" id="chore-reset-badge"></span>
+      <div class="chores-section">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">✅ Chores</span>
+            <span class="section-badge" id="chore-count-badge"></span>
+          </div>
+        </div>
+        <div class="chore-list" id="chore-list">
+          <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+        </div>
       </div>
-      <div class="chore-list" id="chore-list">
-        <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">🛒 Grocery List</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
+            <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="grocery-grid" id="grocery-list">
+          <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+        </div>
       </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">🍽️ This Week's Menu</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openMealForm()">+ Edit</button>
+          </div>
+        </div>
+        <div class="meal-list" id="meal-list">
+          <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="panel">
-      <div class="section-header">
-        <span class="section-title">🛒 Grocery List</span>
-        <button class="add-btn" onclick="openGroceryForm()">+ Add Item</button>
-      </div>
-      <div class="grocery-grid" id="grocery-list">
-        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
-      </div>
-    </div>
+    <div class="main-grid">
 
-    <div class="panel">
-      <div class="section-header">
-        <span class="section-title">🍽️ This Week's Menu</span>
-        <button class="add-btn" onclick="openMealForm()">+ Edit</button>
+      <div class="agenda-section">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">📅 Agenda</span>
+            <span class="section-badge">Upcoming Events</span>
+          </div>
+        </div>
+        <iframe class="agenda-embed"
+          src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+          frameborder="0" scrolling="no"></iframe>
       </div>
-      <div class="meal-list" id="meal-list">
-        <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
-      </div>
-    </div>
 
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">📌 Reminders</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="reminder-list" id="reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <div class="month-section">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">📆 Month View</span>
+          </div>
+        </div>
+        <iframe class="month-embed"
+          src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+          frameborder="0" scrolling="no"></iframe>
+      </div>
+
+    </div>
   </div>
+</div>
 
-  <!-- MAIN GRID: AGENDA (spans) | REMINDERS + MONTH -->
-  <div class="main-grid">
+<!-- PARENTALS -->
+<div class="tab-panel" id="tab-parentals">
+  <div class="personal-content">
+    <div class="personal-grid-2">
 
-    <div class="agenda-section">
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent2)">✅ Your Chores</span>
+            <span class="section-badge" id="parent-chore-badge"></span>
+          </div>
+        </div>
+        <div class="chore-list" id="parent-chore-list">
+          <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent2)">📌 Reminders</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="reminder-list" id="parent-reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel" style="height:420px">
       <div class="section-header">
-        <span class="section-title">📅 Agenda</span>
-        <span class="section-badge">Upcoming Events</span>
+        <div class="section-header-left">
+          <span class="section-title" style="color:var(--accent2)">📅 Calendar</span>
+        </div>
       </div>
       <iframe class="agenda-embed"
         src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-        frameborder="0" scrolling="no">
-      </iframe>
+        frameborder="0" scrolling="no"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- TORI -->
+<div class="tab-panel" id="tab-tori">
+  <div class="personal-content">
+    <div class="personal-grid-3">
+
+      <!-- Next Up: Wrestling -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">🤼‍♀️ Next Up</span>
+          </div>
+        </div>
+        <div class="next-up-hero" id="tori-next-up">
+          <div class="next-up-label">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Tori's Chores -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">✅ My Chores</span>
+            <span class="section-badge" id="tori-chore-badge"></span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openPersonalChoreForm('tori')">+ Add</button>
+          </div>
+        </div>
+        <div class="chore-list" id="tori-chore-list">
+          <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Tori's Reminders -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">📌 My Reminders</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="reminder-list" id="tori-reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
     </div>
 
+    <div class="personal-grid-2">
+
+      <!-- Class Schedule -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">📚 Class Schedule</span>
+            <span class="section-badge">Running Start</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openToriScheduleForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="schedule-list" id="tori-schedule">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- All Wrestling Events -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">🏆 Wrestling Events</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="countdown-list" id="tori-events">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- NOVA -->
+<div class="tab-panel" id="tab-nova">
+  <div class="personal-content">
+    <div class="personal-grid-3">
+
+      <!-- Nova's Chores -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">✅ My Chores</span>
+            <span class="section-badge" id="nova-chore-badge"></span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openPersonalChoreForm('nova')">+ Add</button>
+          </div>
+        </div>
+        <div class="chore-list" id="nova-chore-list">
+          <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Nova's Upcoming Events -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">🎉 My Events</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="countdown-list" id="nova-events">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Tori's Events FYI -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">🤼‍♀️ Tori's Matches</span>
+            <span class="section-badge">FYI</span>
+          </div>
+        </div>
+        <div class="countdown-list" id="nova-tori-events">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Homework Checklist -->
     <div class="panel">
       <div class="section-header">
-        <span class="section-title">📌 Reminders</span>
-        <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+        <div class="section-header-left">
+          <span class="section-title" style="color:var(--accent3)">📖 Homework</span>
+          <span class="section-badge" id="hw-badge"></span>
+        </div>
+        <div class="section-header-actions">
+          <button class="clear-btn" onclick="clearDoneHomework()">Clear Done</button>
+          <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+ Add</button>
+        </div>
       </div>
-      <div class="reminder-list" id="reminder-list">
-        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+      <div class="homework-list" id="hw-list">
+        <div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>
       </div>
-    </div>
-
-    <div class="month-section">
-      <div class="section-header">
-        <span class="section-title">📆 Month View</span>
-      </div>
-      <iframe class="month-embed"
-        src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-        frameborder="0" scrolling="no">
-      </iframe>
     </div>
 
   </div>
-
 </div>
 
-<!-- OVERLAYS (outside content grid) -->
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" data-tab="home" onclick="switchTab('home')">
+    <span class="nav-icon">🏡</span>
+    <span class="nav-label">Home</span>
+  </button>
+  <button class="nav-tab" data-tab="parentals" onclick="switchTab('parentals')">
+    <span class="nav-icon">👨‍👩‍👧‍👦</span>
+    <span class="nav-label">Parentals</span>
+  </button>
+  <button class="nav-tab" data-tab="tori" onclick="switchTab('tori')">
+    <span class="nav-icon">🤼‍♀️</span>
+    <span class="nav-label">Tori</span>
+  </button>
+  <button class="nav-tab" data-tab="nova" onclick="switchTab('nova')">
+    <span class="nav-icon">🚲</span>
+    <span class="nav-label">Nova</span>
+  </button>
+</nav>
+
+<!-- ── OVERLAYS ── -->
 <div id="reminder-overlay" class="overlay hidden">
   <div class="overlay-box">
     <div class="overlay-title">📌 Add Reminder</div>
     <input type="text" id="reminder-input" class="overlay-input" placeholder="e.g. Call the dentist" autocomplete="off" />
+    <input type="date" id="reminder-date" class="overlay-input" />
     <div class="overlay-actions">
       <button class="overlay-btn cancel" onclick="closeReminderForm()">Cancel</button>
       <button class="overlay-btn submit" onclick="submitReminder()">Add</button>
@@ -789,13 +1254,8 @@
     <div class="overlay-title">🍽️ Set a Meal</div>
     <select id="meal-day-select" class="overlay-input">
       <option value="">Select a day...</option>
-      <option>Monday</option>
-      <option>Tuesday</option>
-      <option>Wednesday</option>
-      <option>Thursday</option>
-      <option>Friday</option>
-      <option>Saturday</option>
-      <option>Sunday</option>
+      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+      <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
     </select>
     <input type="text" id="meal-input" class="overlay-input" placeholder="e.g. Tacos" autocomplete="off" />
     <div class="overlay-actions">
@@ -806,56 +1266,200 @@
   </div>
 </div>
 
+<!-- TORI REMINDER OVERLAY -->
+<div id="tori-reminder-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" style="color:var(--accent4)">📌 Add Reminder</div>
+    <input type="text" id="tori-reminder-input" class="overlay-input" placeholder="e.g. Return library book" autocomplete="off" />
+    <input type="date" id="tori-reminder-date" class="overlay-input" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeToriReminderForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent4)" onclick="submitToriReminder()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONAL CHORE OVERLAY (shared by Tori + Nova) -->
+<div id="personal-chore-overlay" class="overlay hidden" data-person="">
+  <div class="overlay-box">
+    <div class="overlay-title" id="personal-chore-title">✅ Add Chore</div>
+    <input type="text" id="personal-chore-input" class="overlay-input" placeholder="e.g. Clean room" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closePersonalChoreForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitPersonalChore()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- TORI SCHEDULE OVERLAY -->
+<div id="tori-schedule-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" style="color:var(--accent4)">📚 Add Class</div>
+    <select id="tori-schedule-day" class="overlay-input">
+      <option value="">Select day...</option>
+      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+      <option>Thursday</option><option>Friday</option>
+    </select>
+    <input type="text" id="tori-schedule-class" class="overlay-input" placeholder="Class name (e.g. English 101)" autocomplete="off" />
+    <input type="text" id="tori-schedule-time" class="overlay-input" placeholder="Time (e.g. 9:00–10:50am)" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeToriScheduleForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent4)" onclick="submitToriSchedule()">Add</button>
+    </div>
+    <div class="overlay-status" id="tori-schedule-status"></div>
+  </div>
+</div>
+
+<!-- TORI EVENTS OVERLAY -->
+<div id="tori-events-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" style="color:var(--accent4)">🏆 Add Wrestling Event</div>
+    <input type="text" id="tori-event-name" class="overlay-input" placeholder="Event name (e.g. District Tournament)" autocomplete="off" />
+    <select id="tori-event-type" class="overlay-input">
+      <option value="">Type...</option>
+      <option>Tournament</option><option>Camp</option><option>Scrimmage</option><option>Other</option>
+    </select>
+    <input type="date" id="tori-event-date" class="overlay-input" />
+    <input type="text" id="tori-event-location" class="overlay-input" placeholder="Location (optional)" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeToriEventsForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent4)" onclick="submitToriEvent()">Add</button>
+    </div>
+    <div class="overlay-status" id="tori-events-status"></div>
+  </div>
+</div>
+
+<!-- NOVA EVENTS OVERLAY -->
+<div id="nova-events-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" style="color:var(--accent3)">🎉 Add Event</div>
+    <input type="text" id="nova-event-name" class="overlay-input" placeholder="Event name (e.g. BMX Race)" autocomplete="off" />
+    <input type="text" id="nova-event-type" class="overlay-input" placeholder="Type (e.g. 🚲 BMX, ⚽ Soccer)" autocomplete="off" />
+    <input type="date" id="nova-event-date" class="overlay-input" />
+    <input type="text" id="nova-event-location" class="overlay-input" placeholder="Location (optional)" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeNovaEventsForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent3);color:#0f1117" onclick="submitNovaEvent()">Add</button>
+    </div>
+    <div class="overlay-status" id="nova-events-status"></div>
+  </div>
+</div>
+
+<div id="hw-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">📖 Add Homework</div>
+    <input type="text" id="hw-input" class="overlay-input" placeholder="e.g. Read chapter 5" autocomplete="off" />
+    <input type="text" id="hw-subject-input" class="overlay-input" placeholder="Subject (e.g. Math)" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeHomeworkForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent3);color:#0f1117" onclick="submitHomework()">Add</button>
+    </div>
+  </div>
+</div>
 
 <script>
-  // ── CONSTANTS (all declared first, before any function references them) ──
+  // ── CONSTANTS ──
   const GROCERY_SCRIPT   = 'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec';
   const REMINDERS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxwkMmwNzRlSupy2aoP-crQaqjeqJ0r0M0VHxseiLmSwzqMUYq8nJ-NF7i4phs2_Zwz/exec';
   const CHORES_SCRIPT    = 'https://script.google.com/macros/s/AKfycbwB9HNfYxuI8o07uag1AtLTl1O9Ujyc_KaDndJq0Eb0Znjui2CqpLoUjBq0FvpIPuiv/exec';
   const MEAL_SCRIPT      = 'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec';
   const DAYS_ORDER       = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  const CORRECT_PIN      = '1234';
+  const TORI_SCRIPT      = 'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec';
+  const NOVA_SCRIPT      = 'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec';
 
-  // ── PIN ──
-  let pinEntry = '';
+  // PIN per tab — change these to update PINs
+  const TAB_PINS = {
+    home:      '1234',
+    parentals: '1234',
+    tori:      '1234',
+    nova:      '1234'
+  };
 
-  function pinPress(digit) {
-    if (pinEntry.length >= 4) return;
-    pinEntry += digit;
-    updatePinDots();
-    if (pinEntry.length === 4) checkPin();
+  const TAB_TITLES = {
+    home:      '🏡 What\'s The Plan Stan',
+    parentals: '👨‍👩‍👧‍👦 Parentals',
+    tori:      '🤼‍♀️ Tori',
+    nova:      '🚲 Nova'
+  };
+
+
+
+  // ── PIN SYSTEM ── 
+  const pinEntries = { home: '', parentals: '', tori: '', nova: '' };
+
+  function pinPress(tab, digit) {
+    if (pinEntries[tab].length >= 4) return;
+    pinEntries[tab] += digit;
+    updatePinDots(tab);
+    if (pinEntries[tab].length === 4) checkPin(tab);
   }
 
-  function pinDelete() {
-    pinEntry = pinEntry.slice(0, -1);
-    updatePinDots();
-    document.getElementById('pin-error').textContent = '';
+  function pinDelete(tab) {
+    pinEntries[tab] = pinEntries[tab].slice(0, -1);
+    updatePinDots(tab);
+    document.getElementById(`pin-error-${tab}`).textContent = '';
   }
 
-  function updatePinDots() {
+  function updatePinDots(tab) {
     for (let i = 0; i < 4; i++) {
-      document.getElementById('d' + i).classList.toggle('filled', i < pinEntry.length);
+      document.getElementById(`${tab}-d${i}`).classList.toggle('filled', i < pinEntries[tab].length);
     }
   }
 
-  function checkPin() {
-    if (pinEntry === CORRECT_PIN) {
-      localStorage.setItem('hh_auth', 'true');
-      document.getElementById('pin-screen').classList.add('hidden');
+  function checkPin(tab) {
+    if (pinEntries[tab] === TAB_PINS[tab]) {
+      localStorage.setItem(`hh_auth_${tab}`, 'true');
+      document.getElementById(`pin-${tab}`).classList.add('hidden');
+      onTabUnlocked(tab);
     } else {
-      const dots = document.getElementById('pin-dots');
+      const dots = document.getElementById(`pin-dots-${tab}`);
       dots.classList.add('shake');
-      document.getElementById('pin-error').textContent = 'Incorrect PIN, try again';
+      document.getElementById(`pin-error-${tab}`).textContent = 'Incorrect PIN';
       setTimeout(() => {
         dots.classList.remove('shake');
-        pinEntry = '';
-        updatePinDots();
+        pinEntries[tab] = '';
+        updatePinDots(tab);
       }, 450);
     }
   }
 
-  if (localStorage.getItem('hh_auth') === 'true') {
-    document.getElementById('pin-screen').classList.add('hidden');
+  function requirePin(tab) {
+    if (localStorage.getItem(`hh_auth_${tab}`) !== 'true') {
+      document.getElementById(`pin-${tab}`).classList.remove('hidden');
+      return false;
+    }
+    return true;
+  }
+
+  // ── TAB SWITCHING ──
+  let currentTab = 'home';
+
+  function switchTab(tab) {
+    // Hide all panels and deactivate nav
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+
+    // Show target panel and activate nav
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    document.querySelector(`.nav-tab[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById('topbar-title').textContent = TAB_TITLES[tab];
+    currentTab = tab;
+
+    // Check PIN
+    if (!requirePin(tab)) return;
+    onTabUnlocked(tab);
+  }
+
+  function onTabUnlocked(tab) {
+    if (tab === 'home') {
+      loadChores(); loadReminders(); loadGroceryList(); loadMealPlan();
+    } else if (tab === 'parentals') {
+      loadParentChores(); loadParentReminders();
+    } else if (tab === 'tori') {
+      loadToriChores(); loadToriReminders(); loadToriSchedule(); loadToriEvents();
+    } else if (tab === 'nova') {
+      loadNovaChores(); loadNovaEvents(); loadToriEvents(); loadHomework();
+    }
   }
 
   // ── CLOCK ──
@@ -871,13 +1475,13 @@
     document.getElementById('date').textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
   }
   updateClock();
-  setInterval(updateClock, 30000);
+  setInterval(updateClock, 1000);
 
   // ── WEATHER ──
   async function loadWeather() {
     try {
       const lat = 47.5221, lon = -120.4699;
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=3`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=5`;
       const res = await fetch(url);
       const data = await res.json();
       const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -885,13 +1489,13 @@
       const conditions = {0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',71:'Light Snow',73:'Snow',75:'Heavy Snow',80:'Showers',81:'Heavy Showers',82:'Violent Showers',95:'Thunderstorm',99:'Heavy Storm'};
       const wb = document.getElementById('weather');
       wb.innerHTML = '';
-      for (let i = 0; i < 3; i++) {
-        const d = new Date(data.daily.time[i]);
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(data.daily.time[i] + 'T12:00:00');
         const code = data.daily.weathercode[i];
         const max = Math.round(data.daily.temperature_2m_max[i]);
         const min = Math.round(data.daily.temperature_2m_min[i]);
         wb.innerHTML += `<div class="weather-day">
-          <div class="day-name">${days[d.getDay()]}</div>
+          <div class="day-name">${i === 0 ? 'Today' : days[d.getDay()]}</div>
           <div class="icon">${icons[code] || '🌡️'}</div>
           <div class="temp">${max}° / ${min}°</div>
           <div class="condition">${conditions[code] || 'Mixed'}</div>
@@ -904,90 +1508,386 @@
   loadWeather();
   setInterval(loadWeather, 30 * 60 * 1000);
 
-  // ── CHORES ──
+  // ── COUNTDOWN HELPERS ──
+  function getDayDiff(dateStr) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.round((target - today) / 86400000);
+  }
+
+  function countdownBadge(diff) {
+    if (diff < 0) return { text: `${Math.abs(diff)}d ago`, cls: 'past' };
+    if (diff === 0) return { text: 'TODAY', cls: 'today' };
+    if (diff <= 7) return { text: `${diff}d away`, cls: 'soon' };
+    return { text: `${diff} days`, cls: 'upcoming' };
+  }
+
+  function renderEventList(events, containerId, deleteFn) {
+    const el = document.getElementById(containerId);
+    const sorted = [...events].sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+    const upcoming = sorted.filter(e => getDayDiff(e.date) >= -30);
+    if (upcoming.length === 0) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No upcoming events</div>';
+      return;
+    }
+    el.innerHTML = upcoming.map(e => {
+      const diff = getDayDiff(e.date);
+      const badge = countdownBadge(diff);
+      const d = new Date(e.date + 'T00:00:00');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const dateStr = `${months[d.getMonth()]} ${d.getDate()}`;
+      const deleteBtn = deleteFn ? `<button class="hw-delete" onclick="event.stopPropagation();${deleteFn}(${e.id})" title="Remove">×</button>` : '';
+      return `<div class="countdown-item">
+        <div class="countdown-info">
+          <div class="countdown-name">${e.name}</div>
+          <div class="countdown-sub">${e.type}${e.location ? ' · ' + e.location : ''} · ${dateStr}</div>
+        </div>
+        <div class="countdown-badge ${badge.cls}">${badge.text}</div>
+        ${deleteBtn}
+      </div>`;
+    }).join('');
+  }
+
+  function renderNextUp(events, containerId) {
+    const el = document.getElementById(containerId);
+    const upcoming = [...events]
+      .filter(e => getDayDiff(e.date) >= 0)
+      .sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+    if (upcoming.length === 0) {
+      el.innerHTML = '<div class="next-up-label">No upcoming events</div>';
+      return;
+    }
+    const next = upcoming[0];
+    const diff = getDayDiff(next.date);
+    const d = new Date(next.date + 'T00:00:00');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const isToday = diff === 0;
+    el.innerHTML = `
+      <div class="next-up-label">${next.type}</div>
+      <div class="next-up-name">${next.name}</div>
+      <div class="next-up-sub">${months[d.getMonth()]} ${d.getDate()}${next.location ? ' · ' + next.location : ''}</div>
+      <div class="next-up-countdown ${isToday ? 'today-color' : ''}">${isToday ? 'TODAY' : diff}</div>
+      <div class="next-up-unit">${isToday ? '' : 'days away'}</div>
+    `;
+  }
+
+  // ── CHORES (shared loader with optional assignee filter) ──
+  let choreCache = null;
+
+  async function fetchChores() {
+    if (choreCache) return choreCache;
+    const res = await fetch(CHORES_SCRIPT);
+    choreCache = await res.json();
+    setTimeout(() => choreCache = null, 60000); // invalidate after 1 min
+    return choreCache;
+  }
+
+  function renderChoreList(entries, listEl, badgeEl) {
+    const total = entries.length;
+    const done = entries.filter(([,v]) => v.done).length;
+    if (badgeEl) badgeEl.textContent = total > 0 ? `${done} / ${total}` : '';
+    listEl.innerHTML = entries.map(([name, val]) => {
+      const isDone = val.done;
+      const who = val.who || '';
+      return `<div class="chore-item ${isDone ? 'done' : ''}" onclick="toggleChore(this, '${name.replace(/'/g, "\\'")}', '${listEl.id}')">
+        <div class="chore-check">✓</div>
+        <span class="chore-name">${name}</span>
+        ${who ? `<span class="chore-who">${who}</span>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // ── PERSONAL CHORE LIST (Tori/Nova own sheets) ──
+  function renderPersonalChoreList(chores, listId, badgeId, person) {
+    const list = document.getElementById(listId);
+    const badge = document.getElementById(badgeId);
+    const total = chores.length;
+    const done = chores.filter(c => c.done).length;
+    if (badge) badge.textContent = total > 0 ? `${done} / ${total}` : '';
+    if (total === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px;grid-column:1/-1">No chores! 🎉</div>';
+      return;
+    }
+    const script = person === 'tori' ? 'TORI_SCRIPT' : 'NOVA_SCRIPT';
+    list.innerHTML = chores.map(c => `
+      <div class="chore-item ${c.done ? 'done' : ''}" onclick="togglePersonalChore(${c.id}, this, '${person}', '${listId}', '${badgeId}')">
+        <div class="chore-check">✓</div>
+        <span class="chore-name">${c.name}</span>
+        <button class="hw-delete" onclick="event.stopPropagation();deletePersonalChore(${c.id},'${person}','${listId}','${badgeId}')" title="Remove">×</button>
+      </div>`).join('');
+  }
+
+  async function togglePersonalChore(idx, el, person, listId, badgeId) {
+    el.classList.toggle('done');
+    const isDone = el.classList.contains('done');
+    const script = person === 'tori' ? TORI_SCRIPT : NOVA_SCRIPT;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'toggle'); fd.append('type', 'chores');
+      fd.append('idx', idx); fd.append('done', isDone.toString());
+      await fetch(script, { method: 'POST', body: fd });
+    } catch(e) {}
+    const items = document.querySelectorAll(`#${listId} .chore-item`);
+    const doneCount = document.querySelectorAll(`#${listId} .chore-item.done`).length;
+    const badge = document.getElementById(badgeId);
+    if (badge) badge.textContent = `${doneCount} / ${items.length}`;
+  }
+
+  async function deletePersonalChore(idx, person, listId, badgeId) {
+    const script = person === 'tori' ? TORI_SCRIPT : NOVA_SCRIPT;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete'); fd.append('type', 'chores'); fd.append('idx', idx);
+      await fetch(script, { method: 'POST', body: fd });
+      person === 'tori' ? await loadToriChores() : await loadNovaChores();
+    } catch(e) {}
+  }
+
+  function openPersonalChoreForm(person) {
+    document.getElementById('personal-chore-overlay').classList.remove('hidden');
+    document.getElementById('personal-chore-overlay').dataset.person = person;
+    document.getElementById('personal-chore-input').value = '';
+    document.getElementById('personal-chore-input').focus();
+  }
+  function closePersonalChoreForm() { document.getElementById('personal-chore-overlay').classList.add('hidden'); }
+  async function submitPersonalChore() {
+    const name = document.getElementById('personal-chore-input').value.trim();
+    const person = document.getElementById('personal-chore-overlay').dataset.person;
+    if (!name) return;
+    const script = person === 'tori' ? TORI_SCRIPT : NOVA_SCRIPT;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add'); fd.append('type', 'chores'); fd.append('name', name);
+      await fetch(script, { method: 'POST', body: fd });
+    } catch(e) {}
+    closePersonalChoreForm();
+    person === 'tori' ? await loadToriChores() : await loadNovaChores();
+  }
+
   async function loadChores() {
     try {
-      const res = await fetch(CHORES_SCRIPT);
-      const data = await res.json();
+      const data = await fetchChores();
       const list = document.getElementById('chore-list');
+      const badge = document.getElementById('chore-count-badge');
       const resetDay = data.resetDay || 'Sunday';
-      document.getElementById('chore-reset-badge').textContent = '';
-
       const now = new Date();
       const todayDate = now.toDateString();
       const todayDay = now.toLocaleDateString('en-US', { weekday: 'long' });
       const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
-
       for (const [choreId, val] of Object.entries(data.chores)) {
         const freq = val.frequency || 'weekly';
         const key = `chore_reset_${choreId}`;
         const last = localStorage.getItem(key);
         let shouldReset = false;
-
-        if (freq === 'daily' && last !== todayDate) {
-          shouldReset = true;
-          localStorage.setItem(key, todayDate);
-        } else if (freq === 'weekly' && todayDay === resetDay && last !== todayDate) {
-          shouldReset = true;
-          localStorage.setItem(key, todayDate);
-        } else if (freq === 'monthly' && last !== thisMonth) {
-          shouldReset = true;
-          localStorage.setItem(key, thisMonth);
-        }
-
+        if (freq === 'daily' && last !== todayDate) { shouldReset = true; localStorage.setItem(key, todayDate); }
+        else if (freq === 'weekly' && todayDay === resetDay && last !== todayDate) { shouldReset = true; localStorage.setItem(key, todayDate); }
+        else if (freq === 'monthly' && last !== thisMonth) { shouldReset = true; localStorage.setItem(key, thisMonth); }
         if (shouldReset && val.done) {
-          const fd = new FormData();
-          fd.append('choreId', choreId);
-          fd.append('done', 'false');
+          const fd = new FormData(); fd.append('choreId', choreId); fd.append('done', 'false');
           await fetch(CHORES_SCRIPT, { method: 'POST', body: fd });
           data.chores[choreId] = { ...val, done: false };
         }
       }
-
-      list.innerHTML = Object.entries(data.chores).map(([name, val]) => {
-        const done = val.done;
-        const who = val.who || '';
-        return `<div class="chore-item ${done ? 'done' : ''}" onclick="toggleChore(this, '${name.replace(/'/g, "\\'")}')">
-          <div class="chore-check">✓</div>
-          <span class="chore-name">${name}</span>
-          ${who ? `<span class="chore-who">${who}</span>` : ''}
-        </div>`;
-      }).join('');
+      renderChoreList(Object.entries(data.chores), list, badge);
     } catch (e) {
       document.getElementById('chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
     }
   }
 
-  async function toggleChore(el, choreId) {
-    el.classList.toggle('done');
-    const done = el.classList.contains('done');
-    const fd = new FormData();
-    fd.append('choreId', choreId);
-    fd.append('done', done.toString());
-    try { await fetch(CHORES_SCRIPT, { method: 'POST', body: fd }); } catch (e) {}
+  async function loadFilteredChores(assigneeKeyword, listId, badgeId) {
+    try {
+      const data = await fetchChores();
+      const entries = Object.entries(data.chores).filter(([, v]) => {
+        if (!assigneeKeyword) return true;
+        const who = (v.who || '').toLowerCase();
+        return who === assigneeKeyword.toLowerCase() || who === 'everyone' || who === 'anyone';
+      });
+      renderChoreList(entries, document.getElementById(listId), document.getElementById(badgeId));
+    } catch (e) {
+      document.getElementById(listId).innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    }
   }
 
-  loadChores();
+  function loadParentChores() { loadFilteredChores('Dad', 'parent-chore-list', 'parent-chore-badge'); }
+  async function loadToriChores() {
+    try {
+      const res = await fetch(TORI_SCRIPT + '?type=chores');
+      const chores = await res.json();
+      renderPersonalChoreList(chores, 'tori-chore-list', 'tori-chore-badge', 'tori');
+    } catch(e) {
+      document.getElementById('tori-chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    }
+  }
+  async function loadNovaChores() {
+    try {
+      const res = await fetch(NOVA_SCRIPT + '?type=chores');
+      const chores = await res.json();
+      renderPersonalChoreList(chores, 'nova-chore-list', 'nova-chore-badge', 'nova');
+    } catch(e) {
+      document.getElementById('nova-chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function toggleChore(el, choreId, listId) {
+    el.classList.toggle('done');
+    choreCache = null; // invalidate cache on toggle
+    const isDone = el.classList.contains('done');
+    const fd = new FormData();
+    fd.append('choreId', choreId);
+    fd.append('done', isDone.toString());
+    try { await fetch(CHORES_SCRIPT, { method: 'POST', body: fd }); } catch (e) {}
+    // Update badge for whichever list was toggled
+    const items = document.querySelectorAll(`#${listId} .chore-item`);
+    const total = items.length;
+    const doneCount = document.querySelectorAll(`#${listId} .chore-item.done`).length;
+    const badgeMap = { 'chore-list': 'chore-count-badge', 'parent-chore-list': 'parent-chore-badge', 'tori-chore-list': 'tori-chore-badge', 'nova-chore-list': 'nova-chore-badge' };
+    const badge = document.getElementById(badgeMap[listId]);
+    if (badge) badge.textContent = `${doneCount} / ${total}`;
+  }
 
   // ── REMINDERS ──
+  function renderReminderList(items, listEl) {
+    if (!items || items.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">No reminders</div>';
+      return;
+    }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const normalized = items.map(item =>
+      typeof item === 'string' ? { text: item, date: '' } : { text: item.text || '', date: item.date || '' }
+    );
+    const sorted = [...normalized].sort((a, b) => {
+      const dA = a.date ? new Date(a.date) : null;
+      const dB = b.date ? new Date(b.date) : null;
+      if (dA && dB) return dA - dB;
+      if (dA) return -1; if (dB) return 1; return 0;
+    });
+    listEl.innerHTML = sorted.map(item => {
+      const text = item.text;
+      let dateLabel = '';
+      if (item.date && item.date.trim()) {
+        const parsed = new Date(item.date);
+        if (!isNaN(parsed)) {
+          const y = parsed.getFullYear(), mo = String(parsed.getMonth()+1).padStart(2,'0'), dy = String(parsed.getDate()).padStart(2,'0');
+          const clean = `${y}-${mo}-${dy}`;
+          const diff = Math.round((new Date(clean + 'T00:00:00') - today) / 86400000);
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          if (diff === 0) dateLabel = 'Today';
+          else if (diff === 1) dateLabel = 'Tomorrow';
+          else if (diff < 0) dateLabel = `${Math.abs(diff)}d ago`;
+          else dateLabel = `${months[parsed.getMonth()]} ${parsed.getDate()}`;
+        }
+      }
+      const safe = text.replace(/'/g, "\\'");
+      return `<div class="reminder-item">
+        <div class="reminder-dot"></div>
+        <div class="reminder-body">
+          <span class="reminder-text">${text}</span>
+          ${dateLabel ? `<span class="reminder-date-tag">📅 ${dateLabel}</span>` : ''}
+        </div>
+        <button class="reminder-delete" onclick="deleteReminder('${safe}', this)" title="Remove">×</button>
+      </div>`;
+    }).join('');
+  }
+
   async function loadReminders() {
     try {
       const res = await fetch(REMINDERS_SCRIPT);
       const items = await res.json();
-      const list = document.getElementById('reminder-list');
-      if (items.length === 0) {
-        list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No reminders</div>';
-      } else {
-        list.innerHTML = items.map(text => `
-          <div class="reminder-item">
-            <div class="reminder-dot"></div>
-            <span class="reminder-text">${text}</span>
-            <button class="reminder-delete" onclick="deleteReminder('${text.replace(/'/g, "\\'")}', this)" title="Remove">×</button>
-          </div>`).join('');
-      }
+      renderReminderList(items, document.getElementById('reminder-list'));
     } catch (e) {
-      document.getElementById('reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+      document.getElementById('reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">Unavailable</div>';
     }
+  }
+
+  async function loadParentReminders() {
+    try {
+      const res = await fetch(REMINDERS_SCRIPT);
+      const items = await res.json();
+      renderReminderList(items, document.getElementById('parent-reminder-list'));
+    } catch (e) {
+      document.getElementById('parent-reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function loadToriReminders() {
+    try {
+      const res = await fetch(TORI_SCRIPT + '?type=reminders');
+      const items = await res.json();
+      renderPersonalReminderList(items, 'tori-reminder-list');
+    } catch(e) {
+      document.getElementById('tori-reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  function renderPersonalReminderList(items, listId) {
+    const list = document.getElementById(listId);
+    if (!items || items.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">No reminders</div>';
+      return;
+    }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const sorted = [...items].sort((a, b) => {
+      const dA = a.date ? new Date(a.date) : null;
+      const dB = b.date ? new Date(b.date) : null;
+      if (dA && dB) return dA - dB;
+      if (dA) return -1; if (dB) return 1; return 0;
+    });
+    list.innerHTML = sorted.map(item => {
+      let dateLabel = '';
+      if (item.date && item.date.trim()) {
+        const parsed = new Date(item.date);
+        if (!isNaN(parsed)) {
+          const y = parsed.getFullYear(), mo = String(parsed.getMonth()+1).padStart(2,'0'), dy = String(parsed.getDate()).padStart(2,'0');
+          const diff = Math.round((new Date(`${y}-${mo}-${dy}T00:00:00`) - today) / 86400000);
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          if (diff === 0) dateLabel = 'Today';
+          else if (diff === 1) dateLabel = 'Tomorrow';
+          else if (diff < 0) dateLabel = `${Math.abs(diff)}d ago`;
+          else dateLabel = `${months[parsed.getMonth()]} ${parsed.getDate()}`;
+        }
+      }
+      return `<div class="reminder-item">
+        <div class="reminder-dot" style="background:var(--accent4)"></div>
+        <div class="reminder-body">
+          <span class="reminder-text">${item.text}</span>
+          ${dateLabel ? `<span class="reminder-date-tag">📅 ${dateLabel}</span>` : ''}
+        </div>
+        <button class="reminder-delete" onclick="deleteToriReminder(${item.id}, this)" title="Remove">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  function openToriReminderForm() {
+    document.getElementById('tori-reminder-overlay').classList.remove('hidden');
+    document.getElementById('tori-reminder-input').value = '';
+    document.getElementById('tori-reminder-date').value = '';
+    document.getElementById('tori-reminder-input').focus();
+  }
+  function closeToriReminderForm() { document.getElementById('tori-reminder-overlay').classList.add('hidden'); }
+
+  async function submitToriReminder() {
+    const text = document.getElementById('tori-reminder-input').value.trim();
+    const date = document.getElementById('tori-reminder-date').value;
+    if (!text) return;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add'); fd.append('type', 'reminders');
+      fd.append('text', text);
+      if (date) fd.append('date', date);
+      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    closeToriReminderForm();
+    loadToriReminders();
+  }
+
+  async function deleteToriReminder(idx, btn) {
+    btn.disabled = true;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete'); fd.append('type', 'reminders'); fd.append('idx', idx);
+      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+      await loadToriReminders();
+    } catch(e) { btn.disabled = false; }
   }
 
   function openReminderForm() {
@@ -995,6 +1895,7 @@
     document.getElementById('reminder-input').focus();
     document.getElementById('reminder-status').textContent = '';
     document.getElementById('reminder-input').value = '';
+    document.getElementById('reminder-date').value = '';
   }
 
   function closeReminderForm() {
@@ -1003,17 +1904,18 @@
 
   async function submitReminder() {
     const input = document.getElementById('reminder-input');
+    const dateInput = document.getElementById('reminder-date');
     const text = input.value.trim();
     if (!text) return;
     try {
       const fd = new FormData();
       fd.append('action', 'add');
       fd.append('text', text);
+      if (dateInput.value) fd.append('date', dateInput.value);
       await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
     } catch (e) {}
-    input.value = '';
     closeReminderForm();
-    loadReminders();
+    loadReminders(); loadParentReminders();
   }
 
   async function deleteReminder(text, btn) {
@@ -1024,6 +1926,7 @@
       fd.append('text', text);
       await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
       await loadReminders();
+      loadParentReminders();
     } catch (e) { btn.disabled = false; }
   }
 
@@ -1031,25 +1934,60 @@
   setInterval(loadReminders, 5 * 60 * 1000);
 
   // ── GROCERY ──
+  function getGroceryBought() { try { return JSON.parse(localStorage.getItem('grocery_bought') || '[]'); } catch { return []; } }
+  function setGroceryBought(arr) { localStorage.setItem('grocery_bought', JSON.stringify(arr)); }
+
   async function loadGroceryList() {
     try {
       const res = await fetch(GROCERY_SCRIPT);
       const items = await res.json();
       const grid = document.getElementById('grocery-list');
-      if (items.length === 0) {
+      const bought = getGroceryBought();
+      if (!items || items.length === 0) {
         grid.innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">No items yet</div>';
-      } else {
-        grid.innerHTML = items.map(item => `<div class="grocery-item"><span class="grocery-text">${item}</span><button class="grocery-delete" onclick="deleteGroceryItem('${item.replace(/'/g, "\\'")}', this)" title="Remove">×</button></div>`).join('');
+        return;
       }
+      const sorted = [...items].sort((a, b) => bought.includes(a) ? 1 : bought.includes(b) ? -1 : 0);
+      grid.innerHTML = sorted.map(item => {
+        const isBought = bought.includes(item);
+        const safe = item.replace(/'/g, "\\'");
+        return `<div class="grocery-item${isBought ? ' bought' : ''}" onclick="toggleGroceryBought('${safe}', this)">
+          <span class="grocery-text">${item}</span>
+          <button class="grocery-delete" onclick="event.stopPropagation(); deleteGroceryItem('${safe}', this)" title="Remove">×</button>
+        </div>`;
+      }).join('');
+      if (items.length > 0 && items.every(i => bought.includes(i))) await clearBoughtGroceries();
     } catch (e) {
       document.getElementById('grocery-list').innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">Unavailable</div>';
     }
+  }
+
+  function toggleGroceryBought(item) {
+    const bought = getGroceryBought();
+    const idx = bought.indexOf(item);
+    if (idx === -1) bought.push(item); else bought.splice(idx, 1);
+    setGroceryBought(bought);
+    loadGroceryList();
+  }
+
+  async function clearBoughtGroceries() {
+    const bought = getGroceryBought();
+    if (bought.length === 0) return;
+    for (const item of bought) {
+      try {
+        const fd = new FormData(); fd.append('action', 'delete'); fd.append('item', item);
+        await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
+      } catch (e) {}
+    }
+    setGroceryBought([]);
+    await loadGroceryList();
   }
 
   function openGroceryForm() {
     document.getElementById('grocery-overlay').classList.remove('hidden');
     document.getElementById('grocery-input').focus();
     document.getElementById('grocery-status').textContent = '';
+    document.getElementById('grocery-input').value = '';
   }
 
   function closeGroceryForm() {
@@ -1060,26 +1998,22 @@
 
   async function submitGroceryItem() {
     const input = document.getElementById('grocery-input');
-    const status = document.getElementById('grocery-status');
     const item = input.value.trim();
     if (!item) return;
-    status.textContent = 'Adding...';
     try {
-      const fd = new FormData();
-      fd.append('item', item);
+      const fd = new FormData(); fd.append('item', item);
       await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
     } catch (e) {}
-    input.value = '';
     closeGroceryForm();
     loadGroceryList();
   }
 
   async function deleteGroceryItem(item, btn) {
     btn.disabled = true;
+    const bought = getGroceryBought().filter(i => i !== item);
+    setGroceryBought(bought);
     try {
-      const fd = new FormData();
-      fd.append('action', 'delete');
-      fd.append('item', item);
+      const fd = new FormData(); fd.append('action', 'delete'); fd.append('item', item);
       await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
       await loadGroceryList();
     } catch (e) { btn.disabled = false; }
@@ -1096,12 +2030,21 @@
       const list = document.getElementById('meal-list');
       list.innerHTML = DAYS_ORDER.map(day => `
         <div class="meal-item">
-          <span class="meal-day">${day.slice(0, 3)}</span>
+          <span class="meal-day">${day.slice(0,3)}</span>
           <span class="meal-name">${meals[day] || '—'}</span>
+          ${meals[day] ? `<button class="meal-clear" onclick="clearMeal('${day}')">×</button>` : ''}
         </div>`).join('');
     } catch (e) {
       document.getElementById('meal-list').innerHTML = '<div style="color:var(--muted);font-size:0.78rem;padding:8px">Unavailable</div>';
     }
+  }
+
+  async function clearMeal(day) {
+    try {
+      const fd = new FormData(); fd.append('day', day); fd.append('meal', '__CLEAR__');
+      await fetch(MEAL_SCRIPT, { method: 'POST', body: fd });
+      await loadMealPlan();
+    } catch (e) {}
   }
 
   function openMealForm() {
@@ -1111,9 +2054,7 @@
     document.getElementById('meal-input').value = '';
   }
 
-  function closeMealForm() {
-    document.getElementById('meal-overlay').classList.add('hidden');
-  }
+  function closeMealForm() { document.getElementById('meal-overlay').classList.add('hidden'); }
 
   async function submitMeal() {
     const day = document.getElementById('meal-day-select').value;
@@ -1122,9 +2063,7 @@
     if (!day) { status.textContent = 'Please select a day'; return; }
     if (!meal) { status.textContent = 'Please enter a meal'; return; }
     try {
-      const fd = new FormData();
-      fd.append('day', day);
-      fd.append('meal', meal);
+      const fd = new FormData(); fd.append('day', day); fd.append('meal', meal);
       await fetch(MEAL_SCRIPT, { method: 'POST', body: fd });
     } catch (e) {}
     closeMealForm();
@@ -1134,9 +2073,254 @@
   loadMealPlan();
   setInterval(loadMealPlan, 5 * 60 * 1000);
 
+  // ── TORI: load schedule + events from sheet ──
+  async function loadToriSchedule() {
+    try {
+      const res = await fetch(TORI_SCRIPT + '?type=schedule');
+      const rows = await res.json();
+      const el = document.getElementById('tori-schedule');
+      if (!rows || rows.length === 0) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No classes found</div>';
+        return;
+      }
+      el.innerHTML = rows.map(r => `
+        <div class="schedule-item">
+          <span class="schedule-day">${r.day}</span>
+          <span class="schedule-class">${r.class}</span>
+          <span class="schedule-time">${r.time}</span>
+          <button class="hw-delete" onclick="deleteToriSchedule(${r.id})" title="Remove">×</button>
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('tori-schedule').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function loadToriEvents() {
+    try {
+      const res = await fetch(TORI_SCRIPT + '?type=events');
+      const events = await res.json();
+      renderNextUp(events, 'tori-next-up');
+      renderEventList(events, 'tori-events', 'deleteToriEvent');
+      // also update nova's tori-events view (read-only, no delete)
+      renderEventList(events, 'nova-tori-events');
+    } catch(e) {
+      document.getElementById('tori-next-up').innerHTML = '<div class="next-up-label">Unavailable</div>';
+      document.getElementById('tori-events').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  // ── NOVA: load events + homework from sheet ──
+  async function loadNovaEvents() {
+    try {
+      const res = await fetch(NOVA_SCRIPT + '?type=events');
+      const events = await res.json();
+      renderEventList(events, 'nova-events', 'deleteNovaEvent');
+    } catch(e) {
+      document.getElementById('nova-events').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  // ── TORI SCHEDULE FORM ──
+  function openToriScheduleForm() {
+    document.getElementById('tori-schedule-overlay').classList.remove('hidden');
+    document.getElementById('tori-schedule-day').value = '';
+    document.getElementById('tori-schedule-class').value = '';
+    document.getElementById('tori-schedule-time').value = '';
+    document.getElementById('tori-schedule-status').textContent = '';
+    document.getElementById('tori-schedule-class').focus();
+  }
+  function closeToriScheduleForm() { document.getElementById('tori-schedule-overlay').classList.add('hidden'); }
+  async function submitToriSchedule() {
+    const day = document.getElementById('tori-schedule-day').value;
+    const cls = document.getElementById('tori-schedule-class').value.trim();
+    const time = document.getElementById('tori-schedule-time').value.trim();
+    const status = document.getElementById('tori-schedule-status');
+    if (!day) { status.textContent = 'Please select a day'; return; }
+    if (!cls) { status.textContent = 'Please enter a class name'; return; }
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add'); fd.append('type', 'schedule');
+      fd.append('day', day); fd.append('class', cls); fd.append('time', time);
+      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    closeToriScheduleForm();
+    loadToriSchedule();
+  }
+  async function deleteToriSchedule(idx) {
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete'); fd.append('type', 'schedule'); fd.append('idx', idx);
+      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+      await loadToriSchedule();
+    } catch(e) {}
+  }
+
+  // ── TORI EVENTS FORM ──
+  function openToriEventsForm() {
+    document.getElementById('tori-events-overlay').classList.remove('hidden');
+    document.getElementById('tori-event-name').value = '';
+    document.getElementById('tori-event-type').value = '';
+    document.getElementById('tori-event-date').value = '';
+    document.getElementById('tori-event-location').value = '';
+    document.getElementById('tori-events-status').textContent = '';
+    document.getElementById('tori-event-name').focus();
+  }
+  function closeToriEventsForm() { document.getElementById('tori-events-overlay').classList.add('hidden'); }
+  async function submitToriEvent() {
+    const name = document.getElementById('tori-event-name').value.trim();
+    const evtType = document.getElementById('tori-event-type').value;
+    const date = document.getElementById('tori-event-date').value;
+    const location = document.getElementById('tori-event-location').value.trim();
+    const status = document.getElementById('tori-events-status');
+    if (!name) { status.textContent = 'Please enter an event name'; return; }
+    if (!date) { status.textContent = 'Please select a date'; return; }
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add'); fd.append('type', 'events');
+      fd.append('name', name); fd.append('evtType', evtType || 'Event');
+      fd.append('date', date); fd.append('location', location);
+      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    closeToriEventsForm();
+    loadToriEvents();
+  }
+  async function deleteToriEvent(idx) {
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete'); fd.append('type', 'events'); fd.append('idx', idx);
+      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+      await loadToriEvents();
+    } catch(e) {}
+  }
+
+  // ── NOVA EVENTS FORM ──
+  function openNovaEventsForm() {
+    document.getElementById('nova-events-overlay').classList.remove('hidden');
+    document.getElementById('nova-event-name').value = '';
+    document.getElementById('nova-event-type').value = '';
+    document.getElementById('nova-event-date').value = '';
+    document.getElementById('nova-event-location').value = '';
+    document.getElementById('nova-events-status').textContent = '';
+    document.getElementById('nova-event-name').focus();
+  }
+  function closeNovaEventsForm() { document.getElementById('nova-events-overlay').classList.add('hidden'); }
+  async function submitNovaEvent() {
+    const name = document.getElementById('nova-event-name').value.trim();
+    const evtType = document.getElementById('nova-event-type').value.trim();
+    const date = document.getElementById('nova-event-date').value;
+    const location = document.getElementById('nova-event-location').value.trim();
+    const status = document.getElementById('nova-events-status');
+    if (!name) { status.textContent = 'Please enter an event name'; return; }
+    if (!date) { status.textContent = 'Please select a date'; return; }
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add'); fd.append('type', 'events');
+      fd.append('name', name); fd.append('evtType', evtType || 'Event');
+      fd.append('date', date); fd.append('location', location);
+      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    closeNovaEventsForm();
+    loadNovaEvents();
+  }
+  async function deleteNovaEvent(idx) {
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete'); fd.append('type', 'events'); fd.append('idx', idx);
+      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      await loadNovaEvents();
+    } catch(e) {}
+  }
+
+  // ── HOMEWORK (Google Sheets) ──
+  function renderHomework(hw) {
+    const list = document.getElementById('hw-list');
+    const badge = document.getElementById('hw-badge');
+    const total = hw.length;
+    const done = hw.filter(h => h.done).length;
+    badge.textContent = total > 0 ? `${done} / ${total}` : '';
+    if (total === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>';
+      return;
+    }
+    list.innerHTML = hw.map((item) => `
+      <div class="hw-item ${item.done ? 'done' : ''}" onclick="toggleHomework(${item.id})">
+        <div class="hw-check">✓</div>
+        <span class="hw-name">${item.name}</span>
+        ${item.subject ? `<span class="hw-subject">${item.subject}</span>` : ''}
+        <button class="hw-delete" onclick="event.stopPropagation(); deleteHomework(${item.id})">×</button>
+      </div>`).join('');
+  }
+
+  async function loadHomework() {
+    try {
+      const res = await fetch(NOVA_SCRIPT + '?type=homework');
+      const hw = await res.json();
+      renderHomework(hw);
+    } catch(e) {
+      document.getElementById('hw-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function toggleHomework(idx) {
+    const items = document.querySelectorAll('.hw-item');
+    const el = items[idx];
+    if (el) el.classList.toggle('done');
+    const isDone = el ? el.classList.contains('done') : false;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'toggle');
+      fd.append('idx', idx);
+      fd.append('done', isDone.toString());
+      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      await loadHomework();
+    } catch(e) {}
+  }
+
+  async function deleteHomework(idx) {
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('idx', idx);
+      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      await loadHomework();
+    } catch(e) {}
+  }
+
+  async function clearDoneHomework() {
+    try {
+      const fd = new FormData();
+      fd.append('action', 'clear_done');
+      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      await loadHomework();
+    } catch(e) {}
+  }
+
+  function openHomeworkForm() {
+    document.getElementById('hw-overlay').classList.remove('hidden');
+    document.getElementById('hw-input').focus();
+    document.getElementById('hw-input').value = '';
+    document.getElementById('hw-subject-input').value = '';
+  }
+
+  function closeHomeworkForm() { document.getElementById('hw-overlay').classList.add('hidden'); }
+
+  async function submitHomework() {
+    const name = document.getElementById('hw-input').value.trim();
+    const subject = document.getElementById('hw-subject-input').value.trim();
+    if (!name) return;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('name', name);
+      fd.append('subject', subject);
+      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+    } catch(e) {}
+    closeHomeworkForm();
+    await loadHomework();
+  }
+
   // ── SINGLE KEYDOWN HANDLER ──
   document.addEventListener('keydown', (e) => {
-    // Overlays take priority
     if (!document.getElementById('grocery-overlay').classList.contains('hidden')) {
       if (e.key === 'Enter') submitGroceryItem();
       if (e.key === 'Escape') closeGroceryForm();
@@ -1152,12 +2336,52 @@
       if (e.key === 'Escape') closeReminderForm();
       return;
     }
-    // PIN screen
-    if (!document.getElementById('pin-screen').classList.contains('hidden')) {
-      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-      if (e.key === 'Backspace') pinDelete();
+    if (!document.getElementById('hw-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitHomework();
+      if (e.key === 'Escape') closeHomeworkForm();
+      return;
     }
+    if (!document.getElementById('tori-schedule-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitToriSchedule();
+      if (e.key === 'Escape') closeToriScheduleForm();
+      return;
+    }
+    if (!document.getElementById('tori-events-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitToriEvent();
+      if (e.key === 'Escape') closeToriEventsForm();
+      return;
+    }
+    if (!document.getElementById('nova-events-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitNovaEvent();
+      if (e.key === 'Escape') closeNovaEventsForm();
+      return;
+    }
+    if (!document.getElementById('tori-reminder-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitToriReminder();
+      if (e.key === 'Escape') closeToriReminderForm();
+      return;
+    }
+    if (!document.getElementById('personal-chore-overlay').classList.contains('hidden')) {
+      if (e.key === 'Enter') submitPersonalChore();
+      if (e.key === 'Escape') closePersonalChoreForm();
+      return;
+    }
+    // PIN screens
+    ['home','parentals','tori','nova'].forEach(tab => {
+      const pinEl = document.getElementById(`pin-${tab}`);
+      if (pinEl && !pinEl.classList.contains('hidden')) {
+        if (e.key >= '0' && e.key <= '9') pinPress(tab, e.key);
+        if (e.key === 'Backspace') pinDelete(tab);
+      }
+    });
   });
+
+  // ── INIT ──
+  // Check home PIN on load
+  if (localStorage.getItem('hh_auth_home') === 'true') {
+    document.getElementById('pin-home').classList.add('hidden');
+    onTabUnlocked('home');
+  }
 </script>
 </body>
 </html>
