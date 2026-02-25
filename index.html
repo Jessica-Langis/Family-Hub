@@ -1429,7 +1429,7 @@
   const SCRIPTS = {
     GROCERY:   'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec',
     REMINDERS: 'https://script.google.com/macros/s/AKfycbxwkMmwNzRlSupy2aoP-crQaqjeqJ0r0M0VHxseiLmSwzqMUYq8nJ-NF7i4phs2_Zwz/exec',
-    CHORES:    'https://script.google.com/macros/s/AKfycbwB9HNfYxuI8o07uag1AtLTl1O9Ujyc_KaDndJq0Eb0Znjui2CqpLoUjBq0FvpIPuiv/exec',
+    CHORES:    'https://script.google.com/macros/s/AKfycbxWTpChkrWj-CYqBq4zt-ukj-FpSz2bttXklwHbBwNS0yv7p2hc5eNzQaNbHCF-vCXc/exec',
     MEAL:      'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec',
     TORI:      'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec',
     NOVA:      'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec',
@@ -1814,205 +1814,38 @@
   }
 
   // ─────────────────────────────────────────────
-  // CHORES — SHARED (Home / Parentals)
   // ─────────────────────────────────────────────
-  let choreCache = null;
-
-  async function fetchChores() {
-    if (choreCache) {
-      log('Chores: using cache');
-      return choreCache;
-    }
-    log('Chores: fetching from sheet');
-    const res  = await apiFetch(SCRIPTS.CHORES);
-    choreCache = await res.json();
-    return choreCache;
-  }
-
-  function renderChoreList(entries, listEl, badgeEl) {
-    if (!listEl) return;
-    const total = entries.length;
-    const done  = entries.filter(([, v]) => v.done).length;
-    if (badgeEl) badgeEl.textContent = total > 0 ? `${done} / ${total}` : '';
-
-    if (total === 0) {
-      listEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px;grid-column:1/-1">No chores! 🎉</div>';
-      return;
-    }
-
-    listEl.innerHTML = entries.map(([name, val]) => {
-      const isDone = val.done;
-      const who    = val.who || '';
-      return `<div class="chore-item ${isDone ? 'done' : ''}"
-                   data-chore-id="${esc(name)}"
-                   data-list-id="${esc(listEl.id)}">
-        <div class="chore-check">✓</div>
-        <span class="chore-name">${esc(name)}</span>
-        ${who ? `<span class="chore-who">${esc(who)}</span>` : ''}
-        <button class="hw-delete chore-delete-btn" data-chore-id="${esc(name)}" data-list-id="${esc(listEl.id)}" title="Remove">×</button>
-      </div>`;
-    }).join('');
-
-    // Toggle: click on row (not delete button)
-    listEl.querySelectorAll('.chore-item').forEach(item => {
-      item.addEventListener('click', e => {
-        if (e.target.closest('.hw-delete')) return;
-        toggleChore(item, item.dataset.choreId, item.dataset.listId);
-      });
-    });
-
-    // Delete: click on × button
-    listEl.querySelectorAll('.chore-delete-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        deleteSharedChore(btn.dataset.choreId, btn.dataset.listId);
-      });
-    });
-  }
-
-  async function toggleChore(el, choreId, listId) {
-    el.classList.toggle('done');
-    choreCache = null;
-    const isDone = el.classList.contains('done');
-    const fd = new FormData();
-    fd.append('choreId', choreId);
-    fd.append('done', isDone.toString());
-    try {
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-    } catch (e) {
-      // Revert optimistic toggle on failure
-      el.classList.toggle('done');
-      choreCache = null;
-      err('toggleChore failed, reverted:', e.message);
-      return;
-    }
-    // Update badge count without full reload
-    const items    = listId ? document.querySelectorAll(`#${listId} .chore-item`) : [];
-    const doneCount = listId ? document.querySelectorAll(`#${listId} .chore-item.done`).length : 0;
-    const badgeMap = {
-      'chore-list':        'chore-count-badge',
-      'parent-chore-list': 'parent-chore-badge',
-    };
-    const badge = document.getElementById(badgeMap[listId]);
-    if (badge) badge.textContent = `${doneCount} / ${items.length}`;
-  }
-
-  function openSharedChoreForm() {
-    document.getElementById('shared-chore-overlay').classList.remove('hidden');
-    document.getElementById('shared-chore-input').value = '';
-    document.getElementById('shared-chore-who').value   = '';
-    document.getElementById('shared-chore-freq').value  = 'weekly';
-    setStatus('shared-chore-status', '');
-    document.getElementById('shared-chore-input').focus();
-  }
-  function closeSharedChoreForm() {
-    document.getElementById('shared-chore-overlay').classList.add('hidden');
-  }
-
-  async function submitSharedChore() {
-    const btn  = getSubmitBtn('shared-chore-overlay');
-    const name = document.getElementById('shared-chore-input').value.trim();
-    const who  = document.getElementById('shared-chore-who').value.trim();
-    const freq = document.getElementById('shared-chore-freq').value;
-
-    if (!name) {
-      setStatus('shared-chore-status', 'Please enter a chore name', true);
-      return;
-    }
-
-    setLoading(btn);
-    try {
-      const fd = new FormData();
-      fd.append('action',    'add');
-      fd.append('choreId',   name);
-      fd.append('who',       who);
-      fd.append('frequency', freq);
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-      choreCache = null;
-      clearLoading(btn);
-      closeSharedChoreForm();
-      // Refresh both lists that use shared chores
-      await loadChores();
-      loadParentChores();
-    } catch (e) {
-      clearLoading(btn);
-      setStatus('shared-chore-status', 'Failed to save — check connection', true);
-    }
-  }
-
-  async function deleteSharedChore(choreId, listId) {
-    choreCache = null;
-    try {
-      const fd = new FormData();
-      fd.append('choreId', choreId);
-      fd.append('action',  'delete');
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-      choreCache = null;
-      // Always refresh both lists — they share the same source
-      await loadChores();
-      loadParentChores();
-    } catch (e) {
-      err('deleteSharedChore failed:', e.message);
-    }
-  }
-
+  // CHORES — SHARED (Home / Parentals)
+  // Same array format as Tori/Nova: [{ id, name, done, who, frequency }]
+  // ─────────────────────────────────────────────
   async function loadChores() {
-    const list  = document.getElementById('chore-list');
-    const badge = document.getElementById('chore-count-badge');
+    const list = document.getElementById('chore-list');
     if (!list) return;
     try {
-      const data     = await fetchChores();
-      const resetDay = data.resetDay || 'Sunday';
-      const now      = new Date();
-      const todayDate = now.toDateString();
-      const todayDay  = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
-
-      for (const [choreId, val] of Object.entries(data.chores)) {
-        const freq = val.frequency || 'weekly';
-        const key  = `chore_reset_${choreId}`;
-        const last = localStorage.getItem(key);
-        let shouldReset = false;
-
-        if      (freq === 'daily'   && last !== todayDate)                       { shouldReset = true; localStorage.setItem(key, todayDate); }
-        else if (freq === 'weekly'  && todayDay === resetDay && last !== todayDate) { shouldReset = true; localStorage.setItem(key, todayDate); }
-        else if (freq === 'monthly' && last !== thisMonth)                       { shouldReset = true; localStorage.setItem(key, thisMonth); }
-
-        if (shouldReset && val.done) {
-          log(`Auto-resetting chore: ${choreId}`);
-          const fd = new FormData();
-          fd.append('choreId', choreId);
-          fd.append('done', 'false');
-          await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-          data.chores[choreId] = { ...val, done: false };
-        }
-      }
-      renderChoreList(Object.entries(data.chores), list, badge);
+      const res    = await apiFetch(SCRIPTS.CHORES);
+      const chores = await res.json();
+      renderPersonalChoreList(chores, 'chore-list', 'chore-count-badge', 'home');
     } catch (e) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
     }
   }
 
-  async function loadFilteredChores(assigneeKeyword, listId, badgeId) {
-    const list  = document.getElementById(listId);
-    const badge = document.getElementById(badgeId);
+  async function loadParentChores() {
+    const list = document.getElementById('parent-chore-list');
     if (!list) return;
     try {
-      const data    = await fetchChores();
-      const entries = Object.entries(data.chores).filter(([, v]) => {
-        if (!assigneeKeyword) return true;
-        const who = (v.who || '').toLowerCase();
-        return who === assigneeKeyword.toLowerCase() || who === 'everyone' || who === 'anyone';
+      const res    = await apiFetch(SCRIPTS.CHORES);
+      const chores = await res.json();
+      const filtered = chores.filter(c => {
+        const who = (c.who || '').toLowerCase();
+        return who === 'dad' || who === 'everyone' || who === 'anyone' || who === '';
       });
-      renderChoreList(entries, list, badge);
+      renderPersonalChoreList(filtered, 'parent-chore-list', 'parent-chore-badge', 'home');
     } catch (e) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
     }
   }
 
-  function loadParentChores() {
-    loadFilteredChores('Dad', 'parent-chore-list', 'parent-chore-badge');
-  }
 
   // ─────────────────────────────────────────────
   // CHORES — PERSONAL (Tori / Nova own sheets)
@@ -2030,21 +1863,25 @@
       return;
     }
 
-    list.innerHTML = chores.map(c => `
-      <div class="chore-item ${c.done ? 'done' : ''}"
+    list.innerHTML = chores.map(c => {
+      const whoTag = (c.who && (person === 'home'))
+        ? `<span class="chore-who">${esc(c.who)}</span>` : '';
+      return `<div class="chore-item ${c.done ? 'done' : ''}"
            data-chore-idx="${esc(String(c.id))}"
            data-person="${esc(person)}"
            data-list-id="${esc(listId)}"
            data-badge-id="${esc(badgeId)}">
         <div class="chore-check">✓</div>
         <span class="chore-name">${esc(c.name)}</span>
+        ${whoTag}
         <button class="hw-delete personal-chore-delete"
                 data-chore-idx="${esc(String(c.id))}"
                 data-person="${esc(person)}"
                 data-list-id="${esc(listId)}"
                 data-badge-id="${esc(badgeId)}"
                 title="Remove">×</button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     list.querySelectorAll('.chore-item').forEach(item => {
       item.addEventListener('click', e => {
@@ -2064,10 +1901,11 @@
   async function togglePersonalChore(idx, el, person, listId, badgeId) {
     el.classList.toggle('done');
     const isDone = el.classList.contains('done');
-    const script = person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+    const script = person === 'home' ? SCRIPTS.CHORES
+                 : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
     const fd = new FormData();
     fd.append('action', 'toggle');
-    fd.append('type',   'chores');
+    if (person !== 'home') fd.append('type', 'chores');
     fd.append('idx',    idx);
     fd.append('done',   isDone.toString());
     try {
@@ -2084,14 +1922,17 @@
   }
 
   async function deletePersonalChore(idx, person, listId, badgeId) {
-    const script = person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+    const script = person === 'home' ? SCRIPTS.CHORES
+                 : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
     try {
       const fd = new FormData();
       fd.append('action', 'delete');
-      fd.append('type',   'chores');
+      if (person !== 'home') fd.append('type', 'chores');
       fd.append('idx',    idx);
       await apiFetch(script, { method: 'POST', body: fd });
-      person === 'tori' ? await loadToriChores() : await loadNovaChores();
+      if (person === 'home') { await loadChores(); loadParentChores(); }
+      else if (person === 'tori') await loadToriChores();
+      else await loadNovaChores();
     } catch (e) {
       err('deletePersonalChore failed:', e.message);
     }
@@ -2118,6 +1959,44 @@
       renderPersonalChoreList(chores, 'nova-chore-list', 'nova-chore-badge', 'nova');
     } catch (e) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
+
+  function openSharedChoreForm() {
+    document.getElementById('shared-chore-overlay').classList.remove('hidden');
+    document.getElementById('shared-chore-input').value = '';
+    document.getElementById('shared-chore-who').value   = '';
+    document.getElementById('shared-chore-freq').value  = 'weekly';
+    setStatus('shared-chore-status', '');
+    document.getElementById('shared-chore-input').focus();
+  }
+  function closeSharedChoreForm() {
+    document.getElementById('shared-chore-overlay').classList.add('hidden');
+  }
+  async function submitSharedChore() {
+    const btn  = getSubmitBtn('shared-chore-overlay');
+    const name = document.getElementById('shared-chore-input').value.trim();
+    const who  = document.getElementById('shared-chore-who').value.trim();
+    const freq = document.getElementById('shared-chore-freq').value;
+    if (!name) {
+      setStatus('shared-chore-status', 'Please enter a chore name', true);
+      return;
+    }
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action',    'add');
+      fd.append('choreId',   name);
+      fd.append('who',       who);
+      fd.append('frequency', freq);
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeSharedChoreForm();
+      await loadChores();
+      loadParentChores();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('shared-chore-status', 'Failed to save — check connection', true);
     }
   }
 
