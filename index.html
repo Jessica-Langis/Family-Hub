@@ -15,7 +15,7 @@
     --accent: #e8b86d;
     --accent2: #7eb8d4;
     --accent3: #a8d5a2;
-    --accent4: #c9a0e8;
+    --accent4: #f096b5;
     --accent5: #e88d8d;
     --text: #e8eaf0;
     --muted: #8891a8;
@@ -742,6 +742,12 @@
     flex: 1;
   }
 
+  /* Tori + Nova personal reminder tiles: force single column */
+  #tori-reminder-list,
+  #nova-reminder-list {
+    grid-template-columns: 1fr;
+  }
+
   /* ── NEXT UP HERO ── */
   .next-up-hero {
     padding: 16px;
@@ -1456,9 +1462,7 @@
   function err(...args)  { console.error('[Dashboard]', ...args); }
 
   // ─────────────────────────────────────────────
-  // FETCH WRAPPER — centralised error handling
-  // All fetch calls go through here so errors are
-  // always logged and never silently swallowed.
+  // FETCH WRAPPER
   // ─────────────────────────────────────────────
   async function apiFetch(url, options = {}) {
     log(`fetch ${options.method || 'GET'} →`, url);
@@ -1471,14 +1475,12 @@
       return res;
     } catch (e) {
       err('apiFetch failed:', url, e.message);
-      throw e; // re-throw so callers can show UI error
+      throw e;
     }
   }
 
   // ─────────────────────────────────────────────
   // STARTUP CONNECTIVITY CHECK
-  // Pings each script URL and logs result so you
-  // can immediately see in DevTools if a URL is dead.
   // ─────────────────────────────────────────────
   async function checkScriptHealth() {
     if (!DEBUG) return;
@@ -1496,7 +1498,7 @@
   checkScriptHealth();
 
   // ─────────────────────────────────────────────
-  // SAFE HTML — prevent XSS in rendered content
+  // SAFE HTML
   // ─────────────────────────────────────────────
   function esc(str) {
     return String(str)
@@ -1528,7 +1530,6 @@
     return document.querySelector(`#${overlayId} .overlay-btn.submit`);
   }
 
-  // Show status message in an overlay — red for errors, green for success
   function setStatus(elId, msg, isError = false) {
     const el = document.getElementById(elId);
     if (!el) return;
@@ -1626,7 +1627,7 @@
     } else if (tab === 'nova') {
       loadNovaChores();
       loadNovaEvents();
-      loadToriEventsForNova(); // read-only view of Tori's events
+      loadToriEventsForNova();
       loadHomework();
     }
   }
@@ -1718,13 +1719,9 @@
   function formatReminderDate(dateStr) {
     if (!dateStr || !dateStr.trim()) return '';
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    // Normalize to YYYY-MM-DD to avoid timezone shifting
-    const parsed = new Date(dateStr);
+    const parsed = new Date(dateStr + 'T00:00:00');
     if (isNaN(parsed)) return '';
-    const y  = parsed.getFullYear();
-    const mo = String(parsed.getMonth() + 1).padStart(2, '0');
-    const dy = String(parsed.getDate()).padStart(2, '0');
-    const diff = Math.round((new Date(`${y}-${mo}-${dy}T00:00:00`) - today) / 86400000);
+    const diff = Math.round((parsed - today) / 86400000);
     if (diff === 0)  return 'Today';
     if (diff === 1)  return 'Tomorrow';
     if (diff < 0)    return `${Math.abs(diff)}d ago`;
@@ -1759,7 +1756,6 @@
       </div>`;
     }).join('');
 
-    // Attach delete handlers via delegation (no inline onclick = no XSS risk)
     el.querySelectorAll('.hw-delete[data-fn]').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
@@ -1814,9 +1810,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // ─────────────────────────────────────────────
   // CHORES — SHARED (Home / Parentals)
-  // Same array format as Tori/Nova: [{ id, name, done, who, frequency }]
   // ─────────────────────────────────────────────
   async function loadChores() {
     const list = document.getElementById('chore-list');
@@ -1845,7 +1839,6 @@
       list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
     }
   }
-
 
   // ─────────────────────────────────────────────
   // CHORES — PERSONAL (Tori / Nova own sheets)
@@ -1911,7 +1904,7 @@
     try {
       await apiFetch(script, { method: 'POST', body: fd });
     } catch (e) {
-      el.classList.toggle('done'); // revert
+      el.classList.toggle('done');
       err('togglePersonalChore failed, reverted:', e.message);
       return;
     }
@@ -2014,12 +2007,7 @@
     const btn    = getSubmitBtn('personal-chore-overlay');
     const name   = document.getElementById('personal-chore-input').value.trim();
     const person = document.getElementById('personal-chore-overlay').dataset.person;
-
-    if (!name) {
-      // FIX: was returning without clearing loading — button would stay disabled
-      return;
-    }
-
+    if (!name) return;
     setLoading(btn);
     const script = person === 'home' ? SCRIPTS.CHORES
                  : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
@@ -2076,7 +2064,6 @@
       </div>`;
     }).join('');
 
-    // Attach delete handlers via delegation
     listEl.querySelectorAll('.reminder-delete[data-reminder-text]').forEach(btn => {
       btn.addEventListener('click', () => deleteReminder(btn.dataset.reminderText, btn));
     });
@@ -2121,12 +2108,7 @@
     const btn  = getSubmitBtn('reminder-overlay');
     const text = document.getElementById('reminder-input').value.trim();
     const date = document.getElementById('reminder-date').value;
-
-    if (!text) {
-      // FIX: was returning without clearing loading
-      return;
-    }
-
+    if (!text) return;
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2221,12 +2203,7 @@
     const btn  = getSubmitBtn('tori-reminder-overlay');
     const text = document.getElementById('tori-reminder-input').value.trim();
     const date = document.getElementById('tori-reminder-date').value;
-
-    if (!text) {
-      // FIX: was returning without clearing loading
-      return;
-    }
-
+    if (!text) return;
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2307,7 +2284,6 @@
         });
       });
 
-      // Auto-clear if all items bought
       if (items.length > 0 && items.every(i => bought.includes(i))) {
         await clearBoughtGroceries();
       }
@@ -2357,12 +2333,7 @@
   async function submitGroceryItem() {
     const btn  = getSubmitBtn('grocery-overlay');
     const item = document.getElementById('grocery-input').value.trim();
-
-    if (!item) {
-      // FIX: was returning without clearing loading
-      return;
-    }
-
+    if (!item) return;
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2443,17 +2414,8 @@
     const btn  = getSubmitBtn('meal-overlay');
     const day  = document.getElementById('meal-day-select').value;
     const meal = document.getElementById('meal-input').value.trim();
-
-    if (!day) {
-      // FIX: was returning without clearing loading
-      setStatus('meal-status', 'Please select a day', true);
-      return;
-    }
-    if (!meal) {
-      setStatus('meal-status', 'Please enter a meal', true);
-      return;
-    }
-
+    if (!day) { setStatus('meal-status', 'Please select a day', true); return; }
+    if (!meal) { setStatus('meal-status', 'Please enter a meal', true); return; }
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2515,17 +2477,8 @@
     const day = document.getElementById('tori-schedule-day').value;
     const cls = document.getElementById('tori-schedule-class').value.trim();
     const time = document.getElementById('tori-schedule-time').value.trim();
-
-    if (!day) {
-      // FIX: was returning without clearing loading
-      setStatus('tori-schedule-status', 'Please select a day', true);
-      return;
-    }
-    if (!cls) {
-      setStatus('tori-schedule-status', 'Please enter a class name', true);
-      return;
-    }
-
+    if (!day) { setStatus('tori-schedule-status', 'Please select a day', true); return; }
+    if (!cls) { setStatus('tori-schedule-status', 'Please enter a class name', true); return; }
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2574,17 +2527,13 @@
     }
   }
 
-  // Separate function for Nova's read-only view of Tori's events
-  // FIX: was calling loadToriEvents() from onTabUnlocked('nova') which tried
-  //      to write to 'tori-events' (Tori tab) and 'tori-next-up', both absent
-  //      on the Nova tab, resulting in silent null-ref errors
   async function loadToriEventsForNova() {
     const el = document.getElementById('nova-tori-events');
     if (!el) return;
     try {
       const res    = await apiFetch(SCRIPTS.TORI + '?type=events');
       const events = await res.json();
-      renderEventList(events, 'nova-tori-events'); // no delete fn — read-only
+      renderEventList(events, 'nova-tori-events');
     } catch (e) {
       el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
     }
@@ -2609,17 +2558,8 @@
     const evtType  = document.getElementById('tori-event-type').value;
     const date     = document.getElementById('tori-event-date').value;
     const location = document.getElementById('tori-event-location').value.trim();
-
-    if (!name) {
-      // FIX: was returning without clearing loading
-      setStatus('tori-events-status', 'Please enter an event name', true);
-      return;
-    }
-    if (!date) {
-      setStatus('tori-events-status', 'Please select a date', true);
-      return;
-    }
-
+    if (!name) { setStatus('tori-events-status', 'Please enter an event name', true); return; }
+    if (!date) { setStatus('tori-events-status', 'Please select a date', true); return; }
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2686,17 +2626,8 @@
     const evtType  = document.getElementById('nova-event-type').value.trim();
     const date     = document.getElementById('nova-event-date').value;
     const location = document.getElementById('nova-event-location').value.trim();
-
-    if (!name) {
-      // FIX: was returning without clearing loading
-      setStatus('nova-events-status', 'Please enter an event name', true);
-      return;
-    }
-    if (!date) {
-      setStatus('nova-events-status', 'Please select a date', true);
-      return;
-    }
-
+    if (!name) { setStatus('nova-events-status', 'Please enter an event name', true); return; }
+    if (!date) { setStatus('nova-events-status', 'Please select a date', true); return; }
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2754,7 +2685,6 @@
     list.querySelectorAll('.hw-item[data-hw-id]').forEach(item => {
       item.addEventListener('click', e => {
         if (e.target.closest('.hw-delete')) return;
-        // FIX: was using DOM index — now using sheet row ID so order changes don't break toggles
         toggleHomework(Number(item.dataset.hwId), item);
       });
     });
@@ -2780,18 +2710,17 @@
   }
 
   async function toggleHomework(id, el) {
-    // Optimistic UI update
     el.classList.toggle('done');
     const isDone = el.classList.contains('done');
     const fd = new FormData();
     fd.append('action', 'toggle');
-    fd.append('idx',    id);   // FIX: use sheet row ID, not DOM index
+    fd.append('idx',    id);
     fd.append('done',   isDone.toString());
     try {
       await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
-      await loadHomework(); // reload to sync badge counts
+      await loadHomework();
     } catch (e) {
-      el.classList.toggle('done'); // revert on failure
+      el.classList.toggle('done');
       err('toggleHomework failed, reverted:', e.message);
     }
   }
@@ -2833,12 +2762,7 @@
     const btn     = getSubmitBtn('hw-overlay');
     const name    = document.getElementById('hw-input').value.trim();
     const subject = document.getElementById('hw-subject-input').value.trim();
-
-    if (!name) {
-      // FIX: was returning without clearing loading
-      return;
-    }
-
+    if (!name) return;
     setLoading(btn);
     try {
       const fd = new FormData();
@@ -2856,7 +2780,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // KEYBOARD SHORTCUTS (single handler)
+  // KEYBOARD SHORTCUTS
   // ─────────────────────────────────────────────
   const OVERLAY_SHORTCUTS = [
     { id: 'grocery-overlay',        enter: submitGroceryItem,    escape: closeGroceryForm       },
@@ -2872,7 +2796,6 @@
   ];
 
   document.addEventListener('keydown', e => {
-    // Check overlays first
     for (const { id, enter, escape } of OVERLAY_SHORTCUTS) {
       const el = document.getElementById(id);
       if (el && !el.classList.contains('hidden')) {
@@ -2881,7 +2804,6 @@
         return;
       }
     }
-    // PIN screens
     ['home', 'parentals', 'tori', 'nova'].forEach(tab => {
       const pinEl = document.getElementById(`pin-${tab}`);
       if (pinEl && !pinEl.classList.contains('hidden')) {
@@ -2892,7 +2814,7 @@
   });
 
   // ─────────────────────────────────────────────
-  // INIT — only runs after home PIN is cleared
+  // INIT
   // ─────────────────────────────────────────────
   if (localStorage.getItem('hh_auth_home') === 'true') {
     document.getElementById('pin-home').classList.add('hidden');

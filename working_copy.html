@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>What's The Plan Stan</title>
+<title>Family Hub</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -15,7 +15,7 @@
     --accent: #e8b86d;
     --accent2: #7eb8d4;
     --accent3: #a8d5a2;
-    --accent4: #c9a0e8;
+    --accent4: #f096b5;
     --accent5: #e88d8d;
     --text: #e8eaf0;
     --muted: #8891a8;
@@ -580,6 +580,24 @@
   .overlay-btn.cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
   .overlay-btn.submit { background: var(--accent); color: #0f1117; }
   .overlay-btn:hover { opacity: 0.85; }
+  .overlay-btn.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+    position: relative;
+  }
+  .overlay-btn.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .overlay-status { font-size: 0.78rem; color: var(--accent3); min-height: 1rem; text-align: center; }
 
@@ -724,6 +742,12 @@
     flex: 1;
   }
 
+  /* Tori + Nova personal reminder tiles: force single column */
+  #tori-reminder-list,
+  #nova-reminder-list {
+    grid-template-columns: 1fr;
+  }
+
   /* ── NEXT UP HERO ── */
   .next-up-hero {
     padding: 16px;
@@ -804,7 +828,7 @@
 
 <!-- ── HOME PIN ── -->
 <div class="pin-overlay" id="pin-home">
-  <div class="pin-title">🏡 What's The Plan Stan</div>
+  <div class="pin-title">🏡 Family Hub</div>
   <div class="pin-subtitle">Enter PIN to continue</div>
   <div class="pin-dots" id="pin-dots-home">
     <div class="pin-dot" id="home-d0"></div>
@@ -912,7 +936,7 @@
 
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
-  <div class="home-title" id="topbar-title">🏡 What's The Plan Stan</div>
+  <div class="home-title" id="topbar-title">🏡 What Is It Today?</div>
   <div class="clock-block">
     <div id="clock">--:--</div>
     <div id="date">Loading...</div>
@@ -938,6 +962,9 @@
           <div class="section-header-left">
             <span class="section-title">✅ Chores</span>
             <span class="section-badge" id="chore-count-badge"></span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openPersonalChoreForm('home')">+ Add</button>
           </div>
         </div>
         <div class="chore-list" id="chore-list">
@@ -1029,6 +1056,9 @@
           <div class="section-header-left">
             <span class="section-title" style="color:var(--accent2)">✅ Your Chores</span>
             <span class="section-badge" id="parent-chore-badge"></span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
           </div>
         </div>
         <div class="chore-list" id="parent-chore-list">
@@ -1286,6 +1316,25 @@
   </div>
 </div>
 
+<!-- SHARED CHORE OVERLAY -->
+<div id="shared-chore-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">✅ Add Chore</div>
+    <input type="text" id="shared-chore-input" class="overlay-input" placeholder="e.g. Vacuum living room" autocomplete="off" />
+    <input type="text" id="shared-chore-who" class="overlay-input" placeholder="Assigned to (e.g. Dad, Mom, Everyone)" autocomplete="off" />
+    <select id="shared-chore-freq" class="overlay-input">
+      <option value="weekly">Weekly</option>
+      <option value="daily">Daily</option>
+      <option value="monthly">Monthly</option>
+    </select>
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeSharedChoreForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitSharedChore()">Add</button>
+    </div>
+    <div class="overlay-status" id="shared-chore-status"></div>
+  </div>
+</div>
+
 <!-- TORI REMINDER OVERLAY -->
 <div id="tori-reminder-overlay" class="overlay hidden">
   <div class="overlay-box">
@@ -1378,33 +1427,119 @@
 </div>
 
 <script>
-  // ── CONSTANTS ──
-  const GROCERY_SCRIPT   = 'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec';
-  const REMINDERS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxwkMmwNzRlSupy2aoP-crQaqjeqJ0r0M0VHxseiLmSwzqMUYq8nJ-NF7i4phs2_Zwz/exec';
-  const CHORES_SCRIPT    = 'https://script.google.com/macros/s/AKfycbwB9HNfYxuI8o07uag1AtLTl1O9Ujyc_KaDndJq0Eb0Znjui2CqpLoUjBq0FvpIPuiv/exec';
-  const MEAL_SCRIPT      = 'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec';
-  const DAYS_ORDER       = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  const TORI_SCRIPT      = 'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec';
-  const NOVA_SCRIPT      = 'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec';
+  // ─────────────────────────────────────────────
+  // CONSTANTS & CONFIG
+  // ─────────────────────────────────────────────
+  const DEBUG = true; // set false in production to suppress console logs
 
-  // PIN per tab — change these to update PINs
-  const TAB_PINS = {
-    home:      '1234',
-    parentals: '1234',
-    tori:      '1234',
-    nova:      '1234'
+  const SCRIPTS = {
+    GROCERY:   'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec',
+    REMINDERS: 'https://script.google.com/macros/s/AKfycbxwkMmwNzRlSupy2aoP-crQaqjeqJ0r0M0VHxseiLmSwzqMUYq8nJ-NF7i4phs2_Zwz/exec',
+    CHORES:    'https://script.google.com/macros/s/AKfycbxWTpChkrWj-CYqBq4zt-ukj-FpSz2bttXklwHbBwNS0yv7p2hc5eNzQaNbHCF-vCXc/exec',
+    MEAL:      'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec',
+    TORI:      'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec',
+    NOVA:      'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec',
   };
+
+  const DAYS_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const MONTHS     = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // PIN per tab — update these to change PINs
+  const TAB_PINS = { home: '1470', parentals: '1470', tori: '1470', nova: '0258' };
 
   const TAB_TITLES = {
-    home:      '🏡 What\'s The Plan Stan',
+    home:      "🏡 What's The Plan Stan",
     parentals: '👨‍👩‍👧‍👦 Parentals',
     tori:      '🤼‍♀️ Tori',
-    nova:      '🚲 Nova'
+    nova:      '🚲 Nova',
   };
 
+  // ─────────────────────────────────────────────
+  // LOGGING HELPERS
+  // ─────────────────────────────────────────────
+  function log(...args)  { if (DEBUG) console.log('[Dashboard]', ...args); }
+  function warn(...args) { if (DEBUG) console.warn('[Dashboard]', ...args); }
+  function err(...args)  { console.error('[Dashboard]', ...args); }
 
+  // ─────────────────────────────────────────────
+  // FETCH WRAPPER
+  // ─────────────────────────────────────────────
+  async function apiFetch(url, options = {}) {
+    log(`fetch ${options.method || 'GET'} →`, url);
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+      }
+      return res;
+    } catch (e) {
+      err('apiFetch failed:', url, e.message);
+      throw e;
+    }
+  }
 
-  // ── PIN SYSTEM ── 
+  // ─────────────────────────────────────────────
+  // STARTUP CONNECTIVITY CHECK
+  // ─────────────────────────────────────────────
+  async function checkScriptHealth() {
+    if (!DEBUG) return;
+    log('--- Script health check ---');
+    for (const [name, url] of Object.entries(SCRIPTS)) {
+      try {
+        const res = await fetch(url + '?ping=1');
+        log(`${name}: ${res.ok ? '✅ OK' : '⚠️ HTTP ' + res.status}`);
+      } catch (e) {
+        err(`${name}: ❌ FAILED —`, e.message);
+      }
+    }
+    log('--- Health check complete ---');
+  }
+  checkScriptHealth();
+
+  // ─────────────────────────────────────────────
+  // SAFE HTML
+  // ─────────────────────────────────────────────
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ─────────────────────────────────────────────
+  // LOADING BUTTON HELPERS
+  // ─────────────────────────────────────────────
+  function setLoading(btn) {
+    if (!btn) return;
+    btn.dataset.originalText = btn.textContent;
+    btn.classList.add('loading');
+    btn.disabled = true;
+  }
+
+  function clearLoading(btn) {
+    if (!btn) return;
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+
+  function getSubmitBtn(overlayId) {
+    return document.querySelector(`#${overlayId} .overlay-btn.submit`);
+  }
+
+  function setStatus(elId, msg, isError = false) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isError ? 'var(--accent5)' : 'var(--accent3)';
+  }
+
+  // ─────────────────────────────────────────────
+  // PIN SYSTEM
+  // ─────────────────────────────────────────────
   const pinEntries = { home: '', parentals: '', tori: '', nova: '' };
 
   function pinPress(tab, digit) {
@@ -1417,12 +1552,14 @@
   function pinDelete(tab) {
     pinEntries[tab] = pinEntries[tab].slice(0, -1);
     updatePinDots(tab);
-    document.getElementById(`pin-error-${tab}`).textContent = '';
+    const errEl = document.getElementById(`pin-error-${tab}`);
+    if (errEl) errEl.textContent = '';
   }
 
   function updatePinDots(tab) {
     for (let i = 0; i < 4; i++) {
-      document.getElementById(`${tab}-d${i}`).classList.toggle('filled', i < pinEntries[tab].length);
+      const dot = document.getElementById(`${tab}-d${i}`);
+      if (dot) dot.classList.toggle('filled', i < pinEntries[tab].length);
     }
   }
 
@@ -1432,11 +1569,13 @@
       document.getElementById(`pin-${tab}`).classList.add('hidden');
       onTabUnlocked(tab);
     } else {
+      log(`Wrong PIN for tab: ${tab}`);
       const dots = document.getElementById(`pin-dots-${tab}`);
-      dots.classList.add('shake');
-      document.getElementById(`pin-error-${tab}`).textContent = 'Incorrect PIN';
+      if (dots) dots.classList.add('shake');
+      const errEl = document.getElementById(`pin-error-${tab}`);
+      if (errEl) errEl.textContent = 'Incorrect PIN';
       setTimeout(() => {
-        dots.classList.remove('shake');
+        if (dots) dots.classList.remove('shake');
         pinEntries[tab] = '';
         updatePinDots(tab);
       }, 450);
@@ -1445,162 +1584,223 @@
 
   function requirePin(tab) {
     if (localStorage.getItem(`hh_auth_${tab}`) !== 'true') {
-      document.getElementById(`pin-${tab}`).classList.remove('hidden');
+      const pinEl = document.getElementById(`pin-${tab}`);
+      if (pinEl) pinEl.classList.remove('hidden');
       return false;
     }
     return true;
   }
 
-  // ── TAB SWITCHING ──
+  // ─────────────────────────────────────────────
+  // TAB SWITCHING
+  // ─────────────────────────────────────────────
   let currentTab = 'home';
 
   function switchTab(tab) {
-    // Hide all panels and deactivate nav
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
-
-    // Show target panel and activate nav
     document.getElementById(`tab-${tab}`).classList.add('active');
-    document.querySelector(`.nav-tab[data-tab="${tab}"]`).classList.add('active');
-    document.getElementById('topbar-title').textContent = TAB_TITLES[tab];
+    const navBtn = document.querySelector(`.nav-tab[data-tab="${tab}"]`);
+    if (navBtn) navBtn.classList.add('active');
+    const titleEl = document.getElementById('topbar-title');
+    if (titleEl) titleEl.textContent = TAB_TITLES[tab];
     currentTab = tab;
-
-    // Check PIN
     if (!requirePin(tab)) return;
     onTabUnlocked(tab);
   }
 
   function onTabUnlocked(tab) {
+    log(`Tab unlocked: ${tab}`);
     if (tab === 'home') {
-      loadChores(); loadReminders(); loadGroceryList(); loadMealPlan();
+      loadChores();
+      loadReminders();
+      loadGroceryList();
+      loadMealPlan();
     } else if (tab === 'parentals') {
-      loadParentChores(); loadParentReminders();
+      loadParentChores();
+      loadParentReminders();
     } else if (tab === 'tori') {
-      loadToriChores(); loadToriReminders(); loadToriSchedule(); loadToriEvents();
+      loadToriChores();
+      loadToriReminders();
+      loadToriSchedule();
+      loadToriEvents();
     } else if (tab === 'nova') {
-      loadNovaChores(); loadNovaEvents(); loadToriEvents(); loadHomework();
+      loadNovaChores();
+      loadNovaEvents();
+      loadToriEventsForNova();
+      loadHomework();
     }
   }
 
-  // ── CLOCK ──
+  // ─────────────────────────────────────────────
+  // CLOCK
+  // ─────────────────────────────────────────────
   function updateClock() {
     const now = new Date();
     const rawH = now.getHours();
     const h = (rawH % 12 || 12).toString().padStart(2, '0');
     const m = now.getMinutes().toString().padStart(2, '0');
     const ampm = rawH >= 12 ? 'PM' : 'AM';
-    document.getElementById('clock').textContent = `${h}:${m} ${ampm}`;
+    const clockEl = document.getElementById('clock');
+    const dateEl  = document.getElementById('date');
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    document.getElementById('date').textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+    if (clockEl) clockEl.textContent = `${h}:${m} ${ampm}`;
+    if (dateEl)  dateEl.textContent  = `${days[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
   }
   updateClock();
   setInterval(updateClock, 1000);
 
-  // ── WEATHER ──
+  // ─────────────────────────────────────────────
+  // WEATHER
+  // ─────────────────────────────────────────────
+  const WEATHER_ICONS = {
+    0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',
+    51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',
+    71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',99:'⛈️'
+  };
+  const WEATHER_CONDITIONS = {
+    0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',
+    45:'Foggy',48:'Foggy',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',
+    61:'Light Rain',63:'Rain',65:'Heavy Rain',71:'Light Snow',73:'Snow',
+    75:'Heavy Snow',80:'Showers',81:'Heavy Showers',82:'Violent Showers',
+    95:'Thunderstorm',99:'Heavy Storm'
+  };
+
   async function loadWeather() {
+    const wb = document.getElementById('weather');
+    if (!wb) return;
     try {
       const lat = 47.5221, lon = -120.4699;
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=5`;
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       const data = await res.json();
-      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const icons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',99:'⛈️'};
-      const conditions = {0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',71:'Light Snow',73:'Snow',75:'Heavy Snow',80:'Showers',81:'Heavy Showers',82:'Violent Showers',95:'Thunderstorm',99:'Heavy Storm'};
-      const wb = document.getElementById('weather');
-      wb.innerHTML = '';
-      for (let i = 0; i < 5; i++) {
-        const d = new Date(data.daily.time[i] + 'T12:00:00');
+      const dayCodes = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      wb.innerHTML = data.daily.time.slice(0, 5).map((t, i) => {
+        const d    = new Date(t + 'T12:00:00');
         const code = data.daily.weathercode[i];
-        const max = Math.round(data.daily.temperature_2m_max[i]);
-        const min = Math.round(data.daily.temperature_2m_min[i]);
-        wb.innerHTML += `<div class="weather-day">
-          <div class="day-name">${i === 0 ? 'Today' : days[d.getDay()]}</div>
-          <div class="icon">${icons[code] || '🌡️'}</div>
+        const max  = Math.round(data.daily.temperature_2m_max[i]);
+        const min  = Math.round(data.daily.temperature_2m_min[i]);
+        return `<div class="weather-day">
+          <div class="day-name">${i === 0 ? 'Today' : dayCodes[d.getDay()]}</div>
+          <div class="icon">${WEATHER_ICONS[code] || '🌡️'}</div>
           <div class="temp">${max}° / ${min}°</div>
-          <div class="condition">${conditions[code] || 'Mixed'}</div>
+          <div class="condition">${WEATHER_CONDITIONS[code] || 'Mixed'}</div>
         </div>`;
-      }
+      }).join('');
     } catch (e) {
-      document.getElementById('weather').innerHTML = '<div style="color:var(--muted);font-size:0.8rem">Weather unavailable</div>';
+      wb.innerHTML = '<div style="color:var(--muted);font-size:0.8rem">Weather unavailable</div>';
     }
   }
   loadWeather();
   setInterval(loadWeather, 30 * 60 * 1000);
 
-  // ── COUNTDOWN HELPERS ──
+  // ─────────────────────────────────────────────
+  // DATE HELPERS
+  // ─────────────────────────────────────────────
   function getDayDiff(dateStr) {
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const target = new Date(dateStr + 'T00:00:00');
     return Math.round((target - today) / 86400000);
   }
 
   function countdownBadge(diff) {
-    if (diff < 0) return { text: `${Math.abs(diff)}d ago`, cls: 'past' };
-    if (diff === 0) return { text: 'TODAY', cls: 'today' };
-    if (diff <= 7) return { text: `${diff}d away`, cls: 'soon' };
-    return { text: `${diff} days`, cls: 'upcoming' };
+    if (diff < 0)  return { text: `${Math.abs(diff)}d ago`, cls: 'past' };
+    if (diff === 0) return { text: 'TODAY',           cls: 'today' };
+    if (diff <= 7)  return { text: `${diff}d away`,   cls: 'soon' };
+    return               { text: `${diff} days`,      cls: 'upcoming' };
   }
 
-  function renderEventList(events, containerId, deleteFn) {
+  function formatDateShort(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  }
+
+  function formatReminderDate(dateStr) {
+    if (!dateStr || !dateStr.trim()) return '';
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const parsed = new Date(dateStr + 'T00:00:00');
+    if (isNaN(parsed)) return '';
+    const diff = Math.round((parsed - today) / 86400000);
+    if (diff === 0)  return 'Today';
+    if (diff === 1)  return 'Tomorrow';
+    if (diff < 0)    return `${Math.abs(diff)}d ago`;
+    return `${MONTHS[parsed.getMonth()]} ${parsed.getDate()}`;
+  }
+
+  // ─────────────────────────────────────────────
+  // EVENT LIST RENDERERS
+  // ─────────────────────────────────────────────
+  function renderEventList(events, containerId, deleteFnName) {
     const el = document.getElementById(containerId);
-    const sorted = [...events].sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+    if (!el) return;
+    const sorted   = [...events].sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
     const upcoming = sorted.filter(e => getDayDiff(e.date) >= -30);
     if (upcoming.length === 0) {
       el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No upcoming events</div>';
       return;
     }
     el.innerHTML = upcoming.map(e => {
-      const diff = getDayDiff(e.date);
+      const diff  = getDayDiff(e.date);
       const badge = countdownBadge(diff);
-      const d = new Date(e.date + 'T00:00:00');
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const dateStr = `${months[d.getMonth()]} ${d.getDate()}`;
-      const deleteBtn = deleteFn ? `<button class="hw-delete" onclick="event.stopPropagation();${deleteFn}(${e.id})" title="Remove">×</button>` : '';
+      const deleteBtn = deleteFnName
+        ? `<button class="hw-delete" data-fn="${esc(deleteFnName)}" data-id="${esc(String(e.id))}" title="Remove">×</button>`
+        : '';
       return `<div class="countdown-item">
         <div class="countdown-info">
-          <div class="countdown-name">${e.name}</div>
-          <div class="countdown-sub">${e.type}${e.location ? ' · ' + e.location : ''} · ${dateStr}</div>
+          <div class="countdown-name">${esc(e.name)}</div>
+          <div class="countdown-sub">${esc(e.type)}${e.location ? ' · ' + esc(e.location) : ''} · ${formatDateShort(e.date)}</div>
         </div>
         <div class="countdown-badge ${badge.cls}">${badge.text}</div>
         ${deleteBtn}
       </div>`;
     }).join('');
+
+    el.querySelectorAll('.hw-delete[data-fn]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const fn = window[btn.dataset.fn];
+        if (typeof fn === 'function') fn(Number(btn.dataset.id));
+        else err('Unknown delete function:', btn.dataset.fn);
+      });
+    });
   }
 
   function renderNextUp(events, containerId) {
     const el = document.getElementById(containerId);
+    if (!el) return;
     const upcoming = [...events]
       .filter(e => getDayDiff(e.date) >= 0)
       .sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+
     if (upcoming.length === 0) {
       el.innerHTML = '<div class="next-up-label">No upcoming events</div>';
       return;
     }
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const next = upcoming[0];
-    const diff = getDayDiff(next.date);
-    const d = new Date(next.date + 'T00:00:00');
+
+    const next    = upcoming[0];
+    const diff    = getDayDiff(next.date);
     const isToday = diff === 0;
+
     let html = `
-      <div class="next-up-label">${next.type}</div>
-      <div class="next-up-name">${next.name}</div>
-      <div class="next-up-sub">${months[d.getMonth()]} ${d.getDate()}${next.location ? ' · ' + next.location : ''}</div>
+      <div class="next-up-label">${esc(next.type)}</div>
+      <div class="next-up-name">${esc(next.name)}</div>
+      <div class="next-up-sub">${formatDateShort(next.date)}${next.location ? ' · ' + esc(next.location) : ''}</div>
       <div class="next-up-countdown ${isToday ? 'today-color' : ''}">${isToday ? 'TODAY' : diff}</div>
       <div class="next-up-unit">${isToday ? '' : 'days away'}</div>
     `;
+
     if (upcoming.length > 1) {
       const second = upcoming[1];
-      const diff2 = getDayDiff(second.date);
-      const d2 = new Date(second.date + 'T00:00:00');
+      const diff2  = getDayDiff(second.date);
       const badge2 = countdownBadge(diff2);
       html += `
         <div class="next-up-divider"></div>
         <div class="next-up-second">
           <div class="next-up-second-info">
-            <span class="next-up-second-type">${second.type}</span>
-            <span class="next-up-second-name">${second.name}</span>
-            <span class="next-up-second-date">${months[d2.getMonth()]} ${d2.getDate()}${second.location ? ' · ' + second.location : ''}</span>
+            <span class="next-up-second-type">${esc(second.type)}</span>
+            <span class="next-up-second-name">${esc(second.name)}</span>
+            <span class="next-up-second-date">${formatDateShort(second.date)}${second.location ? ' · ' + esc(second.location) : ''}</span>
           </div>
           <div class="countdown-badge ${badge2.cls}">${badge2.text}</div>
         </div>
@@ -1609,76 +1809,188 @@
     el.innerHTML = html;
   }
 
-  // ── CHORES (shared loader with optional assignee filter) ──
-  let choreCache = null;
-
-  async function fetchChores() {
-    if (choreCache) return choreCache;
-    const res = await fetch(CHORES_SCRIPT);
-    choreCache = await res.json();
-    setTimeout(() => choreCache = null, 60000); // invalidate after 1 min
-    return choreCache;
+  // ─────────────────────────────────────────────
+  // CHORES — SHARED (Home / Parentals)
+  // ─────────────────────────────────────────────
+  async function loadChores() {
+    const list = document.getElementById('chore-list');
+    if (!list) return;
+    try {
+      const res    = await apiFetch(SCRIPTS.CHORES + '?type=chores');
+      const chores = await res.json();
+      renderPersonalChoreList(chores, 'chore-list', 'chore-count-badge', 'home');
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
+    }
   }
 
-  function renderChoreList(entries, listEl, badgeEl) {
-    const total = entries.length;
-    const done = entries.filter(([,v]) => v.done).length;
-    if (badgeEl) badgeEl.textContent = total > 0 ? `${done} / ${total}` : '';
-    listEl.innerHTML = entries.map(([name, val]) => {
-      const isDone = val.done;
-      const who = val.who || '';
-      return `<div class="chore-item ${isDone ? 'done' : ''}" onclick="toggleChore(this, '${name.replace(/'/g, "\\'")}', '${listEl.id}')">
-        <div class="chore-check">✓</div>
-        <span class="chore-name">${name}</span>
-        ${who ? `<span class="chore-who">${who}</span>` : ''}
-      </div>`;
-    }).join('');
+  async function loadParentChores() {
+    const list = document.getElementById('parent-chore-list');
+    if (!list) return;
+    try {
+      const res    = await apiFetch(SCRIPTS.CHORES + '?type=chores');
+      const chores = await res.json();
+      const filtered = chores.filter(c => {
+        const who = (c.who || '').toLowerCase();
+        return who === 'dad' || who === 'everyone' || who === 'anyone' || who === '';
+      });
+      renderPersonalChoreList(filtered, 'parent-chore-list', 'parent-chore-badge', 'home');
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
+    }
   }
 
-  // ── PERSONAL CHORE LIST (Tori/Nova own sheets) ──
+  // ─────────────────────────────────────────────
+  // CHORES — PERSONAL (Tori / Nova own sheets)
+  // ─────────────────────────────────────────────
   function renderPersonalChoreList(chores, listId, badgeId, person) {
-    const list = document.getElementById(listId);
+    const list  = document.getElementById(listId);
     const badge = document.getElementById(badgeId);
+    if (!list) return;
     const total = chores.length;
-    const done = chores.filter(c => c.done).length;
+    const done  = chores.filter(c => c.done).length;
     if (badge) badge.textContent = total > 0 ? `${done} / ${total}` : '';
+
     if (total === 0) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px;grid-column:1/-1">No chores! 🎉</div>';
       return;
     }
-    const script = person === 'tori' ? 'TORI_SCRIPT' : 'NOVA_SCRIPT';
-    list.innerHTML = chores.map(c => `
-      <div class="chore-item ${c.done ? 'done' : ''}" onclick="togglePersonalChore(${c.id}, this, '${person}', '${listId}', '${badgeId}')">
+
+    list.innerHTML = chores.map(c => {
+      const whoTag = (c.who && (person === 'home'))
+        ? `<span class="chore-who">${esc(c.who)}</span>` : '';
+      return `<div class="chore-item ${c.done ? 'done' : ''}"
+           data-chore-idx="${esc(String(c.id))}"
+           data-person="${esc(person)}"
+           data-list-id="${esc(listId)}"
+           data-badge-id="${esc(badgeId)}">
         <div class="chore-check">✓</div>
-        <span class="chore-name">${c.name}</span>
-        <button class="hw-delete" onclick="event.stopPropagation();deletePersonalChore(${c.id},'${person}','${listId}','${badgeId}')" title="Remove">×</button>
-      </div>`).join('');
+        <span class="chore-name">${esc(c.name)}</span>
+        ${whoTag}
+        <button class="hw-delete personal-chore-delete"
+                data-chore-idx="${esc(String(c.id))}"
+                data-person="${esc(person)}"
+                data-list-id="${esc(listId)}"
+                data-badge-id="${esc(badgeId)}"
+                title="Remove">×</button>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.chore-item').forEach(item => {
+      item.addEventListener('click', e => {
+        if (e.target.closest('.hw-delete')) return;
+        togglePersonalChore(Number(item.dataset.choreIdx), item, item.dataset.person, item.dataset.listId, item.dataset.badgeId);
+      });
+    });
+
+    list.querySelectorAll('.personal-chore-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        deletePersonalChore(Number(btn.dataset.choreIdx), btn.dataset.person, btn.dataset.listId, btn.dataset.badgeId);
+      });
+    });
   }
 
   async function togglePersonalChore(idx, el, person, listId, badgeId) {
     el.classList.toggle('done');
     const isDone = el.classList.contains('done');
-    const script = person === 'tori' ? TORI_SCRIPT : NOVA_SCRIPT;
+    const script = person === 'home' ? SCRIPTS.CHORES
+                 : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+    const fd = new FormData();
+    fd.append('action', 'toggle');
+    if (person !== 'home') fd.append('type', 'chores');
+    fd.append('idx',    idx);
+    fd.append('done',   isDone.toString());
     try {
-      const fd = new FormData();
-      fd.append('action', 'toggle'); fd.append('type', 'chores');
-      fd.append('idx', idx); fd.append('done', isDone.toString());
-      await fetch(script, { method: 'POST', body: fd });
-    } catch(e) {}
-    const items = document.querySelectorAll(`#${listId} .chore-item`);
+      await apiFetch(script, { method: 'POST', body: fd });
+    } catch (e) {
+      el.classList.toggle('done');
+      err('togglePersonalChore failed, reverted:', e.message);
+      return;
+    }
+    const items     = document.querySelectorAll(`#${listId} .chore-item`);
     const doneCount = document.querySelectorAll(`#${listId} .chore-item.done`).length;
-    const badge = document.getElementById(badgeId);
+    const badge     = document.getElementById(badgeId);
     if (badge) badge.textContent = `${doneCount} / ${items.length}`;
   }
 
   async function deletePersonalChore(idx, person, listId, badgeId) {
-    const script = person === 'tori' ? TORI_SCRIPT : NOVA_SCRIPT;
+    const script = person === 'home' ? SCRIPTS.CHORES
+                 : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
     try {
       const fd = new FormData();
-      fd.append('action', 'delete'); fd.append('type', 'chores'); fd.append('idx', idx);
-      await fetch(script, { method: 'POST', body: fd });
-      person === 'tori' ? await loadToriChores() : await loadNovaChores();
-    } catch(e) {}
+      fd.append('action', 'delete');
+      if (person !== 'home') fd.append('type', 'chores');
+      fd.append('idx',    idx);
+      await apiFetch(script, { method: 'POST', body: fd });
+      if (person === 'home') { await loadChores(); loadParentChores(); }
+      else if (person === 'tori') await loadToriChores();
+      else await loadNovaChores();
+    } catch (e) {
+      err('deletePersonalChore failed:', e.message);
+    }
+  }
+
+  async function loadToriChores() {
+    const list = document.getElementById('tori-chore-list');
+    if (!list) return;
+    try {
+      const res    = await apiFetch(SCRIPTS.TORI + '?type=chores');
+      const chores = await res.json();
+      renderPersonalChoreList(chores, 'tori-chore-list', 'tori-chore-badge', 'tori');
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
+
+  async function loadNovaChores() {
+    const list = document.getElementById('nova-chore-list');
+    if (!list) return;
+    try {
+      const res    = await apiFetch(SCRIPTS.NOVA + '?type=chores');
+      const chores = await res.json();
+      renderPersonalChoreList(chores, 'nova-chore-list', 'nova-chore-badge', 'nova');
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
+
+  function openSharedChoreForm() {
+    document.getElementById('shared-chore-overlay').classList.remove('hidden');
+    document.getElementById('shared-chore-input').value = '';
+    document.getElementById('shared-chore-who').value   = '';
+    document.getElementById('shared-chore-freq').value  = 'weekly';
+    setStatus('shared-chore-status', '');
+    document.getElementById('shared-chore-input').focus();
+  }
+  function closeSharedChoreForm() {
+    document.getElementById('shared-chore-overlay').classList.add('hidden');
+  }
+  async function submitSharedChore() {
+    const btn  = getSubmitBtn('shared-chore-overlay');
+    const name = document.getElementById('shared-chore-input').value.trim();
+    const who  = document.getElementById('shared-chore-who').value.trim();
+    const freq = document.getElementById('shared-chore-freq').value;
+    if (!name) {
+      setStatus('shared-chore-status', 'Please enter a chore name', true);
+      return;
+    }
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action',    'add');
+      fd.append('choreId',   name);
+      fd.append('who',       who);
+      fd.append('frequency', freq);
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeSharedChoreForm();
+      await loadChores();
+      loadParentChores();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('shared-chore-status', 'Failed to save — check connection', true);
+    }
   }
 
   function openPersonalChoreForm(person) {
@@ -1687,109 +1999,47 @@
     document.getElementById('personal-chore-input').value = '';
     document.getElementById('personal-chore-input').focus();
   }
-  function closePersonalChoreForm() { document.getElementById('personal-chore-overlay').classList.add('hidden'); }
+  function closePersonalChoreForm() {
+    document.getElementById('personal-chore-overlay').classList.add('hidden');
+  }
+
   async function submitPersonalChore() {
-    const name = document.getElementById('personal-chore-input').value.trim();
+    const btn    = getSubmitBtn('personal-chore-overlay');
+    const name   = document.getElementById('personal-chore-input').value.trim();
     const person = document.getElementById('personal-chore-overlay').dataset.person;
     if (!name) return;
-    const script = person === 'tori' ? TORI_SCRIPT : NOVA_SCRIPT;
+    setLoading(btn);
+    const script = person === 'home' ? SCRIPTS.CHORES
+                 : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
     try {
       const fd = new FormData();
-      fd.append('action', 'add'); fd.append('type', 'chores'); fd.append('name', name);
-      await fetch(script, { method: 'POST', body: fd });
-    } catch(e) {}
-    closePersonalChoreForm();
-    person === 'tori' ? await loadToriChores() : await loadNovaChores();
-  }
-
-  async function loadChores() {
-    try {
-      const data = await fetchChores();
-      const list = document.getElementById('chore-list');
-      const badge = document.getElementById('chore-count-badge');
-      const resetDay = data.resetDay || 'Sunday';
-      const now = new Date();
-      const todayDate = now.toDateString();
-      const todayDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
-      for (const [choreId, val] of Object.entries(data.chores)) {
-        const freq = val.frequency || 'weekly';
-        const key = `chore_reset_${choreId}`;
-        const last = localStorage.getItem(key);
-        let shouldReset = false;
-        if (freq === 'daily' && last !== todayDate) { shouldReset = true; localStorage.setItem(key, todayDate); }
-        else if (freq === 'weekly' && todayDay === resetDay && last !== todayDate) { shouldReset = true; localStorage.setItem(key, todayDate); }
-        else if (freq === 'monthly' && last !== thisMonth) { shouldReset = true; localStorage.setItem(key, thisMonth); }
-        if (shouldReset && val.done) {
-          const fd = new FormData(); fd.append('choreId', choreId); fd.append('done', 'false');
-          await fetch(CHORES_SCRIPT, { method: 'POST', body: fd });
-          data.chores[choreId] = { ...val, done: false };
-        }
-      }
-      renderChoreList(Object.entries(data.chores), list, badge);
+      fd.append('action', 'add');
+      if (person !== 'home') fd.append('type', 'chores');
+      fd.append('choreId', name);
+      fd.append('name',    name);
+      await apiFetch(script, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closePersonalChoreForm();
+      if (person === 'home') { await loadChores(); loadParentChores(); }
+      else if (person === 'tori') await loadToriChores();
+      else await loadNovaChores();
     } catch (e) {
-      document.getElementById('chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+      clearLoading(btn);
+      err('submitPersonalChore failed:', e.message);
     }
   }
 
-  async function loadFilteredChores(assigneeKeyword, listId, badgeId) {
-    try {
-      const data = await fetchChores();
-      const entries = Object.entries(data.chores).filter(([, v]) => {
-        if (!assigneeKeyword) return true;
-        const who = (v.who || '').toLowerCase();
-        return who === assigneeKeyword.toLowerCase() || who === 'everyone' || who === 'anyone';
-      });
-      renderChoreList(entries, document.getElementById(listId), document.getElementById(badgeId));
-    } catch (e) {
-      document.getElementById(listId).innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
-    }
-  }
-
-  function loadParentChores() { loadFilteredChores('Dad', 'parent-chore-list', 'parent-chore-badge'); }
-  async function loadToriChores() {
-    try {
-      const res = await fetch(TORI_SCRIPT + '?type=chores');
-      const chores = await res.json();
-      renderPersonalChoreList(chores, 'tori-chore-list', 'tori-chore-badge', 'tori');
-    } catch(e) {
-      document.getElementById('tori-chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
-    }
-  }
-  async function loadNovaChores() {
-    try {
-      const res = await fetch(NOVA_SCRIPT + '?type=chores');
-      const chores = await res.json();
-      renderPersonalChoreList(chores, 'nova-chore-list', 'nova-chore-badge', 'nova');
-    } catch(e) {
-      document.getElementById('nova-chore-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
-    }
-  }
-
-  async function toggleChore(el, choreId, listId) {
-    el.classList.toggle('done');
-    choreCache = null; // invalidate cache on toggle
-    const isDone = el.classList.contains('done');
-    const fd = new FormData();
-    fd.append('choreId', choreId);
-    fd.append('done', isDone.toString());
-    try { await fetch(CHORES_SCRIPT, { method: 'POST', body: fd }); } catch (e) {}
-    // Update badge for whichever list was toggled
-    const items = document.querySelectorAll(`#${listId} .chore-item`);
-    const total = items.length;
-    const doneCount = document.querySelectorAll(`#${listId} .chore-item.done`).length;
-    const badgeMap = { 'chore-list': 'chore-count-badge', 'parent-chore-list': 'parent-chore-badge', 'tori-chore-list': 'tori-chore-badge', 'nova-chore-list': 'nova-chore-badge' };
-    const badge = document.getElementById(badgeMap[listId]);
-    if (badge) badge.textContent = `${doneCount} / ${total}`;
-  }
-
-  // ── REMINDERS ──
-  function renderReminderList(items, listEl) {
+  // ─────────────────────────────────────────────
+  // REMINDERS — SHARED
+  // ─────────────────────────────────────────────
+  function renderReminderList(items, listEl, dotColor) {
+    if (!listEl) return;
+    const color = dotColor || 'var(--accent)';
     if (!items || items.length === 0) {
       listEl.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">No reminders</div>';
       return;
     }
-    const today = new Date(); today.setHours(0,0,0,0);
+
     const normalized = items.map(item =>
       typeof item === 'string' ? { text: item, date: '' } : { text: item.text || '', date: item.date || '' }
     );
@@ -1797,163 +2047,83 @@
       const dA = a.date ? new Date(a.date) : null;
       const dB = b.date ? new Date(b.date) : null;
       if (dA && dB) return dA - dB;
-      if (dA) return -1; if (dB) return 1; return 0;
+      if (dA) return -1;
+      if (dB) return 1;
+      return 0;
     });
+
     listEl.innerHTML = sorted.map(item => {
-      const text = item.text;
-      let dateLabel = '';
-      if (item.date && item.date.trim()) {
-        const parsed = new Date(item.date);
-        if (!isNaN(parsed)) {
-          const y = parsed.getFullYear(), mo = String(parsed.getMonth()+1).padStart(2,'0'), dy = String(parsed.getDate()).padStart(2,'0');
-          const clean = `${y}-${mo}-${dy}`;
-          const diff = Math.round((new Date(clean + 'T00:00:00') - today) / 86400000);
-          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-          if (diff === 0) dateLabel = 'Today';
-          else if (diff === 1) dateLabel = 'Tomorrow';
-          else if (diff < 0) dateLabel = `${Math.abs(diff)}d ago`;
-          else dateLabel = `${months[parsed.getMonth()]} ${parsed.getDate()}`;
-        }
-      }
-      const safe = text.replace(/'/g, "\\'");
+      const label = formatReminderDate(item.date);
       return `<div class="reminder-item">
-        <div class="reminder-dot"></div>
+        <div class="reminder-dot" style="background:${color}"></div>
         <div class="reminder-body">
-          <span class="reminder-text">${text}</span>
-          ${dateLabel ? `<span class="reminder-date-tag">📅 ${dateLabel}</span>` : ''}
+          <span class="reminder-text">${esc(item.text)}</span>
+          ${label ? `<span class="reminder-date-tag">📅 ${label}</span>` : ''}
         </div>
-        <button class="reminder-delete" onclick="deleteReminder('${safe}', this)" title="Remove">×</button>
+        <button class="reminder-delete" data-reminder-text="${esc(item.text)}" title="Remove">×</button>
       </div>`;
     }).join('');
+
+    listEl.querySelectorAll('.reminder-delete[data-reminder-text]').forEach(btn => {
+      btn.addEventListener('click', () => deleteReminder(btn.dataset.reminderText, btn));
+    });
   }
 
   async function loadReminders() {
+    const list = document.getElementById('reminder-list');
+    if (!list) return;
     try {
-      const res = await fetch(REMINDERS_SCRIPT);
+      const res   = await apiFetch(SCRIPTS.REMINDERS);
       const items = await res.json();
-      renderReminderList(items, document.getElementById('reminder-list'));
+      renderReminderList(items, list, 'var(--accent)');
     } catch (e) {
-      document.getElementById('reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">Unavailable</div>';
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">Unavailable — check connection</div>';
     }
   }
 
   async function loadParentReminders() {
+    const list = document.getElementById('parent-reminder-list');
+    if (!list) return;
     try {
-      const res = await fetch(REMINDERS_SCRIPT);
+      const res   = await apiFetch(SCRIPTS.REMINDERS);
       const items = await res.json();
-      renderReminderList(items, document.getElementById('parent-reminder-list'));
+      renderReminderList(items, list, 'var(--accent2)');
     } catch (e) {
-      document.getElementById('parent-reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
     }
-  }
-
-  async function loadToriReminders() {
-    try {
-      const res = await fetch(TORI_SCRIPT + '?type=reminders');
-      const items = await res.json();
-      renderPersonalReminderList(items, 'tori-reminder-list');
-    } catch(e) {
-      document.getElementById('tori-reminder-list').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
-    }
-  }
-
-  function renderPersonalReminderList(items, listId) {
-    const list = document.getElementById(listId);
-    if (!items || items.length === 0) {
-      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">No reminders</div>';
-      return;
-    }
-    const today = new Date(); today.setHours(0,0,0,0);
-    const sorted = [...items].sort((a, b) => {
-      const dA = a.date ? new Date(a.date) : null;
-      const dB = b.date ? new Date(b.date) : null;
-      if (dA && dB) return dA - dB;
-      if (dA) return -1; if (dB) return 1; return 0;
-    });
-    list.innerHTML = sorted.map(item => {
-      let dateLabel = '';
-      if (item.date && item.date.trim()) {
-        const parsed = new Date(item.date);
-        if (!isNaN(parsed)) {
-          const y = parsed.getFullYear(), mo = String(parsed.getMonth()+1).padStart(2,'0'), dy = String(parsed.getDate()).padStart(2,'0');
-          const diff = Math.round((new Date(`${y}-${mo}-${dy}T00:00:00`) - today) / 86400000);
-          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-          if (diff === 0) dateLabel = 'Today';
-          else if (diff === 1) dateLabel = 'Tomorrow';
-          else if (diff < 0) dateLabel = `${Math.abs(diff)}d ago`;
-          else dateLabel = `${months[parsed.getMonth()]} ${parsed.getDate()}`;
-        }
-      }
-      return `<div class="reminder-item">
-        <div class="reminder-dot" style="background:var(--accent4)"></div>
-        <div class="reminder-body">
-          <span class="reminder-text">${item.text}</span>
-          ${dateLabel ? `<span class="reminder-date-tag">📅 ${dateLabel}</span>` : ''}
-        </div>
-        <button class="reminder-delete" onclick="deleteToriReminder(${item.id}, this)" title="Remove">×</button>
-      </div>`;
-    }).join('');
-  }
-
-  function openToriReminderForm() {
-    document.getElementById('tori-reminder-overlay').classList.remove('hidden');
-    document.getElementById('tori-reminder-input').value = '';
-    document.getElementById('tori-reminder-date').value = '';
-    document.getElementById('tori-reminder-input').focus();
-  }
-  function closeToriReminderForm() { document.getElementById('tori-reminder-overlay').classList.add('hidden'); }
-
-  async function submitToriReminder() {
-    const text = document.getElementById('tori-reminder-input').value.trim();
-    const date = document.getElementById('tori-reminder-date').value;
-    if (!text) return;
-    try {
-      const fd = new FormData();
-      fd.append('action', 'add'); fd.append('type', 'reminders');
-      fd.append('text', text);
-      if (date) fd.append('date', date);
-      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
-    } catch(e) {}
-    closeToriReminderForm();
-    loadToriReminders();
-  }
-
-  async function deleteToriReminder(idx, btn) {
-    btn.disabled = true;
-    try {
-      const fd = new FormData();
-      fd.append('action', 'delete'); fd.append('type', 'reminders'); fd.append('idx', idx);
-      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
-      await loadToriReminders();
-    } catch(e) { btn.disabled = false; }
   }
 
   function openReminderForm() {
     document.getElementById('reminder-overlay').classList.remove('hidden');
-    document.getElementById('reminder-input').focus();
-    document.getElementById('reminder-status').textContent = '';
     document.getElementById('reminder-input').value = '';
-    document.getElementById('reminder-date').value = '';
+    document.getElementById('reminder-date').value  = '';
+    setStatus('reminder-status', '');
+    document.getElementById('reminder-input').focus();
   }
-
   function closeReminderForm() {
     document.getElementById('reminder-overlay').classList.add('hidden');
   }
 
   async function submitReminder() {
-    const input = document.getElementById('reminder-input');
-    const dateInput = document.getElementById('reminder-date');
-    const text = input.value.trim();
+    const btn  = getSubmitBtn('reminder-overlay');
+    const text = document.getElementById('reminder-input').value.trim();
+    const date = document.getElementById('reminder-date').value;
     if (!text) return;
+    setLoading(btn);
     try {
       const fd = new FormData();
       fd.append('action', 'add');
-      fd.append('text', text);
-      if (dateInput.value) fd.append('date', dateInput.value);
-      await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
-    } catch (e) {}
-    closeReminderForm();
-    loadReminders(); loadParentReminders();
+      fd.append('text',   text);
+      if (date) fd.append('date', date);
+      await apiFetch(SCRIPTS.REMINDERS, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeReminderForm();
+      loadReminders();
+      loadParentReminders();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('reminder-status', 'Failed to save — check connection', true);
+    }
   }
 
   async function deleteReminder(text, btn) {
@@ -1961,49 +2131,172 @@
     try {
       const fd = new FormData();
       fd.append('action', 'delete');
-      fd.append('text', text);
-      await fetch(REMINDERS_SCRIPT, { method: 'POST', body: fd });
+      fd.append('text',   text);
+      await apiFetch(SCRIPTS.REMINDERS, { method: 'POST', body: fd });
       await loadReminders();
       loadParentReminders();
-    } catch (e) { btn.disabled = false; }
+    } catch (e) {
+      btn.disabled = false;
+      err('deleteReminder failed:', e.message);
+    }
   }
 
-  loadReminders();
-  setInterval(loadReminders, 5 * 60 * 1000);
+  // ─────────────────────────────────────────────
+  // REMINDERS — TORI (personal sheet)
+  // ─────────────────────────────────────────────
+  async function loadToriReminders() {
+    const list = document.getElementById('tori-reminder-list');
+    if (!list) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.TORI + '?type=reminders');
+      const items = await res.json();
+      renderPersonalReminderList(items, 'tori-reminder-list', 'var(--accent4)');
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
 
-  // ── GROCERY ──
-  function getGroceryBought() { try { return JSON.parse(localStorage.getItem('grocery_bought') || '[]'); } catch { return []; } }
-  function setGroceryBought(arr) { localStorage.setItem('grocery_bought', JSON.stringify(arr)); }
+  function renderPersonalReminderList(items, listId, dotColor) {
+    const list  = document.getElementById(listId);
+    if (!list) return;
+    const color = dotColor || 'var(--accent)';
+    if (!items || items.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px;grid-column:1/-1">No reminders</div>';
+      return;
+    }
+    const sorted = [...items].sort((a, b) => {
+      const dA = a.date ? new Date(a.date) : null;
+      const dB = b.date ? new Date(b.date) : null;
+      if (dA && dB) return dA - dB;
+      if (dA) return -1;
+      if (dB) return 1;
+      return 0;
+    });
+    list.innerHTML = sorted.map(item => {
+      const label = formatReminderDate(item.date);
+      return `<div class="reminder-item">
+        <div class="reminder-dot" style="background:${color}"></div>
+        <div class="reminder-body">
+          <span class="reminder-text">${esc(item.text)}</span>
+          ${label ? `<span class="reminder-date-tag">📅 ${label}</span>` : ''}
+        </div>
+        <button class="reminder-delete" data-reminder-idx="${esc(String(item.id))}" title="Remove">×</button>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.reminder-delete[data-reminder-idx]').forEach(btn => {
+      btn.addEventListener('click', () => deleteToriReminder(Number(btn.dataset.reminderIdx), btn));
+    });
+  }
+
+  function openToriReminderForm() {
+    document.getElementById('tori-reminder-overlay').classList.remove('hidden');
+    document.getElementById('tori-reminder-input').value = '';
+    document.getElementById('tori-reminder-date').value  = '';
+    document.getElementById('tori-reminder-input').focus();
+  }
+  function closeToriReminderForm() {
+    document.getElementById('tori-reminder-overlay').classList.add('hidden');
+  }
+
+  async function submitToriReminder() {
+    const btn  = getSubmitBtn('tori-reminder-overlay');
+    const text = document.getElementById('tori-reminder-input').value.trim();
+    const date = document.getElementById('tori-reminder-date').value;
+    if (!text) return;
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('type',   'reminders');
+      fd.append('text',   text);
+      if (date) fd.append('date', date);
+      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeToriReminderForm();
+      loadToriReminders();
+    } catch (e) {
+      clearLoading(btn);
+      err('submitToriReminder failed:', e.message);
+    }
+  }
+
+  async function deleteToriReminder(idx, btn) {
+    btn.disabled = true;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('type',   'reminders');
+      fd.append('idx',    idx);
+      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
+      await loadToriReminders();
+    } catch (e) {
+      btn.disabled = false;
+      err('deleteToriReminder failed:', e.message);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // GROCERY
+  // ─────────────────────────────────────────────
+  function getGroceryBought() {
+    try { return JSON.parse(localStorage.getItem('grocery_bought') || '[]'); }
+    catch { return []; }
+  }
+  function setGroceryBought(arr) {
+    localStorage.setItem('grocery_bought', JSON.stringify(arr));
+  }
 
   async function loadGroceryList() {
+    const grid = document.getElementById('grocery-list');
+    if (!grid) return;
     try {
-      const res = await fetch(GROCERY_SCRIPT);
+      const res   = await apiFetch(SCRIPTS.GROCERY);
       const items = await res.json();
-      const grid = document.getElementById('grocery-list');
       const bought = getGroceryBought();
+
       if (!items || items.length === 0) {
         grid.innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">No items yet</div>';
         return;
       }
-      const sorted = [...items].sort((a, b) => bought.includes(a) ? 1 : bought.includes(b) ? -1 : 0);
+
+      const sorted = [...items].sort((a, b) =>
+        bought.includes(a) ? 1 : bought.includes(b) ? -1 : 0
+      );
       grid.innerHTML = sorted.map(item => {
         const isBought = bought.includes(item);
-        const safe = item.replace(/'/g, "\\'");
-        return `<div class="grocery-item${isBought ? ' bought' : ''}" onclick="toggleGroceryBought('${safe}', this)">
-          <span class="grocery-text">${item}</span>
-          <button class="grocery-delete" onclick="event.stopPropagation(); deleteGroceryItem('${safe}', this)" title="Remove">×</button>
+        return `<div class="grocery-item${isBought ? ' bought' : ''}" data-grocery-item="${esc(item)}">
+          <span class="grocery-text">${esc(item)}</span>
+          <button class="grocery-delete" data-grocery-item="${esc(item)}" title="Remove">×</button>
         </div>`;
       }).join('');
-      if (items.length > 0 && items.every(i => bought.includes(i))) await clearBoughtGroceries();
+
+      grid.querySelectorAll('.grocery-item[data-grocery-item]').forEach(row => {
+        row.addEventListener('click', e => {
+          if (e.target.closest('.grocery-delete')) return;
+          toggleGroceryBought(row.dataset.groceryItem);
+        });
+      });
+      grid.querySelectorAll('.grocery-delete').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          deleteGroceryItem(btn.dataset.groceryItem, btn);
+        });
+      });
+
+      if (items.length > 0 && items.every(i => bought.includes(i))) {
+        await clearBoughtGroceries();
+      }
     } catch (e) {
-      document.getElementById('grocery-list').innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">Unavailable</div>';
+      grid.innerHTML = '<div class="grocery-item" style="grid-column:1/-1;color:var(--muted)">Unavailable — check connection</div>';
     }
   }
 
   function toggleGroceryBought(item) {
     const bought = getGroceryBought();
-    const idx = bought.indexOf(item);
-    if (idx === -1) bought.push(item); else bought.splice(idx, 1);
+    const idx    = bought.indexOf(item);
+    if (idx === -1) bought.push(item);
+    else bought.splice(idx, 1);
     setGroceryBought(bought);
     loadGroceryList();
   }
@@ -2013,9 +2306,13 @@
     if (bought.length === 0) return;
     for (const item of bought) {
       try {
-        const fd = new FormData(); fd.append('action', 'delete'); fd.append('item', item);
-        await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
-      } catch (e) {}
+        const fd = new FormData();
+        fd.append('action', 'delete');
+        fd.append('item',   item);
+        await apiFetch(SCRIPTS.GROCERY, { method: 'POST', body: fd });
+      } catch (e) {
+        err('clearBoughtGroceries: failed to delete', item, e.message);
+      }
     }
     setGroceryBought([]);
     await loadGroceryList();
@@ -2023,27 +2320,32 @@
 
   function openGroceryForm() {
     document.getElementById('grocery-overlay').classList.remove('hidden');
-    document.getElementById('grocery-input').focus();
-    document.getElementById('grocery-status').textContent = '';
     document.getElementById('grocery-input').value = '';
+    setStatus('grocery-status', '');
+    document.getElementById('grocery-input').focus();
   }
-
   function closeGroceryForm() {
     document.getElementById('grocery-overlay').classList.add('hidden');
     document.getElementById('grocery-input').value = '';
-    document.getElementById('grocery-status').textContent = '';
+    setStatus('grocery-status', '');
   }
 
   async function submitGroceryItem() {
-    const input = document.getElementById('grocery-input');
-    const item = input.value.trim();
+    const btn  = getSubmitBtn('grocery-overlay');
+    const item = document.getElementById('grocery-input').value.trim();
     if (!item) return;
+    setLoading(btn);
     try {
-      const fd = new FormData(); fd.append('item', item);
-      await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
-    } catch (e) {}
-    closeGroceryForm();
-    loadGroceryList();
+      const fd = new FormData();
+      fd.append('item', item);
+      await apiFetch(SCRIPTS.GROCERY, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeGroceryForm();
+      loadGroceryList();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('grocery-status', 'Failed to save — check connection', true);
+    }
   }
 
   async function deleteGroceryItem(item, btn) {
@@ -2051,361 +2353,458 @@
     const bought = getGroceryBought().filter(i => i !== item);
     setGroceryBought(bought);
     try {
-      const fd = new FormData(); fd.append('action', 'delete'); fd.append('item', item);
-      await fetch(GROCERY_SCRIPT, { method: 'POST', body: fd });
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('item',   item);
+      await apiFetch(SCRIPTS.GROCERY, { method: 'POST', body: fd });
       await loadGroceryList();
-    } catch (e) { btn.disabled = false; }
+    } catch (e) {
+      btn.disabled = false;
+      err('deleteGroceryItem failed:', e.message);
+    }
   }
 
-  loadGroceryList();
-  setInterval(loadGroceryList, 60 * 1000);
-
-  // ── MEAL PLANNER ──
+  // ─────────────────────────────────────────────
+  // MEAL PLANNER
+  // ─────────────────────────────────────────────
   async function loadMealPlan() {
+    const list = document.getElementById('meal-list');
+    if (!list) return;
     try {
-      const res = await fetch(MEAL_SCRIPT);
+      const res   = await apiFetch(SCRIPTS.MEAL);
       const meals = await res.json();
-      const list = document.getElementById('meal-list');
       list.innerHTML = DAYS_ORDER.map(day => `
         <div class="meal-item">
-          <span class="meal-day">${day.slice(0,3)}</span>
-          <span class="meal-name">${meals[day] || '—'}</span>
-          ${meals[day] ? `<button class="meal-clear" onclick="clearMeal('${day}')">×</button>` : ''}
+          <span class="meal-day">${day.slice(0, 3)}</span>
+          <span class="meal-name">${esc(meals[day] || '—')}</span>
+          ${meals[day] ? `<button class="meal-clear" data-day="${esc(day)}">×</button>` : ''}
         </div>`).join('');
+
+      list.querySelectorAll('.meal-clear[data-day]').forEach(btn => {
+        btn.addEventListener('click', () => clearMeal(btn.dataset.day));
+      });
     } catch (e) {
-      document.getElementById('meal-list').innerHTML = '<div style="color:var(--muted);font-size:0.78rem;padding:8px">Unavailable</div>';
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.78rem;padding:8px">Unavailable — check connection</div>';
     }
   }
 
   async function clearMeal(day) {
     try {
-      const fd = new FormData(); fd.append('day', day); fd.append('meal', '__CLEAR__');
-      await fetch(MEAL_SCRIPT, { method: 'POST', body: fd });
+      const fd = new FormData();
+      fd.append('day',  day);
+      fd.append('meal', '__CLEAR__');
+      await apiFetch(SCRIPTS.MEAL, { method: 'POST', body: fd });
       await loadMealPlan();
-    } catch (e) {}
+    } catch (e) {
+      err('clearMeal failed:', e.message);
+    }
   }
 
   function openMealForm() {
     document.getElementById('meal-overlay').classList.remove('hidden');
-    document.getElementById('meal-status').textContent = '';
+    setStatus('meal-status', '');
     document.getElementById('meal-day-select').value = '';
-    document.getElementById('meal-input').value = '';
+    document.getElementById('meal-input').value      = '';
   }
-
-  function closeMealForm() { document.getElementById('meal-overlay').classList.add('hidden'); }
+  function closeMealForm() {
+    document.getElementById('meal-overlay').classList.add('hidden');
+  }
 
   async function submitMeal() {
-    const day = document.getElementById('meal-day-select').value;
+    const btn  = getSubmitBtn('meal-overlay');
+    const day  = document.getElementById('meal-day-select').value;
     const meal = document.getElementById('meal-input').value.trim();
-    const status = document.getElementById('meal-status');
-    if (!day) { status.textContent = 'Please select a day'; return; }
-    if (!meal) { status.textContent = 'Please enter a meal'; return; }
+    if (!day) { setStatus('meal-status', 'Please select a day', true); return; }
+    if (!meal) { setStatus('meal-status', 'Please enter a meal', true); return; }
+    setLoading(btn);
     try {
-      const fd = new FormData(); fd.append('day', day); fd.append('meal', meal);
-      await fetch(MEAL_SCRIPT, { method: 'POST', body: fd });
-    } catch (e) {}
-    closeMealForm();
-    loadMealPlan();
+      const fd = new FormData();
+      fd.append('day',  day);
+      fd.append('meal', meal);
+      await apiFetch(SCRIPTS.MEAL, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeMealForm();
+      loadMealPlan();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('meal-status', 'Failed to save — check connection', true);
+    }
   }
 
-  loadMealPlan();
-  setInterval(loadMealPlan, 5 * 60 * 1000);
-
-  // ── TORI: load schedule + events from sheet ──
+  // ─────────────────────────────────────────────
+  // TORI: SCHEDULE
+  // ─────────────────────────────────────────────
   async function loadToriSchedule() {
+    const el = document.getElementById('tori-schedule');
+    if (!el) return;
     try {
-      const res = await fetch(TORI_SCRIPT + '?type=schedule');
+      const res  = await apiFetch(SCRIPTS.TORI + '?type=schedule');
       const rows = await res.json();
-      const el = document.getElementById('tori-schedule');
       if (!rows || rows.length === 0) {
         el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No classes found</div>';
         return;
       }
       el.innerHTML = rows.map(r => `
         <div class="schedule-item">
-          <span class="schedule-day">${r.day}</span>
-          <span class="schedule-class">${r.class}</span>
-          <span class="schedule-time">${r.time}</span>
-          <button class="hw-delete" onclick="deleteToriSchedule(${r.id})" title="Remove">×</button>
+          <span class="schedule-day">${esc(r.day)}</span>
+          <span class="schedule-class">${esc(r.class)}</span>
+          <span class="schedule-time">${esc(r.time)}</span>
+          <button class="hw-delete tori-schedule-delete" data-idx="${esc(String(r.id))}" title="Remove">×</button>
         </div>`).join('');
-    } catch(e) {
-      document.getElementById('tori-schedule').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+
+      el.querySelectorAll('.tori-schedule-delete').forEach(btn => {
+        btn.addEventListener('click', () => deleteToriSchedule(Number(btn.dataset.idx)));
+      });
+    } catch (e) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
     }
   }
 
-  async function loadToriEvents() {
-    try {
-      const res = await fetch(TORI_SCRIPT + '?type=events');
-      const events = await res.json();
-      renderNextUp(events, 'tori-next-up');
-      renderEventList(events, 'tori-events', 'deleteToriEvent');
-      // also update nova's tori-events view (read-only, no delete)
-      renderEventList(events, 'nova-tori-events');
-    } catch(e) {
-      document.getElementById('tori-next-up').innerHTML = '<div class="next-up-label">Unavailable</div>';
-      document.getElementById('tori-events').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
-    }
-  }
-
-  // ── NOVA: load events + homework from sheet ──
-  async function loadNovaEvents() {
-    try {
-      const res = await fetch(NOVA_SCRIPT + '?type=events');
-      const events = await res.json();
-      renderEventList(events, 'nova-events', 'deleteNovaEvent');
-    } catch(e) {
-      document.getElementById('nova-events').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
-    }
-  }
-
-  // ── TORI SCHEDULE FORM ──
   function openToriScheduleForm() {
     document.getElementById('tori-schedule-overlay').classList.remove('hidden');
-    document.getElementById('tori-schedule-day').value = '';
+    document.getElementById('tori-schedule-day').value   = '';
     document.getElementById('tori-schedule-class').value = '';
-    document.getElementById('tori-schedule-time').value = '';
-    document.getElementById('tori-schedule-status').textContent = '';
+    document.getElementById('tori-schedule-time').value  = '';
+    setStatus('tori-schedule-status', '');
     document.getElementById('tori-schedule-class').focus();
   }
-  function closeToriScheduleForm() { document.getElementById('tori-schedule-overlay').classList.add('hidden'); }
+  function closeToriScheduleForm() {
+    document.getElementById('tori-schedule-overlay').classList.add('hidden');
+  }
+
   async function submitToriSchedule() {
+    const btn = getSubmitBtn('tori-schedule-overlay');
     const day = document.getElementById('tori-schedule-day').value;
     const cls = document.getElementById('tori-schedule-class').value.trim();
     const time = document.getElementById('tori-schedule-time').value.trim();
-    const status = document.getElementById('tori-schedule-status');
-    if (!day) { status.textContent = 'Please select a day'; return; }
-    if (!cls) { status.textContent = 'Please enter a class name'; return; }
+    if (!day) { setStatus('tori-schedule-status', 'Please select a day', true); return; }
+    if (!cls) { setStatus('tori-schedule-status', 'Please enter a class name', true); return; }
+    setLoading(btn);
     try {
       const fd = new FormData();
-      fd.append('action', 'add'); fd.append('type', 'schedule');
-      fd.append('day', day); fd.append('class', cls); fd.append('time', time);
-      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
-    } catch(e) {}
-    closeToriScheduleForm();
-    loadToriSchedule();
+      fd.append('action', 'add');
+      fd.append('type',   'schedule');
+      fd.append('day',    day);
+      fd.append('class',  cls);
+      fd.append('time',   time);
+      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeToriScheduleForm();
+      loadToriSchedule();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('tori-schedule-status', 'Failed to save — check connection', true);
+    }
   }
+
   async function deleteToriSchedule(idx) {
     try {
       const fd = new FormData();
-      fd.append('action', 'delete'); fd.append('type', 'schedule'); fd.append('idx', idx);
-      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+      fd.append('action', 'delete');
+      fd.append('type',   'schedule');
+      fd.append('idx',    idx);
+      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
       await loadToriSchedule();
-    } catch(e) {}
+    } catch (e) {
+      err('deleteToriSchedule failed:', e.message);
+    }
   }
 
-  // ── TORI EVENTS FORM ──
+  // ─────────────────────────────────────────────
+  // TORI: EVENTS (wrestling)
+  // ─────────────────────────────────────────────
+  async function loadToriEvents() {
+    const nextUpEl  = document.getElementById('tori-next-up');
+    const eventsEl  = document.getElementById('tori-events');
+    try {
+      const res    = await apiFetch(SCRIPTS.TORI + '?type=events');
+      const events = await res.json();
+      if (nextUpEl) renderNextUp(events, 'tori-next-up');
+      if (eventsEl) renderEventList(events, 'tori-events', 'deleteToriEvent');
+    } catch (e) {
+      if (nextUpEl) nextUpEl.innerHTML = '<div class="next-up-label">Unavailable</div>';
+      if (eventsEl) eventsEl.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
+
+  async function loadToriEventsForNova() {
+    const el = document.getElementById('nova-tori-events');
+    if (!el) return;
+    try {
+      const res    = await apiFetch(SCRIPTS.TORI + '?type=events');
+      const events = await res.json();
+      renderEventList(events, 'nova-tori-events');
+    } catch (e) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
   function openToriEventsForm() {
     document.getElementById('tori-events-overlay').classList.remove('hidden');
-    document.getElementById('tori-event-name').value = '';
-    document.getElementById('tori-event-type').value = '';
-    document.getElementById('tori-event-date').value = '';
+    document.getElementById('tori-event-name').value     = '';
+    document.getElementById('tori-event-type').value     = '';
+    document.getElementById('tori-event-date').value     = '';
     document.getElementById('tori-event-location').value = '';
-    document.getElementById('tori-events-status').textContent = '';
+    setStatus('tori-events-status', '');
     document.getElementById('tori-event-name').focus();
   }
-  function closeToriEventsForm() { document.getElementById('tori-events-overlay').classList.add('hidden'); }
+  function closeToriEventsForm() {
+    document.getElementById('tori-events-overlay').classList.add('hidden');
+  }
+
   async function submitToriEvent() {
-    const name = document.getElementById('tori-event-name').value.trim();
-    const evtType = document.getElementById('tori-event-type').value;
-    const date = document.getElementById('tori-event-date').value;
+    const btn      = getSubmitBtn('tori-events-overlay');
+    const name     = document.getElementById('tori-event-name').value.trim();
+    const evtType  = document.getElementById('tori-event-type').value;
+    const date     = document.getElementById('tori-event-date').value;
     const location = document.getElementById('tori-event-location').value.trim();
-    const status = document.getElementById('tori-events-status');
-    if (!name) { status.textContent = 'Please enter an event name'; return; }
-    if (!date) { status.textContent = 'Please select a date'; return; }
+    if (!name) { setStatus('tori-events-status', 'Please enter an event name', true); return; }
+    if (!date) { setStatus('tori-events-status', 'Please select a date', true); return; }
+    setLoading(btn);
     try {
       const fd = new FormData();
-      fd.append('action', 'add'); fd.append('type', 'events');
-      fd.append('name', name); fd.append('evtType', evtType || 'Event');
-      fd.append('date', date); fd.append('location', location);
-      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
-    } catch(e) {}
-    closeToriEventsForm();
-    loadToriEvents();
+      fd.append('action',   'add');
+      fd.append('type',     'events');
+      fd.append('name',     name);
+      fd.append('evtType',  evtType || 'Event');
+      fd.append('date',     date);
+      fd.append('location', location);
+      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeToriEventsForm();
+      loadToriEvents();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('tori-events-status', 'Failed to save — check connection', true);
+    }
   }
+
   async function deleteToriEvent(idx) {
     try {
       const fd = new FormData();
-      fd.append('action', 'delete'); fd.append('type', 'events'); fd.append('idx', idx);
-      await fetch(TORI_SCRIPT, { method: 'POST', body: fd });
+      fd.append('action', 'delete');
+      fd.append('type',   'events');
+      fd.append('idx',    idx);
+      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
       await loadToriEvents();
-    } catch(e) {}
+    } catch (e) {
+      err('deleteToriEvent failed:', e.message);
+    }
   }
 
-  // ── NOVA EVENTS FORM ──
+  // ─────────────────────────────────────────────
+  // NOVA: EVENTS
+  // ─────────────────────────────────────────────
+  async function loadNovaEvents() {
+    const el = document.getElementById('nova-events');
+    if (!el) return;
+    try {
+      const res    = await apiFetch(SCRIPTS.NOVA + '?type=events');
+      const events = await res.json();
+      renderEventList(events, 'nova-events', 'deleteNovaEvent');
+    } catch (e) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
+
   function openNovaEventsForm() {
     document.getElementById('nova-events-overlay').classList.remove('hidden');
-    document.getElementById('nova-event-name').value = '';
-    document.getElementById('nova-event-type').value = '';
-    document.getElementById('nova-event-date').value = '';
+    document.getElementById('nova-event-name').value     = '';
+    document.getElementById('nova-event-type').value     = '';
+    document.getElementById('nova-event-date').value     = '';
     document.getElementById('nova-event-location').value = '';
-    document.getElementById('nova-events-status').textContent = '';
+    setStatus('nova-events-status', '');
     document.getElementById('nova-event-name').focus();
   }
-  function closeNovaEventsForm() { document.getElementById('nova-events-overlay').classList.add('hidden'); }
+  function closeNovaEventsForm() {
+    document.getElementById('nova-events-overlay').classList.add('hidden');
+  }
+
   async function submitNovaEvent() {
-    const name = document.getElementById('nova-event-name').value.trim();
-    const evtType = document.getElementById('nova-event-type').value.trim();
-    const date = document.getElementById('nova-event-date').value;
+    const btn      = getSubmitBtn('nova-events-overlay');
+    const name     = document.getElementById('nova-event-name').value.trim();
+    const evtType  = document.getElementById('nova-event-type').value.trim();
+    const date     = document.getElementById('nova-event-date').value;
     const location = document.getElementById('nova-event-location').value.trim();
-    const status = document.getElementById('nova-events-status');
-    if (!name) { status.textContent = 'Please enter an event name'; return; }
-    if (!date) { status.textContent = 'Please select a date'; return; }
+    if (!name) { setStatus('nova-events-status', 'Please enter an event name', true); return; }
+    if (!date) { setStatus('nova-events-status', 'Please select a date', true); return; }
+    setLoading(btn);
     try {
       const fd = new FormData();
-      fd.append('action', 'add'); fd.append('type', 'events');
-      fd.append('name', name); fd.append('evtType', evtType || 'Event');
-      fd.append('date', date); fd.append('location', location);
-      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
-    } catch(e) {}
-    closeNovaEventsForm();
-    loadNovaEvents();
+      fd.append('action',   'add');
+      fd.append('type',     'events');
+      fd.append('name',     name);
+      fd.append('evtType',  evtType || 'Event');
+      fd.append('date',     date);
+      fd.append('location', location);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeNovaEventsForm();
+      loadNovaEvents();
+    } catch (e) {
+      clearLoading(btn);
+      setStatus('nova-events-status', 'Failed to save — check connection', true);
+    }
   }
+
   async function deleteNovaEvent(idx) {
     try {
       const fd = new FormData();
-      fd.append('action', 'delete'); fd.append('type', 'events'); fd.append('idx', idx);
-      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      fd.append('action', 'delete');
+      fd.append('type',   'events');
+      fd.append('idx',    idx);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
       await loadNovaEvents();
-    } catch(e) {}
+    } catch (e) {
+      err('deleteNovaEvent failed:', e.message);
+    }
   }
 
-  // ── HOMEWORK (Google Sheets) ──
+  // ─────────────────────────────────────────────
+  // NOVA: HOMEWORK
+  // ─────────────────────────────────────────────
   function renderHomework(hw) {
-    const list = document.getElementById('hw-list');
+    const list  = document.getElementById('hw-list');
     const badge = document.getElementById('hw-badge');
+    if (!list) return;
     const total = hw.length;
-    const done = hw.filter(h => h.done).length;
-    badge.textContent = total > 0 ? `${done} / ${total}` : '';
+    const done  = hw.filter(h => h.done).length;
+    if (badge) badge.textContent = total > 0 ? `${done} / ${total}` : '';
     if (total === 0) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>';
       return;
     }
-    list.innerHTML = hw.map((item) => `
-      <div class="hw-item ${item.done ? 'done' : ''}" onclick="toggleHomework(${item.id})">
+    list.innerHTML = hw.map(item => `
+      <div class="hw-item ${item.done ? 'done' : ''}" data-hw-id="${esc(String(item.id))}">
         <div class="hw-check">✓</div>
-        <span class="hw-name">${item.name}</span>
-        ${item.subject ? `<span class="hw-subject">${item.subject}</span>` : ''}
-        <button class="hw-delete" onclick="event.stopPropagation(); deleteHomework(${item.id})">×</button>
+        <span class="hw-name">${esc(item.name)}</span>
+        ${item.subject ? `<span class="hw-subject">${esc(item.subject)}</span>` : ''}
+        <button class="hw-delete hw-delete-btn" data-hw-id="${esc(String(item.id))}" title="Remove">×</button>
       </div>`).join('');
+
+    list.querySelectorAll('.hw-item[data-hw-id]').forEach(item => {
+      item.addEventListener('click', e => {
+        if (e.target.closest('.hw-delete')) return;
+        toggleHomework(Number(item.dataset.hwId), item);
+      });
+    });
+
+    list.querySelectorAll('.hw-delete-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteHomework(Number(btn.dataset.hwId));
+      });
+    });
   }
 
   async function loadHomework() {
+    const list = document.getElementById('hw-list');
+    if (!list) return;
     try {
-      const res = await fetch(NOVA_SCRIPT + '?type=homework');
-      const hw = await res.json();
+      const res = await apiFetch(SCRIPTS.NOVA + '?type=homework');
+      const hw  = await res.json();
       renderHomework(hw);
-    } catch(e) {
-      document.getElementById('hw-list').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
     }
   }
 
-  async function toggleHomework(idx) {
-    const items = document.querySelectorAll('.hw-item');
-    const el = items[idx];
-    if (el) el.classList.toggle('done');
-    const isDone = el ? el.classList.contains('done') : false;
+  async function toggleHomework(id, el) {
+    el.classList.toggle('done');
+    const isDone = el.classList.contains('done');
+    const fd = new FormData();
+    fd.append('action', 'toggle');
+    fd.append('idx',    id);
+    fd.append('done',   isDone.toString());
     try {
-      const fd = new FormData();
-      fd.append('action', 'toggle');
-      fd.append('idx', idx);
-      fd.append('done', isDone.toString());
-      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
       await loadHomework();
-    } catch(e) {}
+    } catch (e) {
+      el.classList.toggle('done');
+      err('toggleHomework failed, reverted:', e.message);
+    }
   }
 
-  async function deleteHomework(idx) {
+  async function deleteHomework(id) {
     try {
       const fd = new FormData();
       fd.append('action', 'delete');
-      fd.append('idx', idx);
-      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      fd.append('idx',    id);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
       await loadHomework();
-    } catch(e) {}
+    } catch (e) {
+      err('deleteHomework failed:', e.message);
+    }
   }
 
   async function clearDoneHomework() {
     try {
       const fd = new FormData();
       fd.append('action', 'clear_done');
-      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
       await loadHomework();
-    } catch(e) {}
+    } catch (e) {
+      err('clearDoneHomework failed:', e.message);
+    }
   }
 
   function openHomeworkForm() {
     document.getElementById('hw-overlay').classList.remove('hidden');
-    document.getElementById('hw-input').focus();
-    document.getElementById('hw-input').value = '';
+    document.getElementById('hw-input').value         = '';
     document.getElementById('hw-subject-input').value = '';
+    document.getElementById('hw-input').focus();
   }
-
-  function closeHomeworkForm() { document.getElementById('hw-overlay').classList.add('hidden'); }
+  function closeHomeworkForm() {
+    document.getElementById('hw-overlay').classList.add('hidden');
+  }
 
   async function submitHomework() {
-    const name = document.getElementById('hw-input').value.trim();
+    const btn     = getSubmitBtn('hw-overlay');
+    const name    = document.getElementById('hw-input').value.trim();
     const subject = document.getElementById('hw-subject-input').value.trim();
     if (!name) return;
+    setLoading(btn);
     try {
       const fd = new FormData();
-      fd.append('action', 'add');
-      fd.append('name', name);
+      fd.append('action',  'add');
+      fd.append('name',    name);
       fd.append('subject', subject);
-      await fetch(NOVA_SCRIPT, { method: 'POST', body: fd });
-    } catch(e) {}
-    closeHomeworkForm();
-    await loadHomework();
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeHomeworkForm();
+      await loadHomework();
+    } catch (e) {
+      clearLoading(btn);
+      err('submitHomework failed:', e.message);
+    }
   }
 
-  // ── SINGLE KEYDOWN HANDLER ──
-  document.addEventListener('keydown', (e) => {
-    if (!document.getElementById('grocery-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitGroceryItem();
-      if (e.key === 'Escape') closeGroceryForm();
-      return;
+  // ─────────────────────────────────────────────
+  // KEYBOARD SHORTCUTS
+  // ─────────────────────────────────────────────
+  const OVERLAY_SHORTCUTS = [
+    { id: 'grocery-overlay',        enter: submitGroceryItem,    escape: closeGroceryForm       },
+    { id: 'meal-overlay',           enter: submitMeal,           escape: closeMealForm          },
+    { id: 'reminder-overlay',       enter: submitReminder,       escape: closeReminderForm      },
+    { id: 'hw-overlay',             enter: submitHomework,       escape: closeHomeworkForm      },
+    { id: 'tori-schedule-overlay',  enter: submitToriSchedule,   escape: closeToriScheduleForm  },
+    { id: 'tori-events-overlay',    enter: submitToriEvent,      escape: closeToriEventsForm    },
+    { id: 'nova-events-overlay',    enter: submitNovaEvent,      escape: closeNovaEventsForm    },
+    { id: 'shared-chore-overlay',   enter: submitSharedChore,    escape: closeSharedChoreForm   },
+    { id: 'tori-reminder-overlay',  enter: submitToriReminder,   escape: closeToriReminderForm  },
+    { id: 'personal-chore-overlay', enter: submitPersonalChore,  escape: closePersonalChoreForm },
+  ];
+
+  document.addEventListener('keydown', e => {
+    for (const { id, enter, escape } of OVERLAY_SHORTCUTS) {
+      const el = document.getElementById(id);
+      if (el && !el.classList.contains('hidden')) {
+        if (e.key === 'Enter')  { e.preventDefault(); enter(); }
+        if (e.key === 'Escape') escape();
+        return;
+      }
     }
-    if (!document.getElementById('meal-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitMeal();
-      if (e.key === 'Escape') closeMealForm();
-      return;
-    }
-    if (!document.getElementById('reminder-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitReminder();
-      if (e.key === 'Escape') closeReminderForm();
-      return;
-    }
-    if (!document.getElementById('hw-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitHomework();
-      if (e.key === 'Escape') closeHomeworkForm();
-      return;
-    }
-    if (!document.getElementById('tori-schedule-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitToriSchedule();
-      if (e.key === 'Escape') closeToriScheduleForm();
-      return;
-    }
-    if (!document.getElementById('tori-events-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitToriEvent();
-      if (e.key === 'Escape') closeToriEventsForm();
-      return;
-    }
-    if (!document.getElementById('nova-events-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitNovaEvent();
-      if (e.key === 'Escape') closeNovaEventsForm();
-      return;
-    }
-    if (!document.getElementById('tori-reminder-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitToriReminder();
-      if (e.key === 'Escape') closeToriReminderForm();
-      return;
-    }
-    if (!document.getElementById('personal-chore-overlay').classList.contains('hidden')) {
-      if (e.key === 'Enter') submitPersonalChore();
-      if (e.key === 'Escape') closePersonalChoreForm();
-      return;
-    }
-    // PIN screens
-    ['home','parentals','tori','nova'].forEach(tab => {
+    ['home', 'parentals', 'tori', 'nova'].forEach(tab => {
       const pinEl = document.getElementById(`pin-${tab}`);
       if (pinEl && !pinEl.classList.contains('hidden')) {
         if (e.key >= '0' && e.key <= '9') pinPress(tab, e.key);
@@ -2414,8 +2813,9 @@
     });
   });
 
-  // ── INIT ──
-  // Check home PIN on load
+  // ─────────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────────
   if (localStorage.getItem('hh_auth_home') === 'true') {
     document.getElementById('pin-home').classList.add('hidden');
     onTabUnlocked('home');
