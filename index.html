@@ -213,6 +213,8 @@
   .nav-tab[data-tab="tori"].active::after { background: var(--accent4); }
   .nav-tab[data-tab="nova"].active { color: var(--accent3); }
   .nav-tab[data-tab="nova"].active::after { background: var(--accent3); }
+  .nav-tab[data-tab="fun"].active { color: var(--accent5); }
+  .nav-tab[data-tab="fun"].active::after { background: var(--accent5); }
 
   /* ── TAB PANELS ── */
   .tab-panel { display: none; }
@@ -818,9 +820,94 @@
   .next-up-second-name { font-size: 0.88rem; font-weight: 600; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; }
   .next-up-second-date { font-size: 0.68rem; color: var(--muted); }
 
+  /* ── FUN LIST ── */
+  .fun-list {
+    padding: 8px 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .fun-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  .fun-item:last-child { border-bottom: none; }
+
+  .fun-item-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .fun-item-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .fun-item-title {
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .fun-item-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .fun-item-tag {
+    font-size: 0.65rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .fun-delete {
+    background: none; border: none;
+    color: var(--muted); font-size: 1rem;
+    cursor: pointer; padding: 0 2px;
+    line-height: 1; flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .fun-delete:hover { color: #e07070; }
+
+  /* Wishlists: 2x2 on desktop */
+  .fun-wishlists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+    max-height: 50vh;
+  }
+
   /* ── NOVA NOTES RESPONSIVE ── */
-  .nova-notes-mobile { display: none; }
+  .nova-notes-mobile  { display: none; }
   .nova-notes-desktop { display: flex; }
+  .nova-school-mobile { display: none; }
+
+  /* Desktop: Notes (2fr) + School Cal (1fr) side by side */
+  .nova-bottom-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
 
   /* ── TORI ROW 2 — desktop: Class Schedule | Wrestling Events ── */
   .tori-schedule-panel { order: 1; }
@@ -859,8 +946,10 @@
 
     .pin-keypad { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(4, 80px); }
     .pin-key { font-size: 1.6rem; border-radius: 14px; }
-    .nova-notes-mobile { display: flex; }
+    .nova-notes-mobile  { display: flex; }
     .nova-notes-desktop { display: none; }
+    .nova-school-mobile { display: flex; }
+    .fun-wishlists { grid-template-columns: 1fr; max-height: none; }
     /* Mobile: Wrestling Events before Class Schedule */
     .tori-events-panel   { order: 1; }
     .tori-schedule-panel { order: 2; }
@@ -920,6 +1009,32 @@
     <div class="pin-key empty"></div>
     <div class="pin-key" onclick="pinPress('parentals','0')">0</div>
     <div class="pin-key delete" onclick="pinDelete('parentals')">⌫</div>
+  </div>
+</div>
+
+<!-- ── FUN PIN ── -->
+<div id="pin-fun" class="pin-overlay hidden">
+  <div class="pin-title" style="color:var(--accent5)">🎪 Fun Shit</div>
+  <div class="pin-subtitle">Enter PIN to continue</div>
+  <div class="pin-dots" id="pin-dots-fun">
+    <div class="pin-dot" id="fun-d0"></div>
+    <div class="pin-dot" id="fun-d1"></div>
+    <div class="pin-dot" id="fun-d2"></div>
+    <div class="pin-dot" id="fun-d3"></div>
+  </div>
+  <div class="pin-error hidden" id="pin-error-fun">Incorrect PIN</div>
+  <div class="pin-keypad">
+    <button class="pin-key" onclick="pinPress('fun','1')">1</button>
+    <button class="pin-key" onclick="pinPress('fun','2')">2</button>
+    <button class="pin-key" onclick="pinPress('fun','3')">3</button>
+    <button class="pin-key" onclick="pinPress('fun','4')">4</button>
+    <button class="pin-key" onclick="pinPress('fun','5')">5</button>
+    <button class="pin-key" onclick="pinPress('fun','6')">6</button>
+    <button class="pin-key" onclick="pinPress('fun','7')">7</button>
+    <button class="pin-key" onclick="pinPress('fun','8')">8</button>
+    <button class="pin-key" onclick="pinPress('fun','9')">9</button>
+    <button class="pin-key pin-key-wide" onclick="pinPress('fun','0')">0</button>
+    <button class="pin-key" onclick="pinDelete('fun')">⌫</button>
   </div>
 </div>
 
@@ -1126,6 +1241,126 @@
   </div>
 </div>
 
+<!-- FUN -->
+<div class="tab-panel" id="tab-fun">
+  <div class="personal-content">
+
+    <div class="personal-grid-3">
+
+      <!-- Movies & Shows -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent5)">🎬 Movies &amp; Shows</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('movies')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-movies-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Books -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent5)">📚 Books to Read</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('books')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-books-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Meal Ideas -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent5)">🍽️ Meal Ideas</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('mealideas')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-meals-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Wishlists row -->
+    <div class="personal-grid-2 fun-wishlists">
+
+      <!-- Jessica -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent5)">🎁 Jessica's Wishlist</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openWishlistForm('jessica')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-wishlist-jessica">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Jesse -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent5)">🎁 Jesse's Wishlist</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openWishlistForm('jesse')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-wishlist-jesse">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Tori -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">🎁 Tori's Wishlist</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4);color:#0f1117" onclick="openWishlistForm('tori')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-wishlist-tori">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Nova -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">🎁 Nova's Wishlist</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openWishlistForm('nova')">+ Add</button>
+          </div>
+        </div>
+        <div class="fun-list" id="fun-wishlist-nova">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- TORI -->
 <div class="tab-panel" id="tab-tori">
   <div class="tori-content">
@@ -1283,18 +1518,47 @@
 
     </div>
 
-    <!-- Nova's Notes (desktop only — full width row) -->
-    <div class="panel nova-notes-desktop">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title" style="color:var(--accent3)">📝 My Notes</span>
+    <!-- Nova's Notes + School Calendar row (desktop) -->
+    <div class="nova-bottom-row nova-notes-desktop">
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">📝 My Notes</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaNotesForm()">+ Add</button>
+          </div>
         </div>
-        <div class="section-header-actions">
-          <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaNotesForm()">+ Add</button>
+        <div class="reminder-list" id="nova-notes-list" style="grid-template-columns:1fr">
+          <!-- Rendered by JS -->
         </div>
       </div>
-      <div class="reminder-list" id="nova-notes-list" style="grid-template-columns:1fr">
-        <!-- Rendered by JS -->
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">🏫 School Calendar</span>
+            <span class="section-badge">Cashmere</span>
+          </div>
+        </div>
+        <div class="countdown-list" id="school-cal-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- School Calendar mobile only (stacks after Notes mobile) -->
+    <div class="panel nova-school-mobile">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title" style="color:var(--accent3)">🏫 School Calendar</span>
+          <span class="section-badge">Cashmere</span>
+        </div>
+      </div>
+      <div class="countdown-list" id="school-cal-list-mobile">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
       </div>
     </div>
 
@@ -1306,6 +1570,10 @@
   <button class="nav-tab active" data-tab="home" onclick="switchTab('home')">
     <span class="nav-icon">🏡</span>
     <span class="nav-label">Home</span>
+  </button>
+  <button class="nav-tab" data-tab="fun" onclick="switchTab('fun')">
+    <span class="nav-icon">🎪</span>
+    <span class="nav-label">Fun</span>
   </button>
   <button class="nav-tab" data-tab="parentals" onclick="switchTab('parentals')">
     <span class="nav-icon">👨‍👩‍👧‍👦</span>
@@ -1474,6 +1742,31 @@
   </div>
 </div>
 
+<!-- FUN FORM OVERLAY (movies/books/meals) -->
+<div id="fun-form-overlay" class="overlay hidden" data-type="">
+  <div class="overlay-box">
+    <div class="overlay-title" id="fun-form-title" style="color:var(--accent5)">Add Item</div>
+    <div id="fun-form-fields"></div>
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeFunForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent5);color:#0f1117" onclick="submitFunForm()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- WISHLIST FORM OVERLAY -->
+<div id="wishlist-form-overlay" class="overlay hidden" data-person="">
+  <div class="overlay-box">
+    <div class="overlay-title" id="wishlist-form-title" style="color:var(--accent5)">🎁 Add to Wishlist</div>
+    <input type="text" id="wishlist-item-input" class="overlay-input" placeholder="What do you want?" autocomplete="off" />
+    <input type="text" id="wishlist-notes-input" class="overlay-input" placeholder="Notes / link (optional)" autocomplete="off" style="margin-top:8px" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeWishlistForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent5);color:#0f1117" onclick="submitWishlistItem()">Add</button>
+    </div>
+  </div>
+</div>
+
 <!-- NOVA NOTES OVERLAY -->
 <div id="nova-notes-overlay" class="overlay hidden">
   <div class="overlay-box">
@@ -1494,7 +1787,6 @@
 
   const SCRIPTS = {
     GROCERY:   'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec',
-    REMINDERS: 'https://script.google.com/macros/s/AKfycbxwkMmwNzRlSupy2aoP-crQaqjeqJ0r0M0VHxseiLmSwzqMUYq8nJ-NF7i4phs2_Zwz/exec',
     CHORES:    'https://script.google.com/macros/s/AKfycbxWTpChkrWj-CYqBq4zt-ukj-FpSz2bttXklwHbBwNS0yv7p2hc5eNzQaNbHCF-vCXc/exec',
     MEAL:      'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec',
     TORI:      'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec',
@@ -1505,10 +1797,11 @@
   const MONTHS     = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   // PIN per tab — update these to change PINs
-  const TAB_PINS = { home: '1470', parentals: '1470', tori: '1470', nova: '0258' };
+  const TAB_PINS = { home: '1470', fun: '1470', parentals: '1470', tori: '1470', nova: '0258' };
 
   const TAB_TITLES = {
-    home:      "🏡 What Is It Today?",
+    home:      "🏡 What's The Plan Stan",
+    fun:       '🎪 Fun',
     parentals: '👨‍👩‍👧‍👦 Parentals',
     tori:      '🤼‍♀️ Tori',
     nova:      '🚲 Nova',
@@ -1600,7 +1893,7 @@
   // ─────────────────────────────────────────────
   // PIN SYSTEM
   // ─────────────────────────────────────────────
-  const pinEntries = { home: '', parentals: '', tori: '', nova: '' };
+  const pinEntries = { home: '', fun: '', parentals: '', tori: '', nova: '' };
 
   function pinPress(tab, digit) {
     if (pinEntries[tab].length >= 4) return;
@@ -1679,6 +1972,14 @@
     } else if (tab === 'parentals') {
       loadParentChores();
       loadParentReminders();
+    } else if (tab === 'fun') {
+      loadFunMovies();
+      loadFunBooks();
+      loadFunMeals();
+      loadFunWishlist('jessica');
+      loadFunWishlist('jesse');
+      loadFunWishlist('tori');
+      loadFunWishlist('nova');
     } else if (tab === 'tori') {
       loadToriChores();
       loadToriReminders();
@@ -1689,6 +1990,68 @@
       loadNovaEvents();
       loadNovaNotes();
       loadHomework();
+      loadSchoolCalendar();
+    }
+  }
+
+
+  // ─────────────────────────────────────────────
+  // SCHOOL CALENDAR (Cashmere ICS)
+  // ─────────────────────────────────────────────
+  const SCHOOL_ICS = 'https://www.cashmere.wednet.edu/calendar/calendar_368_gmt.ics';
+
+  function parseICSEvents(text) {
+    const events = [];
+    const blocks = text.split('BEGIN:VEVENT');
+    for (let i = 1; i < blocks.length; i++) {
+      const block = blocks[i];
+      const summary = (block.match(/SUMMARY:(.+)/) || [])[1]?.trim() || '';
+      const dtRaw   = (block.match(/DTSTART(?:;VALUE=DATE)?:(\d+)/) || [])[1] || '';
+      if (!summary || !dtRaw) continue;
+      // Parse YYYYMMDD or YYYYMMDDTHHmmssZ
+      const y = dtRaw.slice(0,4), mo = dtRaw.slice(4,6), d = dtRaw.slice(6,8);
+      const date = new Date(`${y}-${mo}-${d}T00:00:00`);
+      if (!isNaN(date)) events.push({ summary, date });
+    }
+    return events;
+  }
+
+  function renderSchoolCalList(listEl, events) {
+    if (!listEl) return;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const upcoming = events
+      .filter(e => e.date >= today)
+      .sort((a,b) => a.date - b.date)
+      .slice(0, 5);
+    if (upcoming.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No upcoming events</div>';
+      return;
+    }
+    listEl.innerHTML = upcoming.map(e => {
+      const label = formatReminderDate(e.date.toISOString().slice(0,10));
+      return `<div class="countdown-item">
+        <div class="countdown-left">
+          <div class="countdown-name">${esc(e.summary)}</div>
+          <div class="countdown-meta">${label}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadSchoolCalendar() {
+    const desktop = document.getElementById('school-cal-list');
+    const mobile  = document.getElementById('school-cal-list-mobile');
+    try {
+      const res  = await fetch(SCHOOL_ICS);
+      const text = await res.text();
+      const events = parseICSEvents(text);
+      renderSchoolCalList(desktop, events);
+      renderSchoolCalList(mobile,  events);
+    } catch (e) {
+      const msg = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+      if (desktop) desktop.innerHTML = msg;
+      if (mobile)  mobile.innerHTML  = msg;
+      err('loadSchoolCalendar failed:', e.message);
     }
   }
 
@@ -2133,7 +2496,7 @@
     const list = document.getElementById('reminder-list');
     if (!list) return;
     try {
-      const res   = await apiFetch(SCRIPTS.REMINDERS);
+      const res   = await apiFetch(SCRIPTS.CHORES + '?type=reminders');
       const items = await res.json();
       renderReminderList(items, list, 'var(--accent)');
     } catch (e) {
@@ -2145,7 +2508,7 @@
     const list = document.getElementById('parent-reminder-list');
     if (!list) return;
     try {
-      const res   = await apiFetch(SCRIPTS.REMINDERS);
+      const res   = await apiFetch(SCRIPTS.CHORES + '?type=reminders');
       const items = await res.json();
       renderReminderList(items, list, 'var(--accent2)');
     } catch (e) {
@@ -2175,7 +2538,7 @@
       fd.append('action', 'add');
       fd.append('text',   text);
       if (date) fd.append('date', date);
-      await apiFetch(SCRIPTS.REMINDERS, { method: 'POST', body: fd });
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
       clearLoading(btn);
       closeReminderForm();
       loadReminders();
@@ -2192,7 +2555,7 @@
       const fd = new FormData();
       fd.append('action', 'delete');
       fd.append('text',   text);
-      await apiFetch(SCRIPTS.REMINDERS, { method: 'POST', body: fd });
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
       await loadReminders();
       loadParentReminders();
     } catch (e) {
@@ -2606,6 +2969,200 @@
     });
   }
 
+
+  // ─────────────────────────────────────────────
+  // FUN PAGE
+  // ─────────────────────────────────────────────
+
+  function renderFunList(listId, items, dotColor, titleKey, subKey) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    if (!items || items.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Nothing here yet</div>';
+      return;
+    }
+    list.innerHTML = items.map(item => {
+      const title = esc(item[titleKey] || '');
+      const sub   = subKey && item[subKey] ? `<span class="fun-item-sub">${esc(item[subKey])}</span>` : '';
+      const tag   = item.type ? `<span class="fun-item-tag">${esc(item.type)}</span>` : '';
+      return `<div class="fun-item">
+        <div class="fun-item-dot" style="background:${dotColor}"></div>
+        <div class="fun-item-body">
+          <span class="fun-item-title">${title}</span>
+          ${sub}
+        </div>
+        ${tag}
+        <button class="fun-delete" data-idx="${item.id}" title="Remove">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  function bindFunDeletes(listId, type) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    list.querySelectorAll('.fun-delete[data-idx]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          const fd = new FormData();
+          fd.append('action', 'delete');
+          fd.append('type',   type);
+          fd.append('idx',    btn.dataset.idx);
+          await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+          if (type === 'movies')    { loadFunMovies(); }
+          else if (type === 'books') { loadFunBooks(); }
+          else if (type === 'mealideas') { loadFunMeals(); }
+          else if (type.startsWith('wishlist_')) {
+            const person = type.split('_')[1];
+            loadFunWishlist(person);
+          }
+        } catch (e) { btn.disabled = false; }
+      });
+    });
+  }
+
+  async function loadFunMovies() {
+    const list = document.getElementById('fun-movies-list');
+    if (!list) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.CHORES + '?type=movies');
+      const items = await res.json();
+      renderFunList('fun-movies-list', items, 'var(--accent5)', 'title', null);
+      bindFunDeletes('fun-movies-list', 'movies');
+    } catch(e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function loadFunBooks() {
+    const list = document.getElementById('fun-books-list');
+    if (!list) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.CHORES + '?type=books');
+      const items = await res.json();
+      renderFunList('fun-books-list', items, 'var(--accent5)', 'title', 'author');
+      bindFunDeletes('fun-books-list', 'books');
+    } catch(e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function loadFunMeals() {
+    const list = document.getElementById('fun-meals-list');
+    if (!list) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.CHORES + '?type=mealideas');
+      const items = await res.json();
+      renderFunList('fun-meals-list', items, 'var(--accent5)', 'name', 'category');
+      bindFunDeletes('fun-meals-list', 'mealideas');
+    } catch(e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  async function loadFunWishlist(person) {
+    const listId = `fun-wishlist-${person}`;
+    const list   = document.getElementById(listId);
+    if (!list) return;
+    const colors = { jessica: 'var(--accent5)', jesse: 'var(--accent5)', tori: 'var(--accent4)', nova: 'var(--accent3)' };
+    try {
+      const res   = await apiFetch(SCRIPTS.CHORES + `?type=wishlist_${person}`);
+      const items = await res.json();
+      renderFunList(listId, items, colors[person] || 'var(--accent5)', 'item', 'notes');
+      bindFunDeletes(listId, `wishlist_${person}`);
+    } catch(e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  // ── FUN FORMS ──
+  const FUN_FORM_CONFIG = {
+    movies:    { title: '🎬 Add Movie / Show',  fields: [{ id: 'fun-movie-title', label: 'Title', placeholder: 'e.g. Inception' }, { id: 'fun-movie-type', label: 'Type', placeholder: 'Movie or Show', default: 'Movie' }] },
+    books:     { title: '📚 Add Book',          fields: [{ id: 'fun-book-title',  label: 'Title', placeholder: 'e.g. Atomic Habits' }, { id: 'fun-book-author', label: 'Author (optional)', placeholder: 'e.g. James Clear' }] },
+    mealideas: { title: '🍽️ Add Meal Idea',    fields: [{ id: 'fun-meal-name',   label: 'Meal',  placeholder: 'e.g. Chicken Tikka Masala' }, { id: 'fun-meal-category', label: 'Category (optional)', placeholder: 'e.g. Dinner, Quick' }] },
+  };
+
+  function openFunForm(type) {
+    const cfg = FUN_FORM_CONFIG[type];
+    if (!cfg) return;
+    const overlay = document.getElementById('fun-form-overlay');
+    overlay.dataset.type = type;
+    document.getElementById('fun-form-title').textContent = cfg.title;
+    const fields = document.getElementById('fun-form-fields');
+    fields.innerHTML = cfg.fields.map(f => `
+      <input type="text" id="${f.id}" class="overlay-input" placeholder="${f.placeholder}" autocomplete="off" />
+    `).join('');
+    if (cfg.fields[0].default) document.getElementById(cfg.fields[0].id);
+    overlay.classList.remove('hidden');
+    fields.querySelector('input')?.focus();
+  }
+
+  function closeFunForm() {
+    document.getElementById('fun-form-overlay').classList.add('hidden');
+  }
+
+  async function submitFunForm() {
+    const overlay = document.getElementById('fun-form-overlay');
+    const type    = overlay.dataset.type;
+    const btn     = getSubmitBtn('fun-form-overlay');
+    const cfg     = FUN_FORM_CONFIG[type];
+    if (!cfg) return;
+    const vals = cfg.fields.map(f => (document.getElementById(f.id)?.value || '').trim());
+    if (!vals[0]) return;
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('type', type);
+      if (type === 'movies')    { fd.append('title', vals[0]); fd.append('mediaType', vals[1] || 'Movie'); }
+      else if (type === 'books') { fd.append('title', vals[0]); fd.append('author', vals[1] || ''); }
+      else if (type === 'mealideas') { fd.append('name', vals[0]); fd.append('category', vals[1] || ''); }
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeFunForm();
+      if (type === 'movies')    loadFunMovies();
+      else if (type === 'books') loadFunBooks();
+      else if (type === 'mealideas') loadFunMeals();
+    } catch(e) { clearLoading(btn); }
+  }
+
+  // ── WISHLIST FORM ──
+  function openWishlistForm(person) {
+    const overlay = document.getElementById('wishlist-form-overlay');
+    overlay.dataset.person = person;
+    const names = { jessica: 'Jessica', jesse: 'Jesse', tori: 'Tori', nova: 'Nova' };
+    document.getElementById('wishlist-form-title').textContent = `🎁 Add to ${names[person]}'s Wishlist`;
+    document.getElementById('wishlist-item-input').value = '';
+    document.getElementById('wishlist-notes-input').value = '';
+    overlay.classList.remove('hidden');
+    document.getElementById('wishlist-item-input').focus();
+  }
+
+  function closeWishlistForm() {
+    document.getElementById('wishlist-form-overlay').classList.add('hidden');
+  }
+
+  async function submitWishlistItem() {
+    const overlay = document.getElementById('wishlist-form-overlay');
+    const person  = overlay.dataset.person;
+    const btn     = getSubmitBtn('wishlist-form-overlay');
+    const item    = document.getElementById('wishlist-item-input').value.trim();
+    const notes   = document.getElementById('wishlist-notes-input').value.trim();
+    if (!item) return;
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('type',   `wishlist_${person}`);
+      fd.append('item',   item);
+      fd.append('notes',  notes);
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeWishlistForm();
+      loadFunWishlist(person);
+    } catch(e) { clearLoading(btn); }
+  }
+
   async function loadNovaNotes() {
     const desktopList = document.getElementById('nova-notes-list');
     const mobileList  = document.getElementById('nova-notes-list-mobile');
@@ -2921,6 +3478,8 @@
     { id: 'tori-reminder-overlay',  enter: submitToriReminder,   escape: closeToriReminderForm  },
     { id: 'personal-chore-overlay', enter: submitPersonalChore,  escape: closePersonalChoreForm },
     { id: 'nova-notes-overlay',      enter: submitNovaNote,       escape: closeNovaNotesForm     },
+    { id: 'fun-form-overlay',        enter: submitFunForm,        escape: closeFunForm           },
+    { id: 'wishlist-form-overlay',   enter: submitWishlistItem,   escape: closeWishlistForm      },
   ];
 
   document.addEventListener('keydown', e => {
