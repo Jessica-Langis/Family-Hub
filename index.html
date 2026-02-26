@@ -2321,7 +2321,7 @@
                  : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
     const fd = new FormData();
     fd.append('action', 'toggle');
-    if (person !== 'home') fd.append('type', 'chores');
+    fd.append('type', 'chores');
     fd.append('idx',    idx);
     fd.append('done',   isDone.toString());
     try {
@@ -2343,7 +2343,7 @@
     try {
       const fd = new FormData();
       fd.append('action', 'delete');
-      if (person !== 'home') fd.append('type', 'chores');
+      fd.append('type', 'chores');
       fd.append('idx',    idx);
       await apiFetch(script, { method: 'POST', body: fd });
       if (person === 'home') { await loadChores(); loadParentChores(); }
@@ -2402,6 +2402,7 @@
     try {
       const fd = new FormData();
       fd.append('action',    'add');
+      fd.append('type',      'chores');
       fd.append('choreId',   name);
       fd.append('who',       who);
       fd.append('frequency', freq);
@@ -2437,7 +2438,7 @@
     try {
       const fd = new FormData();
       fd.append('action', 'add');
-      if (person !== 'home') fd.append('type', 'chores');
+      fd.append('type', 'chores');
       fd.append('choreId', name);
       fd.append('name',    name);
       await apiFetch(script, { method: 'POST', body: fd });
@@ -2464,7 +2465,7 @@
     }
 
     const normalized = items.map(item =>
-      typeof item === 'string' ? { text: item, date: '' } : { text: item.text || '', date: item.date || '' }
+      typeof item === 'string' ? { id: 0, text: item, date: '' } : { id: item.id || 0, text: item.text || '', date: item.date || '' }
     );
     const sorted = [...normalized].sort((a, b) => {
       const dA = a.date ? new Date(a.date) : null;
@@ -2483,12 +2484,12 @@
           <span class="reminder-text">${esc(item.text)}</span>
           ${label ? `<span class="reminder-date-tag">📅 ${label}</span>` : ''}
         </div>
-        <button class="reminder-delete" data-reminder-text="${esc(item.text)}" title="Remove">×</button>
+        <button class="reminder-delete" data-reminder-idx="${esc(String(item.id || 0))}" title="Remove">×</button>
       </div>`;
     }).join('');
 
-    listEl.querySelectorAll('.reminder-delete[data-reminder-text]').forEach(btn => {
-      btn.addEventListener('click', () => deleteReminder(btn.dataset.reminderText, btn));
+    listEl.querySelectorAll('.reminder-delete[data-reminder-idx]').forEach(btn => {
+      btn.addEventListener('click', () => deleteReminder(Number(btn.dataset.reminderIdx), btn));
     });
   }
 
@@ -2549,12 +2550,13 @@
     }
   }
 
-  async function deleteReminder(text, btn) {
+  async function deleteReminder(idx, btn) {
     btn.disabled = true;
     try {
       const fd = new FormData();
       fd.append('action', 'delete');
-      fd.append('text',   text);
+      fd.append('type',   'reminders');
+      fd.append('idx',    idx);
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
       await loadReminders();
       loadParentReminders();
