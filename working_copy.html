@@ -108,8 +108,8 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-y: auto;
+    height: 100vh;
+    overflow: hidden;
     display: grid;
     grid-template-rows: auto 1fr auto;
     gap: 10px;
@@ -216,7 +216,8 @@
 
   /* ── TAB PANELS ── */
   .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  .tab-panel.active { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .tab-panel.active > div { flex: 1; min-height: 0; overflow: hidden; }
 
   /* ── SECTION COMMON ── */
   .section-header {
@@ -277,18 +278,21 @@
     grid-template-rows: auto 1fr;
     gap: 10px;
     min-height: 0;
+    height: 100%;
+    overflow: hidden;
   }
 
   .top-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
+    min-height: 0;
+    max-height: 40vh;
   }
 
   .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 3fr 7fr;
     gap: 10px;
     min-height: 0;
   }
@@ -302,14 +306,13 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    grid-column: 1;
-    grid-row: 1 / 3;
   }
 
   .agenda-embed, .month-embed {
     flex: 1; width: 100%; border: none;
     filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.8);
     min-height: 0;
+    height: 0; /* flex:1 overrides but needed for iframe shrink */
   }
 
   .month-section {
@@ -604,19 +607,36 @@
   /* ── PERSONAL TAB LAYOUTS ── */
   .personal-content {
     display: grid;
+    grid-template-rows: auto 1fr;
     gap: 10px;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .tori-content {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 10px;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
   }
 
   .personal-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    min-height: 0;
+    max-height: 40vh;
   }
 
   .personal-grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
+    min-height: 0;
+    max-height: 40vh;
   }
 
   /* ── COUNTDOWN WIDGET ── */
@@ -798,15 +818,33 @@
   .next-up-second-name { font-size: 0.88rem; font-weight: 600; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; }
   .next-up-second-date { font-size: 0.68rem; color: var(--muted); }
 
+  /* ── NOVA NOTES RESPONSIVE ── */
+  .nova-notes-mobile { display: none; }
+  .nova-notes-desktop { display: flex; }
+
+  /* ── TORI ROW 2 — desktop: Class Schedule | Wrestling Events ── */
+  .tori-schedule-panel { order: 1; }
+  .tori-events-panel   { order: 2; }
+
   /* ── MOBILE ── */
   @media (max-width: 768px) {
     body { padding: 8px 8px 0; gap: 8px; padding-bottom: calc(var(--nav-h) + 8px); }
 
-    .home-content { grid-template-rows: auto; height: auto; }
-    .top-row { grid-template-columns: 1fr; gap: 8px; }
+    body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
+    .tab-panel.active { overflow: visible; }
+    .tab-panel.active > div { overflow: visible; }
+    .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
+    .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
+    .tori-content { grid-template-rows: auto; height: auto; overflow: visible; }
+    .personal-grid-2, .personal-grid-3, .main-grid { height: auto; max-height: none; }
+    .top-row { grid-template-columns: 1fr; gap: 8px; max-height: none; }
     .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
     .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
     .month-section { height: 320px; }
+    /* Mobile home order: Reminders | Grocery | Menu | Agenda | Month */
+    .home-reminders-panel { order: 1; }
+    .home-grocery-panel   { order: 2; }
+    .home-menu-panel      { order: 3; }
     .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
     .panel { height: auto; min-height: 100px; }
     .reminder-list, .grocery-grid { overflow: visible; flex: none; grid-template-columns: 1fr; }
@@ -821,6 +859,11 @@
 
     .pin-keypad { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(4, 80px); }
     .pin-key { font-size: 1.6rem; border-radius: 14px; }
+    .nova-notes-mobile { display: flex; }
+    .nova-notes-desktop { display: none; }
+    /* Mobile: Wrestling Events before Class Schedule */
+    .tori-events-panel   { order: 1; }
+    .tori-schedule-panel { order: 2; }
   }
 </style>
 </head>
@@ -955,24 +998,25 @@
 <!-- HOME -->
 <div class="tab-panel active" id="tab-home">
   <div class="home-content">
+
+    <!-- Row 1: Reminders | Grocery | Menu -->
     <div class="top-row">
 
-      <div class="chores-section">
+      <div class="panel home-reminders-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">✅ Chores</span>
-            <span class="section-badge" id="chore-count-badge"></span>
+            <span class="section-title">📌 Reminders</span>
           </div>
           <div class="section-header-actions">
-            <button class="add-btn" onclick="openPersonalChoreForm('home')">+ Add</button>
+            <button class="add-btn" onclick="openReminderForm()">+ Add</button>
           </div>
         </div>
-        <div class="chore-list" id="chore-list">
-          <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+        <div class="reminder-list" id="reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel home-grocery-panel">
         <div class="section-header">
           <div class="section-header-left">
             <span class="section-title">🛒 Grocery List</span>
@@ -987,7 +1031,7 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel home-menu-panel">
         <div class="section-header">
           <div class="section-header-left">
             <span class="section-title">🍽️ This Week's Menu</span>
@@ -1003,6 +1047,7 @@
 
     </div>
 
+    <!-- Row 2: Agenda | Month -->
     <div class="main-grid">
 
       <div class="agenda-section">
@@ -1015,20 +1060,6 @@
         <iframe class="agenda-embed"
           src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
           frameborder="0" scrolling="no"></iframe>
-      </div>
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">📌 Reminders</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" onclick="openReminderForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="reminder-list" id="reminder-list">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
       </div>
 
       <div class="month-section">
@@ -1082,7 +1113,7 @@
 
     </div>
 
-    <div class="panel" style="height:420px">
+    <div class="panel">
       <div class="section-header">
         <div class="section-header-left">
           <span class="section-title" style="color:var(--accent2)">📅 Calendar</span>
@@ -1097,7 +1128,7 @@
 
 <!-- TORI -->
 <div class="tab-panel" id="tab-tori">
-  <div class="personal-content">
+  <div class="tori-content">
     <div class="personal-grid-3">
 
       <!-- Next Up: Wrestling -->
@@ -1109,6 +1140,21 @@
         </div>
         <div class="next-up-hero" id="tori-next-up">
           <div class="next-up-label">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Tori's Reminders -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">📌 My Reminders</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="reminder-list" id="tori-reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
         </div>
       </div>
 
@@ -1128,27 +1174,12 @@
         </div>
       </div>
 
-      <!-- Tori's Reminders -->
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">📌 My Reminders</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="reminder-list" id="tori-reminder-list">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
     </div>
 
     <div class="personal-grid-2">
 
       <!-- Class Schedule -->
-      <div class="panel">
+      <div class="panel tori-schedule-panel">
         <div class="section-header">
           <div class="section-header-left">
             <span class="section-title" style="color:var(--accent4)">📚 Class Schedule</span>
@@ -1164,7 +1195,7 @@
       </div>
 
       <!-- All Wrestling Events -->
-      <div class="panel">
+      <div class="panel tori-events-panel">
         <div class="section-header">
           <div class="section-header-left">
             <span class="section-title" style="color:var(--accent4)">🏆 Wrestling Events</span>
@@ -1187,6 +1218,21 @@
   <div class="personal-content">
     <div class="personal-grid-3">
 
+      <!-- Nova's Upcoming Events -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">🎉 My Events</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="countdown-list" id="nova-events">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
       <!-- Nova's Chores -->
       <div class="panel">
         <div class="section-header">
@@ -1203,50 +1249,52 @@
         </div>
       </div>
 
-      <!-- Nova's Upcoming Events -->
+      <!-- Homework (desktop: col 3 of grid; mobile: stacks after chores) -->
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">🎉 My Events</span>
+            <span class="section-title" style="color:var(--accent3)">📖 Homework</span>
+            <span class="section-badge" id="hw-badge"></span>
           </div>
           <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+ Add</button>
+            <button class="clear-btn" onclick="clearDoneHomework()">Clear Done</button>
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+ Add</button>
           </div>
         </div>
-        <div class="countdown-list" id="nova-events">
-          <!-- Rendered by JS -->
+        <div class="homework-list" id="hw-list">
+          <div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>
         </div>
       </div>
 
-      <!-- Tori's Events FYI -->
-      <div class="panel">
+      <!-- Nova's Notes (mobile only — desktop version is below) -->
+      <div class="panel nova-notes-mobile">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">🤼‍♀️ Tori's Matches</span>
-            <span class="section-badge">FYI</span>
+            <span class="section-title" style="color:var(--accent3)">📝 My Notes</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaNotesForm()">+ Add</button>
           </div>
         </div>
-        <div class="countdown-list" id="nova-tori-events">
+        <div class="reminder-list" id="nova-notes-list-mobile" style="grid-template-columns:1fr">
           <!-- Rendered by JS -->
         </div>
       </div>
 
     </div>
 
-    <!-- Homework Checklist -->
-    <div class="panel">
+    <!-- Nova's Notes (desktop only — full width row) -->
+    <div class="panel nova-notes-desktop">
       <div class="section-header">
         <div class="section-header-left">
-          <span class="section-title" style="color:var(--accent3)">📖 Homework</span>
-          <span class="section-badge" id="hw-badge"></span>
+          <span class="section-title" style="color:var(--accent3)">📝 My Notes</span>
         </div>
         <div class="section-header-actions">
-          <button class="clear-btn" onclick="clearDoneHomework()">Clear Done</button>
-          <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+ Add</button>
+          <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaNotesForm()">+ Add</button>
         </div>
       </div>
-      <div class="homework-list" id="hw-list">
-        <div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>
+      <div class="reminder-list" id="nova-notes-list" style="grid-template-columns:1fr">
+        <!-- Rendered by JS -->
       </div>
     </div>
 
@@ -1422,6 +1470,18 @@
     <div class="overlay-actions">
       <button class="overlay-btn cancel" onclick="closeHomeworkForm()">Cancel</button>
       <button class="overlay-btn submit" style="background:var(--accent3);color:#0f1117" onclick="submitHomework()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVA NOTES OVERLAY -->
+<div id="nova-notes-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" style="color:var(--accent3)">📝 Add Note</div>
+    <input type="text" id="nova-notes-input" class="overlay-input" placeholder="e.g. Can we have tacos this week?" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeNovaNotesForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent3);color:#0f1117" onclick="submitNovaNote()">Add</button>
     </div>
   </div>
 </div>
@@ -1627,7 +1687,7 @@
     } else if (tab === 'nova') {
       loadNovaChores();
       loadNovaEvents();
-      loadToriEventsForNova();
+      loadNovaNotes();
       loadHomework();
     }
   }
@@ -2527,17 +2587,84 @@
     }
   }
 
-  async function loadToriEventsForNova() {
-    const el = document.getElementById('nova-tori-events');
-    if (!el) return;
+  function renderNovaNotesList(listEl, notes, isMobile) {
+    if (!listEl) return;
+    if (!notes || notes.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No notes yet</div>';
+      return;
+    }
+    listEl.innerHTML = notes.map(n => `
+      <div class="reminder-item">
+        <div class="reminder-dot" style="background:var(--accent3)"></div>
+        <div class="reminder-body">
+          <span class="reminder-text">${esc(n.text)}</span>
+        </div>
+        <button class="reminder-delete" data-note-idx="${esc(String(n.id))}" data-mobile="${isMobile}" title="Remove">×</button>
+      </div>`).join('');
+    listEl.querySelectorAll('.reminder-delete[data-note-idx]').forEach(btn => {
+      btn.addEventListener('click', () => deleteNovaNote(Number(btn.dataset.noteIdx), btn));
+    });
+  }
+
+  async function loadNovaNotes() {
+    const desktopList = document.getElementById('nova-notes-list');
+    const mobileList  = document.getElementById('nova-notes-list-mobile');
     try {
-      const res    = await apiFetch(SCRIPTS.TORI + '?type=events');
-      const events = await res.json();
-      renderEventList(events, 'nova-tori-events');
+      const res   = await apiFetch(SCRIPTS.NOVA + '?type=notes');
+      const notes = await res.json();
+      renderNovaNotesList(desktopList, notes, false);
+      renderNovaNotesList(mobileList,  notes, true);
     } catch (e) {
-      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+      const msg = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
+      if (desktopList) desktopList.innerHTML = msg;
+      if (mobileList)  mobileList.innerHTML  = msg;
     }
   }
+
+  function openNovaNotesForm() {
+    document.getElementById('nova-notes-overlay').classList.remove('hidden');
+    document.getElementById('nova-notes-input').value = '';
+    document.getElementById('nova-notes-input').focus();
+  }
+  function closeNovaNotesForm() {
+    document.getElementById('nova-notes-overlay').classList.add('hidden');
+  }
+
+  async function submitNovaNote() {
+    const btn  = getSubmitBtn('nova-notes-overlay');
+    const text = document.getElementById('nova-notes-input').value.trim();
+    if (!text) return;
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action', 'add');
+      fd.append('type',   'notes');
+      fd.append('text',   text);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeNovaNotesForm();
+      loadNovaNotes();
+    } catch (e) {
+      clearLoading(btn);
+      err('submitNovaNote failed:', e.message);
+    }
+  }
+
+  async function deleteNovaNote(idx, btn) {
+    btn.disabled = true;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('type',   'notes');
+      fd.append('idx',    idx);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
+      await loadNovaNotes();
+    } catch (e) {
+      btn.disabled = false;
+      err('deleteNovaNote failed:', e.message);
+    }
+  }
+
 
   function openToriEventsForm() {
     document.getElementById('tori-events-overlay').classList.remove('hidden');
@@ -2793,6 +2920,7 @@
     { id: 'shared-chore-overlay',   enter: submitSharedChore,    escape: closeSharedChoreForm   },
     { id: 'tori-reminder-overlay',  enter: submitToriReminder,   escape: closeToriReminderForm  },
     { id: 'personal-chore-overlay', enter: submitPersonalChore,  escape: closePersonalChoreForm },
+    { id: 'nova-notes-overlay',      enter: submitNovaNote,       escape: closeNovaNotesForm     },
   ];
 
   document.addEventListener('keydown', e => {
