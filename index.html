@@ -1014,7 +1014,7 @@
 
 <!-- ── FUN PIN ── -->
 <div id="pin-fun" class="pin-overlay hidden">
-  <div class="pin-title" style="color:var(--accent5)">🎪 Fun Shit</div>
+  <div class="pin-title" style="color:var(--accent5)">⛺ Fun</div>
   <div class="pin-subtitle">Enter PIN to continue</div>
   <div class="pin-dots" id="pin-dots-fun">
     <div class="pin-dot" id="fun-d0"></div>
@@ -1200,6 +1200,20 @@
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent2)">📌 Reminders</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="reminder-list" id="parent-reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
             <span class="section-title" style="color:var(--accent2)">✅ Your Chores</span>
             <span class="section-badge" id="parent-chore-badge"></span>
           </div>
@@ -1209,20 +1223,6 @@
         </div>
         <div class="chore-list" id="parent-chore-list">
           <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent2)">📌 Reminders</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" onclick="openReminderForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="reminder-list" id="parent-reminder-list">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
         </div>
       </div>
 
@@ -1572,8 +1572,8 @@
     <span class="nav-label">Home</span>
   </button>
   <button class="nav-tab" data-tab="fun" onclick="switchTab('fun')">
-    <span class="nav-icon">🎪</span>
-    <span class="nav-label">Fun Shit</span>
+    <span class="nav-icon">⛺</span>
+    <span class="nav-label">Fun</span>
   </button>
   <button class="nav-tab" data-tab="parentals" onclick="switchTab('parentals')">
     <span class="nav-icon">👨‍👩‍👧‍👦</span>
@@ -1801,7 +1801,7 @@
 
   const TAB_TITLES = {
     home:      "🏡 What's The Plan Stan",
-    fun:       '🎪 Fun',
+    fun:       '⛺ Fun',
     parentals: '👨‍👩‍👧‍👦 Parentals',
     tori:      '🤼‍♀️ Tori',
     nova:      '🚲 Nova',
@@ -3053,7 +3053,22 @@
     try {
       const res   = await apiFetch(SCRIPTS.CHORES + '?type=mealideas');
       const items = await res.json();
-      renderFunList('fun-meals-list', items, 'var(--accent5)', 'name', 'category');
+      if (!items || items.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Nothing here yet</div>';
+        return;
+      }
+      list.innerHTML = items.map(item => {
+        const tags = [item.category, item.ingredient].filter(Boolean).map(t => `<span class="fun-item-tag">${esc(t)}</span>`).join('');
+        const link = item.link ? `<a href="${esc(item.link)}" target="_blank" style="font-size:0.7rem;color:var(--accent2);text-decoration:none;" title="Recipe">🔗 Recipe</a>` : '';
+        return `<div class="fun-item">
+          <div class="fun-item-dot" style="background:var(--accent5)"></div>
+          <div class="fun-item-body">
+            <span class="fun-item-title">${esc(item.name)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">${tags}${link}</div>
+          <button class="fun-delete" data-idx="${item.id}" title="Remove">×</button>
+        </div>`;
+      }).join('');
       bindFunDeletes('fun-meals-list', 'mealideas');
     } catch(e) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
@@ -3079,7 +3094,7 @@
   const FUN_FORM_CONFIG = {
     movies:    { title: '🎬 Add Movie / Show',  fields: [{ id: 'fun-movie-title', label: 'Title', placeholder: 'e.g. Inception' }, { id: 'fun-movie-type', label: 'Type', placeholder: 'Movie or Show', default: 'Movie' }] },
     books:     { title: '📚 Add Book',          fields: [{ id: 'fun-book-title',  label: 'Title', placeholder: 'e.g. Atomic Habits' }, { id: 'fun-book-author', label: 'Author (optional)', placeholder: 'e.g. James Clear' }] },
-    mealideas: { title: '🍽️ Add Meal Idea',    fields: [{ id: 'fun-meal-name',   label: 'Meal',  placeholder: 'e.g. Chicken Tikka Masala' }, { id: 'fun-meal-category', label: 'Category (optional)', placeholder: 'e.g. Dinner, Quick' }] },
+    mealideas: { title: '🍽️ Add Meal Idea',    fields: [{ id: 'fun-meal-name', label: 'Meal', placeholder: 'e.g. Chicken Tikka Masala' }, { id: 'fun-meal-category', label: 'Category (optional)', placeholder: 'e.g. Dinner, Quick' }, { id: 'fun-meal-ingredient', label: 'Main Ingredient (optional)', placeholder: 'e.g. Chicken' }, { id: 'fun-meal-link', label: 'Recipe Link (optional)', placeholder: 'https://...' }] },
   };
 
   function openFunForm(type) {
@@ -3116,7 +3131,7 @@
       fd.append('type', type);
       if (type === 'movies')    { fd.append('title', vals[0]); fd.append('mediaType', vals[1] || 'Movie'); }
       else if (type === 'books') { fd.append('title', vals[0]); fd.append('author', vals[1] || ''); }
-      else if (type === 'mealideas') { fd.append('name', vals[0]); fd.append('category', vals[1] || ''); }
+      else if (type === 'mealideas') { fd.append('name', vals[0]); fd.append('category', vals[1] || ''); fd.append('ingredient', vals[2] || ''); fd.append('link', vals[3] || ''); }
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
       clearLoading(btn);
       closeFunForm();
