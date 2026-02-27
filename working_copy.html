@@ -14,8 +14,8 @@
     --border: #2a3045;
     --accent: #e8b86d;
     --accent2: #7eb8d4;
-    --accent3: #a8d5a2;
-    --accent4: #f096b5;
+    --accent3: #87ceeb;
+    --accent4: #f5b8ce;
     --accent5: #e88d8d;
     --text: #e8eaf0;
     --muted: #8891a8;
@@ -755,6 +755,228 @@
     overflow: hidden;
   }
 
+  /* ── THIS WEEK TILE ── */
+  .this-week-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .this-week-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent4);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .this-week-text {
+    flex: 1;
+    font-size: 1rem;
+    color: var(--text);
+    font-style: italic;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .this-week-text.empty { color: var(--muted); font-style: normal; font-size: 0.85rem; }
+  .this-week-edit-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .this-week-edit-btn:hover { color: var(--accent4); border-color: var(--accent4); }
+  .this-week-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.95rem;
+    padding: 6px 10px;
+    font-family: inherit;
+    min-width: 0;
+  }
+  .this-week-save-btn {
+    background: var(--accent4);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.78rem;
+    padding: 6px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ── HYPE TILE ── */
+  .hype-panel {
+    background: linear-gradient(135deg, rgba(168,130,200,0.12), rgba(126,184,212,0.08));
+    border: 1px solid rgba(168,130,200,0.25);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+  .hype-quote {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    font-style: italic;
+    text-align: center;
+    color: var(--text);
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .hype-quote.visible { opacity: 1; }
+
+  /* ── NOVA LAYOUT ── */
+  .nova-content {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 10px;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  .nova-top-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+  .nova-mid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .nova-bot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+    max-height: 38vh;
+  }
+
+  /* Nova today panel */
+  .nova-today-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+  }
+  .nova-today-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .nova-today-meal {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--text);
+  }
+  .nova-today-meal.empty { font-family: inherit; font-style: normal; font-size: 0.85rem; color: var(--muted); }
+
+  /* Fun fact / joke tiles */
+  .fun-fact-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .fun-fact-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .fun-fact-text {
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+  }
+
+  /* Gamified homework */
+  .hw-progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 20px;
+    height: 6px;
+    margin: 4px 16px 0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .hw-progress-bar {
+    height: 100%;
+    border-radius: 20px;
+    background: var(--accent3);
+    transition: width 0.4s ease;
+  }
+  .hw-all-clear {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    gap: 4px;
+    color: var(--accent3);
+    font-size: 0.85rem;
+  }
+  .hw-all-clear-emoji { font-size: 2rem; }
+
+  /* Nova hype panel */
+  .nova-hype-panel {
+    background: linear-gradient(135deg, rgba(135,206,235,0.12), rgba(100,180,220,0.08));
+    border: 1px solid rgba(135,206,235,0.25);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+  .nova-hype-quote {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-size: clamp(0.9rem, 2vw, 1.25rem);
+    font-style: italic;
+    text-align: center;
+    color: var(--text);
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .nova-hype-quote.visible { opacity: 1; }
+
   .personal-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1031,14 +1253,6 @@
   }
   .fun-delete:hover { color: #e07070; }
 
-  /* Wishlists: 2x2 on desktop */
-  .fun-wishlists {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    min-height: 0;
-    max-height: 50vh;
-  }
 
   /* ── NOVA NOTES RESPONSIVE ── */
   .nova-notes-mobile  { display: none; }
@@ -1064,6 +1278,10 @@
     body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
     .tab-panel.active { overflow: visible; }
     .tab-panel.active > div { overflow: visible; }
+    .nova-top-row { grid-template-columns: 1fr; }
+    .nova-mid-row { grid-template-columns: 1fr 1fr; }
+    .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
+    .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .today-columns { grid-template-columns: 1fr; }
     .today-divider { display: none; }
@@ -1095,7 +1313,6 @@
     .nova-notes-mobile  { display: flex; }
     .nova-notes-desktop { display: none; }
     .nova-school-mobile { display: flex; }
-    .fun-wishlists { grid-template-columns: 1fr; max-height: none; }
     /* Mobile: Wrestling Events before Class Schedule */
     .tori-events-panel   { order: 1; }
     .tori-schedule-panel { order: 2; }
@@ -1465,95 +1682,36 @@
 
     </div>
 
-    <!-- Wishlists row -->
-    <div class="personal-grid-2 fun-wishlists">
 
-      <!-- Jessica -->
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent5)">🎁 Jessica's Wishlist</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openWishlistForm('jessica')">+ Add</button>
-          </div>
-        </div>
-        <div class="fun-list" id="fun-wishlist-jessica">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
-      <!-- Jesse -->
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent5)">🎁 Jesse's Wishlist</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openWishlistForm('jesse')">+ Add</button>
-          </div>
-        </div>
-        <div class="fun-list" id="fun-wishlist-jesse">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
-      <!-- Tori -->
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">🎁 Tori's Wishlist</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent4);color:#0f1117" onclick="openWishlistForm('tori')">+ Add</button>
-          </div>
-        </div>
-        <div class="fun-list" id="fun-wishlist-tori">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
-      <!-- Nova -->
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">🎁 Nova's Wishlist</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openWishlistForm('nova')">+ Add</button>
-          </div>
-        </div>
-        <div class="fun-list" id="fun-wishlist-nova">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
-    </div>
   </div>
 </div>
 
 <!-- TORI -->
 <div class="tab-panel" id="tab-tori">
   <div class="tori-content">
-    <div class="personal-grid-3">
 
-      <!-- Next Up: Wrestling -->
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">🤼‍♀️ Next Up</span>
-          </div>
-        </div>
-        <div class="next-up-hero" id="tori-next-up">
-          <div class="next-up-label">Loading...</div>
-        </div>
+    <!-- Row 1: This Week I Want To | Hype Tile -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+
+      <div class="this-week-panel" id="this-week-panel">
+        <span class="this-week-label">This week I want to</span>
+        <span class="this-week-text empty" id="this-week-display">Tap edit to set your intention...</span>
+        <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Edit</button>
       </div>
 
-      <!-- Tori's Reminders -->
+      <div class="hype-panel">
+        <div class="hype-quote" id="tori-hype-quote"></div>
+      </div>
+
+    </div>
+
+    <!-- Row 2: Reminders | Chores | Schedule -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
+
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">📌 My Reminders</span>
+            <span class="section-title" style="color:var(--accent4)">Reminders</span>
           </div>
           <div class="section-header-actions">
             <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
@@ -1564,11 +1722,10 @@
         </div>
       </div>
 
-      <!-- Tori's Chores -->
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">✅ My Chores</span>
+            <span class="section-title" style="color:var(--accent4)">Chores</span>
             <span class="section-badge" id="tori-chore-badge"></span>
           </div>
           <div class="section-header-actions">
@@ -1580,15 +1737,10 @@
         </div>
       </div>
 
-    </div>
-
-    <div class="personal-grid-2">
-
-      <!-- Class Schedule -->
-      <div class="panel tori-schedule-panel">
+      <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">📚 Class Schedule</span>
+            <span class="section-title" style="color:var(--accent4)">Schedule</span>
             <span class="section-badge">Running Start</span>
           </div>
           <div class="section-header-actions">
@@ -1600,19 +1752,32 @@
         </div>
       </div>
 
-      <!-- All Wrestling Events -->
-      <div class="panel tori-events-panel">
+    </div>
+
+    <!-- Row 3: Next Up | Wrestling Events -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
+
+      <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">🏆 Wrestling Events</span>
+            <span class="section-title" style="color:var(--accent4)">Next Up</span>
+          </div>
+        </div>
+        <div class="next-up-hero" id="tori-next-up">
+          <div class="next-up-label">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">Wrestling Events</span>
           </div>
           <div class="section-header-actions">
             <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
           </div>
         </div>
-        <div class="countdown-list" id="tori-events">
-          <!-- Rendered by JS -->
-        </div>
+        <div class="countdown-list" id="tori-events"></div>
       </div>
 
     </div>
@@ -1621,29 +1786,82 @@
 
 <!-- NOVA -->
 <div class="tab-panel" id="tab-nova">
-  <div class="personal-content">
-    <div class="personal-grid-3">
+  <div class="nova-content">
 
-      <!-- Nova's Upcoming Events -->
+    <!-- Row 1: This Week I Want To | Hype Tile -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+
+      <div class="this-week-panel" id="nova-this-week-panel">
+        <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
+        <span class="this-week-text empty" id="nova-this-week-display">Tap edit to set your goal...</span>
+        <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Edit</button>
+      </div>
+
+      <div class="nova-hype-panel">
+        <div class="nova-hype-quote" id="nova-hype-quote"></div>
+      </div>
+
+    </div>
+
+    <!-- Row 2: Joke | Fun Fact | Cool Fact | Tonight's Dinner -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;flex-shrink:0">
+
+      <div class="fun-fact-panel">
+        <span class="fun-fact-label" style="color:var(--accent3)">Joke of the Day</span>
+        <div class="fun-fact-text" id="nova-joke"></div>
+      </div>
+
+      <div class="fun-fact-panel">
+        <span class="fun-fact-label" style="color:var(--accent3)">Fun Fact</span>
+        <div class="fun-fact-text" id="nova-fact"></div>
+      </div>
+
+      <div class="fun-fact-panel">
+        <span class="fun-fact-label" style="color:var(--accent3)">Did You Know</span>
+        <div class="fun-fact-text" id="nova-cool-fact"></div>
+      </div>
+
+      <div class="nova-today-panel">
+        <span class="nova-today-label" style="color:var(--accent3)">Tonight's Dinner</span>
+        <div class="nova-today-meal empty" id="nova-meal-display">Loading...</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="nova-today-date"></div>
+      </div>
+
+    </div>
+
+    <!-- Row 3: Events | Reminders | Chores | Homework -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
+
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">🎉 My Events</span>
+            <span class="section-title" style="color:var(--accent3)">Events</span>
           </div>
           <div class="section-header-actions">
             <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+ Add</button>
           </div>
         </div>
-        <div class="countdown-list" id="nova-events">
-          <!-- Rendered by JS -->
-        </div>
+        <div class="countdown-list" id="nova-events"></div>
       </div>
 
-      <!-- Nova's Chores -->
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">✅ My Chores</span>
+            <span class="section-title" style="color:var(--accent3)">Reminders</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="reminder-list" id="nova-reminder-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent3)">Chores</span>
             <span class="section-badge" id="nova-chore-badge"></span>
           </div>
           <div class="section-header-actions">
@@ -1655,11 +1873,10 @@
         </div>
       </div>
 
-      <!-- Homework (desktop: col 3 of grid; mobile: stacks after chores) -->
       <div class="panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">📖 Homework</span>
+            <span class="section-title" style="color:var(--accent3)">Homework</span>
             <span class="section-badge" id="hw-badge"></span>
           </div>
           <div class="section-header-actions">
@@ -1667,70 +1884,12 @@
             <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+ Add</button>
           </div>
         </div>
+        <div class="hw-progress-bar-wrap"><div class="hw-progress-bar" id="hw-progress-bar" style="width:0%"></div></div>
         <div class="homework-list" id="hw-list">
           <div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>
         </div>
       </div>
 
-      <!-- Nova's Notes (mobile only — desktop version is below) -->
-      <div class="panel nova-notes-mobile">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">📝 My Notes</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaNotesForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="reminder-list" id="nova-notes-list-mobile" style="grid-template-columns:1fr">
-          <!-- Rendered by JS -->
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Nova's Notes + School Calendar row (desktop) -->
-    <div class="nova-bottom-row nova-notes-desktop">
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">📝 My Notes</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaNotesForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="reminder-list" id="nova-notes-list" style="grid-template-columns:1fr">
-          <!-- Rendered by JS -->
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent3)">🏫 School Calendar</span>
-            <span class="section-badge">Cashmere</span>
-          </div>
-        </div>
-        <div class="countdown-list" id="school-cal-list">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- School Calendar mobile only (stacks after Notes mobile) -->
-    <div class="panel nova-school-mobile">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title" style="color:var(--accent3)">🏫 School Calendar</span>
-          <span class="section-badge">Cashmere</span>
-        </div>
-      </div>
-      <div class="countdown-list" id="school-cal-list-mobile">
-        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-      </div>
     </div>
 
   </div>
@@ -1845,6 +2004,18 @@
   </div>
 </div>
 
+<div id="nova-reminder-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" style="color:var(--accent3)">Add Reminder</div>
+    <input type="text" id="nova-reminder-input" class="overlay-input" placeholder="e.g. Return library book" autocomplete="off" />
+    <input type="date" id="nova-reminder-date" class="overlay-input" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeNovaReminderForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent3);color:#0f1117" onclick="submitNovaReminder()">Add</button>
+    </div>
+  </div>
+</div>
+
 <!-- PERSONAL CHORE OVERLAY (shared by Tori + Nova) -->
 <div id="personal-chore-overlay" class="overlay hidden" data-person="">
   <div class="overlay-box">
@@ -1950,18 +2121,7 @@
   </div>
 </div>
 
-<!-- WISHLIST FORM OVERLAY -->
-<div id="wishlist-form-overlay" class="overlay hidden" data-person="">
-  <div class="overlay-box">
-    <div class="overlay-title" id="wishlist-form-title" style="color:var(--accent5)">🎁 Add to Wishlist</div>
-    <input type="text" id="wishlist-item-input" class="overlay-input" placeholder="What do you want?" autocomplete="off" />
-    <input type="text" id="wishlist-notes-input" class="overlay-input" placeholder="Notes / link (optional)" autocomplete="off" style="margin-top:8px" />
-    <div class="overlay-actions">
-      <button class="overlay-btn cancel" onclick="closeWishlistForm()">Cancel</button>
-      <button class="overlay-btn submit" style="background:var(--accent5);color:#0f1117" onclick="submitWishlistItem()">Add</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- NOVA NOTES OVERLAY -->
 <div id="nova-notes-overlay" class="overlay hidden">
@@ -1999,8 +2159,8 @@
     home:      "🏡 What's The Plan Stan",
     fun:       '⛺ Fun',
     parentals: '👨‍👩‍👧‍👦 Parentals',
-    tori:      '🤼‍♀️ Tori',
-    nova:      '🚲 Nova',
+    tori:      'Tori',
+    nova:      'Nova',
   };
 
   // ─────────────────────────────────────────────
@@ -2152,7 +2312,14 @@
     const navBtn = document.querySelector(`.nav-tab[data-tab="${tab}"]`);
     if (navBtn) navBtn.classList.add('active');
     const titleEl = document.getElementById('topbar-title');
-    if (titleEl) titleEl.textContent = TAB_TITLES[tab];
+    if (titleEl) {
+      titleEl.textContent = TAB_TITLES[tab];
+      const titleColors = { home: '', fun: '', parentals: '', tori: 'var(--accent4)', nova: 'var(--accent3)' };
+      titleEl.style.color = titleColors[tab] || '';
+      titleEl.style.fontFamily = tab === 'tori' ? "'Playfair Display', Georgia, serif" : '';
+      titleEl.style.fontStyle  = '';
+    }
+    history.replaceState(null, '', `#${tab}`);
     currentTab = tab;
     if (!requirePin(tab)) return;
     onTabUnlocked(tab);
@@ -2173,21 +2340,22 @@
       loadFunMovies();
       loadFunBooks();
       loadFunMeals();
-      loadFunWishlist('jessica');
-      loadFunWishlist('jesse');
-      loadFunWishlist('tori');
-      loadFunWishlist('nova');
     } else if (tab === 'tori') {
       loadToriChores();
       loadToriReminders();
       loadToriSchedule();
       loadToriEvents();
+      loadThisWeek();
+      loadToriHype();
     } else if (tab === 'nova') {
       loadNovaChores();
       loadNovaEvents();
-      loadNovaNotes();
       loadHomework();
-      loadSchoolCalendar();
+      loadNovaJokeAndFact();
+      loadNovaTodayPanel();
+      loadNovaHype();
+      loadNovaThisWeek();
+      loadNovaReminders();
     }
   }
 
@@ -3086,6 +3254,94 @@
     localStorage.setItem('grocery_bought', JSON.stringify(arr));
   }
 
+  // ─────────────────────────────────────────────
+  // NOVA: REMINDERS
+  // ─────────────────────────────────────────────
+  async function loadNovaReminders() {
+    const list = document.getElementById('nova-reminder-list');
+    if (!list) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.NOVA + '?type=reminders');
+      const items = await res.json();
+      renderPersonalReminderList(items, 'nova-reminder-list', 'var(--accent3)');
+      list.querySelectorAll('.tori-reminder-edit').forEach(btn => {
+        btn.className = btn.className.replace('tori-reminder-edit', 'nova-reminder-edit');
+      });
+      list.querySelectorAll('.nova-reminder-edit').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const row = btn.closest('.reminder-item');
+          openNovaReminderForm({ idx: Number(row.dataset.reminderId), text: row.dataset.reminderText, date: row.dataset.reminderDate });
+        });
+      });
+      list.querySelectorAll('.reminder-delete[data-reminder-idx]').forEach(btn => {
+        btn.addEventListener('click', () => deleteNovaReminder(Number(btn.dataset.reminderIdx), btn));
+      });
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
+    }
+  }
+
+  function openNovaReminderForm(editData) {
+    const overlay = document.getElementById('nova-reminder-overlay');
+    if (!overlay) {
+      // Reuse tori overlay pattern — open shared reminder form for now
+      openReminderForm(editData);
+      return;
+    }
+    overlay.classList.remove('hidden');
+    overlay.dataset.editIdx = editData ? String(editData.idx) : '';
+    const btn = overlay.querySelector('.overlay-btn.submit');
+    document.getElementById('nova-reminder-input').value = editData ? editData.text : '';
+    document.getElementById('nova-reminder-date').value  = editData ? editData.date : '';
+    if (btn) btn.textContent = editData ? 'Save' : 'Add';
+    document.getElementById('nova-reminder-input').focus();
+  }
+  function closeNovaReminderForm() {
+    const overlay = document.getElementById('nova-reminder-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  async function submitNovaReminder() {
+    const overlay = document.getElementById('nova-reminder-overlay');
+    const btn     = getSubmitBtn('nova-reminder-overlay');
+    const text    = document.getElementById('nova-reminder-input').value.trim();
+    const date    = document.getElementById('nova-reminder-date').value;
+    const editIdx = overlay.dataset.editIdx;
+    if (!text) return;
+    setLoading(btn);
+    try {
+      const fd = new FormData();
+      fd.append('action', editIdx ? 'update' : 'add');
+      fd.append('type',   'reminders');
+      fd.append('text',   text);
+      fd.append('date',   date);
+      if (editIdx) fd.append('idx', editIdx);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
+      clearLoading(btn);
+      closeNovaReminderForm();
+      loadNovaReminders();
+    } catch (e) {
+      clearLoading(btn);
+      err('submitNovaReminder failed:', e.message);
+    }
+  }
+
+  async function deleteNovaReminder(idx, btn) {
+    btn.disabled = true;
+    try {
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('type',   'reminders');
+      fd.append('idx',    idx);
+      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
+      await loadNovaReminders();
+    } catch (e) {
+      btn.disabled = false;
+      err('deleteNovaReminder failed:', e.message);
+    }
+  }
+
   async function loadGroceryList() {
     const grid = document.getElementById('grocery-list');
     if (!grid) return;
@@ -3302,6 +3558,254 @@
     }
   }
 
+  // TORI: THIS WEEK I WANT TO
+  // ─────────────────────────────────────────────
+  async function loadThisWeek() {
+    const el = document.getElementById('this-week-display');
+    if (!el) return;
+    try {
+      const res  = await apiFetch(SCRIPTS.CHORES + '?type=tori_this_week');
+      const data = await res.json();
+      const val  = data.value || '';
+      if (val) { el.textContent = val; el.classList.remove('empty'); }
+      else { el.textContent = 'Tap edit to set your intention...'; el.classList.add('empty'); }
+    } catch(e) {
+      el.textContent = 'Tap edit to set your intention...';
+      el.classList.add('empty');
+    }
+  }
+
+  function startThisWeekEdit() {
+    const panel   = document.getElementById('this-week-panel');
+    const display = document.getElementById('this-week-display');
+    const editBtn = panel.querySelector('.this-week-edit-btn');
+    const current = display.classList.contains('empty') ? '' : display.textContent;
+    const input   = document.createElement('input');
+    input.type = 'text';
+    input.className = 'this-week-input';
+    input.value = current;
+    input.placeholder = 'What do you want to do this week?';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'this-week-save-btn';
+    saveBtn.textContent = 'Save';
+    saveBtn.onclick = async () => {
+      const val = input.value.trim();
+      saveBtn.textContent = '...';
+      saveBtn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('type',  'tori_this_week');
+        fd.append('value', val);
+        await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+      } catch(e) {}
+      input.replaceWith(display);
+      saveBtn.replaceWith(editBtn);
+      loadThisWeek();
+    };
+    display.replaceWith(input);
+    editBtn.replaceWith(saveBtn);
+    input.focus();
+  }
+
+  // ─────────────────────────────────────────────
+  // HYPE TILES
+  // ─────────────────────────────────────────────
+  const TORI_HYPE = [
+    "Built different. Also, go drink some water.",
+    "Dean's list. Third in state. Just getting started.",
+    "Olympians are built in the off days too.",
+    "Third this year. First is just a matter of time.",
+    "The mat doesn't care about your mood. Neither do you.",
+    "Rest isn't quitting. It's maintenance.",
+    "Hard days are just plot development.",
+    "You've already done things most people only talk about.",
+    "Tired? Eat something. Still tired? Sleep. Still tired? Unfollow someone.",
+    "Every rep in practice is a rep toward Paris.",
+  ];
+
+  const NOVA_HYPE = [
+    "Built different. Also, go drink some water.",
+    "You walk in, the room notices. That's not an accident.",
+    "Dogs don't worry about yesterday. Be more dog.",
+    "Every great player started exactly where you are.",
+    "The mat, the field, the track — you show up. That's the whole thing.",
+    "Eat. Sleep. Be awesome. Repeat.",
+    "Quiet confidence hits different. You've got it.",
+    "Not every day is a win screen. Show up for the next level anyway.",
+    "Puppies believe in you. That's basically science.",
+    "You don't ask for respect. You make it impossible to ignore you.",
+    "Lions don't lose sleep over the opinions of sheep.",
+    "Eagles don't explain themselves to pigeons.",
+    "A wolf doesn't have to tell you it's a wolf.",
+    "The room adjusts to you. Not the other way around.",
+    "Sharks keep moving. So do you.",
+    "You're not waiting for your moment. You're building it.",
+    "Even the best players have bad days. They still suit up.",
+    "Bears don't apologize for taking up space. Neither should you.",
+    "The work you put in when nobody's watching is why they notice when you walk in.",
+    "Rhinos run full speed toward the obstacle. Be a rhino.",
+  ];
+
+  function pickDailyItem(arr) {
+    const day = new Date().toDateString();
+    let hash = 0;
+    for (let i = 0; i < day.length; i++) hash = (hash * 31 + day.charCodeAt(i)) % arr.length;
+    return arr[((hash % arr.length) + arr.length) % arr.length];
+  }
+
+  function loadToriHype() {
+    const el = document.getElementById('tori-hype-quote');
+    if (!el) return;
+    el.textContent = pickDailyItem(TORI_HYPE);
+    setTimeout(() => el.classList.add('visible'), 100);
+  }
+
+  function loadNovaHype() {
+    const el = document.getElementById('nova-hype-quote');
+    if (!el) return;
+    el.textContent = pickDailyItem(NOVA_HYPE);
+    setTimeout(() => el.classList.add('visible'), 100);
+  }
+
+  // ─────────────────────────────────────────────
+  // NOVA: JOKES & FACTS
+  // ─────────────────────────────────────────────
+  const NOVA_JOKES = [
+    "Why did the scarecrow win an award? He was outstanding in his field.",
+    "Why can't a leopard hide? Because he's always spotted.",
+    "What do you call a fish without eyes? A fsh.",
+    "Why did the math book look so sad? It had too many problems.",
+    "What do you call a sleeping dinosaur? A dino-snore.",
+    "Why do cows wear bells? Because their horns don't work.",
+    "What do elves learn in school? The elf-abet.",
+    "Why did the bicycle fall over? It was two-tired.",
+    "What do you call a fake noodle? An impasta.",
+    "Why did the golfer bring extra pants? In case he got a hole in one.",
+    "What do you call a dog that does magic? A labracadabrador.",
+    "Why don't scientists trust atoms? Because they make up everything.",
+    "What do you call a bear with no teeth? A gummy bear.",
+    "Why did the stadium get hot after the game? All the fans left.",
+    "What did the ocean say to the beach? Nothing, it just waved.",
+  ];
+
+  const NOVA_FACTS = [
+    "A dog's nose print is as unique as a human fingerprint.",
+    "Puppies are born blind, deaf, and toothless.",
+    "Dogs can smell about 100,000 times better than humans.",
+    "A group of puppies is called a litter. A group of dogs is called a pack.",
+    "Dogs dream just like humans — their paws often twitch during sleep.",
+    "The world record for the fastest 100m was set by Usain Bolt at 9.58 seconds.",
+    "A baseball has exactly 108 stitches.",
+    "The NFL football is made from cowhide leather, not pigskin.",
+    "Geometry Dash has over 100 million downloads worldwide.",
+    "The first video game ever made was called Tennis for Two, created in 1958.",
+    "A standard baseball game uses about 70 different balls.",
+    "Dogs have three eyelids — including one to keep their eye moist.",
+    "Wrestlers burn more calories per hour than almost any other sport.",
+    "Golden retrievers were originally bred in Scotland to retrieve birds.",
+    "The average dog can learn over 150 words and gestures.",
+  ];
+
+  const NOVA_COOL_FACTS = [
+    "There are more stars in the universe than grains of sand on all of Earth's beaches.",
+    "A day on Venus is longer than a year on Venus — it spins that slowly.",
+    "Octopuses have three hearts, blue blood, and can edit their own DNA.",
+    "The human brain generates enough electricity to power a small light bulb.",
+    "Honey never spoils — edible honey has been found in 3,000-year-old Egyptian tombs.",
+    "A single bolt of lightning contains enough energy to toast 100,000 slices of bread.",
+    "There are more possible chess games than atoms in the observable universe.",
+    "Sharks are older than trees — they've existed for over 400 million years.",
+    "The surface of the sun is actually cooler than its outer atmosphere.",
+    "Water can boil and freeze at the same time — it's called the triple point.",
+    "Mantis shrimp can see 16 types of color receptors. Humans have 3.",
+    "A neutron star is so dense that a teaspoon of it would weigh a billion tons.",
+    "Cleopatra lived closer in time to the Moon landing than to the building of the pyramids.",
+    "Some turtles can breathe through their butts — it's called cloacal respiration.",
+    "The Milky Way galaxy smells like rum and tastes like raspberries, according to astronomers.",
+  ];
+
+  async function loadNovaThisWeek() {
+    const el = document.getElementById('nova-this-week-display');
+    if (!el) return;
+    try {
+      const res  = await apiFetch(SCRIPTS.CHORES + '?type=nova_this_week');
+      const data = await res.json();
+      const val  = data.value || '';
+      if (val) { el.textContent = val; el.classList.remove('empty'); }
+      else { el.textContent = 'Tap edit to set your goal...'; el.classList.add('empty'); }
+    } catch(e) {
+      el.textContent = 'Tap edit to set your goal...';
+      el.classList.add('empty');
+    }
+  }
+
+  function startNovaThisWeekEdit() {
+    const panel   = document.getElementById('nova-this-week-panel');
+    const display = document.getElementById('nova-this-week-display');
+    const editBtn = panel.querySelector('.this-week-edit-btn');
+    const current = display.classList.contains('empty') ? '' : display.textContent;
+    const input   = document.createElement('input');
+    input.type = 'text';
+    input.className = 'this-week-input';
+    input.value = current;
+    input.placeholder = 'What do you want to do this week?';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'this-week-save-btn';
+    saveBtn.style.background = 'var(--accent3)';
+    saveBtn.textContent = 'Save';
+    saveBtn.onclick = async () => {
+      const val = input.value.trim();
+      saveBtn.textContent = '...';
+      saveBtn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('type',  'nova_this_week');
+        fd.append('value', val);
+        await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+      } catch(e) {}
+      input.replaceWith(display);
+      saveBtn.replaceWith(editBtn);
+      loadNovaThisWeek();
+    };
+    display.replaceWith(input);
+    editBtn.replaceWith(saveBtn);
+    input.focus();
+  }
+
+  function loadNovaJokeAndFact() {
+    const jokeEl = document.getElementById('nova-joke');
+    const factEl = document.getElementById('nova-fact');
+    const coolEl = document.getElementById('nova-cool-fact');
+    if (jokeEl) jokeEl.textContent = pickDailyItem(NOVA_JOKES);
+    if (factEl) factEl.textContent = pickDailyItem(NOVA_FACTS);
+    if (coolEl) coolEl.textContent = pickDailyItem(NOVA_COOL_FACTS);
+  }
+
+  // ─────────────────────────────────────────────
+  // NOVA: TODAY DATE + MEAL
+  // ─────────────────────────────────────────────
+  async function loadNovaTodayPanel() {
+    const dateEl  = document.getElementById('nova-today-date');
+    const meal1   = document.getElementById('nova-meal-display');
+    const meal2   = document.getElementById('nova-meal-display-2');
+    const today   = new Date();
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    if (dateEl) dateEl.textContent = dayNames[today.getDay()] + ', ' + MONTHS[today.getMonth()] + ' ' + today.getDate();
+    try {
+      const res   = await apiFetch(SCRIPTS.MEAL);
+      const meals = await res.json();
+      const dayFull = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
+      const meal = meals[dayFull] || null;
+      [meal1, meal2].forEach(el => {
+        if (!el) return;
+        if (meal) { el.textContent = meal; el.classList.remove('empty'); }
+        else { el.textContent = 'Nothing planned yet'; el.classList.add('empty'); }
+      });
+    } catch (e) {
+      [meal1, meal2].forEach(el => { if (el) { el.textContent = 'Unavailable'; el.classList.add('empty'); } });
+    }
+  }
+
   // ─────────────────────────────────────────────
   // TORI: SCHEDULE
   // ─────────────────────────────────────────────
@@ -3460,10 +3964,6 @@
           if (type === 'movies')    { loadFunMovies(); }
           else if (type === 'books') { loadFunBooks(); }
           else if (type === 'mealideas') { loadFunMeals(); }
-          else if (type.startsWith('wishlist_')) {
-            const person = type.split('_')[1];
-            loadFunWishlist(person);
-          }
         } catch (e) { btn.disabled = false; }
       });
     });
@@ -3523,21 +4023,6 @@
     }
   }
 
-  async function loadFunWishlist(person) {
-    const listId = `fun-wishlist-${person}`;
-    const list   = document.getElementById(listId);
-    if (!list) return;
-    const colors = { jessica: 'var(--accent5)', jesse: 'var(--accent5)', tori: 'var(--accent4)', nova: 'var(--accent3)' };
-    try {
-      const res   = await apiFetch(SCRIPTS.CHORES + `?type=wishlist_${person}`);
-      const items = await res.json();
-      renderFunList(listId, items, colors[person] || 'var(--accent5)', 'item', 'notes');
-      bindFunDeletes(listId, `wishlist_${person}`);
-    } catch(e) {
-      list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
-    }
-  }
-
   // ── FUN FORMS ──
   const FUN_FORM_CONFIG = {
     movies:    { title: '🎬 Add Movie / Show',  fields: [{ id: 'fun-movie-title', label: 'Title', placeholder: 'e.g. Inception' }, { id: 'fun-movie-type', label: 'Type', placeholder: 'Movie or Show', default: 'Movie' }] },
@@ -3589,55 +4074,14 @@
     } catch(e) { clearLoading(btn); }
   }
 
-  // ── WISHLIST FORM ──
-  function openWishlistForm(person) {
-    const overlay = document.getElementById('wishlist-form-overlay');
-    overlay.dataset.person = person;
-    const names = { jessica: 'Jessica', jesse: 'Jesse', tori: 'Tori', nova: 'Nova' };
-    document.getElementById('wishlist-form-title').textContent = `🎁 Add to ${names[person]}'s Wishlist`;
-    document.getElementById('wishlist-item-input').value = '';
-    document.getElementById('wishlist-notes-input').value = '';
-    overlay.classList.remove('hidden');
-    document.getElementById('wishlist-item-input').focus();
-  }
-
-  function closeWishlistForm() {
-    document.getElementById('wishlist-form-overlay').classList.add('hidden');
-  }
-
-  async function submitWishlistItem() {
-    const overlay = document.getElementById('wishlist-form-overlay');
-    const person  = overlay.dataset.person;
-    const btn     = getSubmitBtn('wishlist-form-overlay');
-    const item    = document.getElementById('wishlist-item-input').value.trim();
-    const notes   = document.getElementById('wishlist-notes-input').value.trim();
-    if (!item) return;
-    setLoading(btn);
-    try {
-      const fd = new FormData();
-      fd.append('action', 'add');
-      fd.append('type',   `wishlist_${person}`);
-      fd.append('item',   item);
-      fd.append('notes',  notes);
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-      clearLoading(btn);
-      closeWishlistForm();
-      loadFunWishlist(person);
-    } catch(e) { clearLoading(btn); }
-  }
-
   async function loadNovaNotes() {
-    const desktopList = document.getElementById('nova-notes-list');
-    const mobileList  = document.getElementById('nova-notes-list-mobile');
+    const list = document.getElementById('nova-notes-list');
     try {
       const res   = await apiFetch(SCRIPTS.NOVA + '?type=notes');
       const notes = await res.json();
-      renderNovaNotesList(desktopList, notes, false);
-      renderNovaNotesList(mobileList,  notes, true);
+      renderNovaNotesList(list, notes, false);
     } catch (e) {
-      const msg = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
-      if (desktopList) desktopList.innerHTML = msg;
-      if (mobileList)  mobileList.innerHTML  = msg;
+      if (list) list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable — check connection</div>';
     }
   }
 
@@ -3827,20 +4271,23 @@
   // NOVA: HOMEWORK
   // ─────────────────────────────────────────────
   function renderHomework(hw) {
-    const list  = document.getElementById('hw-list');
-    const badge = document.getElementById('hw-badge');
+    const list     = document.getElementById('hw-list');
+    const badge    = document.getElementById('hw-badge');
+    const progress = document.getElementById('hw-progress-bar');
     if (!list) return;
     const total = hw.length;
     const done  = hw.filter(h => h.done).length;
     if (badge) badge.textContent = total > 0 ? `${done} / ${total}` : '';
-    if (total === 0) {
-      list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! 🎉</div>';
+    if (progress) progress.style.width = total > 0 ? Math.round((done / total) * 100) + '%' : '0%';
+    if (total === 0 || (total > 0 && done === total)) {
+      list.innerHTML = '<div class="hw-all-clear"><div class="hw-all-clear-emoji">🎉</div><div>All done!</div></div>';
+      if (progress) progress.style.width = '100%';
       return;
     }
     list.innerHTML = hw.map(item => `
       <div class="hw-item ${item.done ? 'done' : ''}" data-hw-id="${esc(String(item.id))}">
         <div class="hw-check">✓</div>
-        <span class="hw-name">${esc(item.name)}</span>
+        <span class="hw-name">${esc(item.task || item.name || '')}</span>
         ${item.subject ? `<span class="hw-subject">${esc(item.subject)}</span>` : ''}
         <button class="hw-delete hw-delete-btn" data-hw-id="${esc(String(item.id))}" title="Remove">×</button>
       </div>`).join('');
@@ -3955,10 +4402,10 @@
     { id: 'nova-events-overlay',    enter: submitNovaEvent,      escape: closeNovaEventsForm    },
     { id: 'shared-chore-overlay',   enter: submitSharedChore,    escape: closeSharedChoreForm   },
     { id: 'tori-reminder-overlay',  enter: submitToriReminder,   escape: closeToriReminderForm  },
+    { id: 'nova-reminder-overlay',  enter: submitNovaReminder,   escape: closeNovaReminderForm  },
     { id: 'personal-chore-overlay', enter: submitPersonalChore,  escape: closePersonalChoreForm },
     { id: 'nova-notes-overlay',      enter: submitNovaNote,       escape: closeNovaNotesForm     },
     { id: 'fun-form-overlay',        enter: submitFunForm,        escape: closeFunForm           },
-    { id: 'wishlist-form-overlay',   enter: submitWishlistItem,   escape: closeWishlistForm      },
   ];
 
   document.addEventListener('keydown', e => {
