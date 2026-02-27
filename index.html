@@ -748,7 +748,7 @@
 
   .tori-content {
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: 2fr 3fr 1fr;
     gap: 10px;
     min-height: 0;
     height: 100%;
@@ -764,6 +764,8 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    min-height: 0;
+    overflow: hidden;
   }
   .this-week-label {
     font-size: 0.78rem;
@@ -847,7 +849,7 @@
   /* ── NOVA LAYOUT ── */
   .nova-content {
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: 2fr 3fr 1fr;
     gap: 10px;
     min-height: 0;
     height: 100%;
@@ -858,6 +860,7 @@
     grid-template-columns: 2fr 1fr 1fr;
     gap: 10px;
     min-height: 0;
+    overflow: hidden;
   }
   .nova-mid-row {
     display: grid;
@@ -871,7 +874,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     min-height: 0;
-    max-height: 38vh;
+    overflow: hidden;
   }
 
   /* Nova today panel */
@@ -1726,7 +1729,7 @@
   <div class="tori-content">
 
     <!-- Row 1: This Week I Want To | Hype Tile -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="this-week-panel" id="this-week-panel">
         <span class="this-week-label">This week I want to</span>
@@ -1740,7 +1743,35 @@
 
     </div>
 
-    <!-- Row 2: Reminders | Chores | Schedule -->
+    <!-- Row 2: Next Up | Wrestling Events -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">Next Up</span>
+          </div>
+        </div>
+        <div class="next-up-hero" id="tori-next-up">
+          <div class="next-up-label">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">Wrestling Events</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="countdown-list" id="tori-events"></div>
+      </div>
+
+    </div>
+
+    <!-- Row 3: Reminders | Chores | Schedule -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="panel">
@@ -1788,34 +1819,6 @@
       </div>
 
     </div>
-
-    <!-- Row 3: Next Up | Wrestling Events -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">Next Up</span>
-          </div>
-        </div>
-        <div class="next-up-hero" id="tori-next-up">
-          <div class="next-up-label">Loading...</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">Wrestling Events</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="countdown-list" id="tori-events"></div>
-      </div>
-
-    </div>
   </div>
 </div>
 
@@ -1824,7 +1827,7 @@
   <div class="nova-content">
 
     <!-- Row 1: This Week I Want To | Hype Tile -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="this-week-panel" id="nova-this-week-panel">
         <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
@@ -1839,7 +1842,7 @@
     </div>
 
     <!-- Row 2: Joke | Fun Fact | Cool Fact | Tonight's Dinner -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;flex-shrink:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="fun-fact-panel">
         <span class="fun-fact-label" style="color:var(--accent3)">Joke of the Day</span>
