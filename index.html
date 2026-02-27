@@ -832,13 +832,15 @@
   }
   .hype-quote {
     font-family: 'Playfair Display', 'Georgia', serif;
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    font-size: clamp(0.85rem, 2.5vw, 1.5rem);
     font-style: italic;
     text-align: center;
     color: var(--text);
-    line-height: 1.4;
+    line-height: 1.5;
     opacity: 0;
     transition: opacity 0.8s ease;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .hype-quote.visible { opacity: 1; }
 
@@ -967,13 +969,15 @@
   }
   .nova-hype-quote {
     font-family: 'Playfair Display', 'Georgia', serif;
-    font-size: clamp(0.9rem, 2vw, 1.25rem);
+    font-size: clamp(0.85rem, 2vw, 1.25rem);
     font-style: italic;
     text-align: center;
     color: var(--text);
-    line-height: 1.4;
+    line-height: 1.5;
     opacity: 0;
     transition: opacity 0.8s ease;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .nova-hype-quote.visible { opacity: 1; }
 
@@ -1279,15 +1283,46 @@
     .tab-panel.active { overflow: visible; }
     .tab-panel.active > div { overflow: visible; }
     .nova-top-row { grid-template-columns: 1fr; }
-    .nova-mid-row { grid-template-columns: 1fr 1fr; }
+    .nova-mid-row { grid-template-columns: 1fr; }
     .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
     .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
+    /* Nova inline grids on mobile */
+    #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
     .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .today-columns { grid-template-columns: 1fr; }
     .today-divider { display: none; }
     .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .tori-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .personal-grid-2, .personal-grid-3, .main-grid { height: auto; max-height: none; }
+    #tab-tori .tori-content > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+    .hype-quote, .nova-hype-quote { font-size: 1rem; }
+
+    /* Schedule items: stack day above class+time on mobile */
+    .schedule-item {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .schedule-day {
+      width: 100%;
+      margin-bottom: 1px;
+    }
+    .schedule-class { flex: 1; }
+    .schedule-time { white-space: normal; }
+
+    /* Countdown items: allow name to wrap */
+    .countdown-item { align-items: flex-start; flex-wrap: wrap; }
+    .countdown-info { min-width: 0; word-break: break-word; }
+    .countdown-name { white-space: normal; word-break: break-word; }
+    .countdown-badge { margin-left: auto; }
+
+    /* Chore and reminder items: allow text to wrap */
+    .chore-item, .reminder-item { flex-wrap: wrap; align-items: flex-start; }
+    .chore-name, .reminder-text { white-space: normal; word-break: break-word; flex: 1; min-width: 0; }
+
+    /* Homework items: allow subject/task to wrap */
+    .hw-item { flex-wrap: wrap; }
+    .hw-name { white-space: normal; word-break: break-word; min-width: 0; }
     .top-row { grid-template-columns: 1fr; gap: 8px; max-height: none; }
     .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
     .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
@@ -4435,6 +4470,13 @@
   if (localStorage.getItem('hh_auth_home') === 'true') {
     document.getElementById('pin-home').classList.add('hidden');
     onTabUnlocked('home');
+  }
+
+  // ── HASH ROUTING ──
+  const VALID_TABS = ['home', 'fun', 'parentals', 'tori', 'nova'];
+  const hashTab = window.location.hash.replace('#', '');
+  if (hashTab && VALID_TABS.includes(hashTab)) {
+    switchTab(hashTab);
   }
 </script>
 </body>
