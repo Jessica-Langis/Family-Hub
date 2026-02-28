@@ -748,7 +748,7 @@
 
   .tori-content {
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
     gap: 10px;
     min-height: 0;
     height: 100%;
@@ -764,6 +764,8 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    min-height: 0;
+    overflow: hidden;
   }
   .this-week-label {
     font-size: 0.78rem;
@@ -832,20 +834,22 @@
   }
   .hype-quote {
     font-family: 'Playfair Display', 'Georgia', serif;
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    font-size: clamp(0.85rem, 2.5vw, 1.5rem);
     font-style: italic;
     text-align: center;
     color: var(--text);
-    line-height: 1.4;
+    line-height: 1.5;
     opacity: 0;
     transition: opacity 0.8s ease;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .hype-quote.visible { opacity: 1; }
 
   /* ── NOVA LAYOUT ── */
   .nova-content {
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: 1fr auto 1fr;
     gap: 10px;
     min-height: 0;
     height: 100%;
@@ -856,6 +860,7 @@
     grid-template-columns: 2fr 1fr 1fr;
     gap: 10px;
     min-height: 0;
+    overflow: hidden;
   }
   .nova-mid-row {
     display: grid;
@@ -869,7 +874,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     min-height: 0;
-    max-height: 38vh;
+    overflow: hidden;
   }
 
   /* Nova today panel */
@@ -967,13 +972,15 @@
   }
   .nova-hype-quote {
     font-family: 'Playfair Display', 'Georgia', serif;
-    font-size: clamp(0.9rem, 2vw, 1.25rem);
+    font-size: clamp(0.85rem, 2vw, 1.25rem);
     font-style: italic;
     text-align: center;
     color: var(--text);
-    line-height: 1.4;
+    line-height: 1.5;
     opacity: 0;
     transition: opacity 0.8s ease;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .nova-hype-quote.visible { opacity: 1; }
 
@@ -1279,15 +1286,46 @@
     .tab-panel.active { overflow: visible; }
     .tab-panel.active > div { overflow: visible; }
     .nova-top-row { grid-template-columns: 1fr; }
-    .nova-mid-row { grid-template-columns: 1fr 1fr; }
+    .nova-mid-row { grid-template-columns: 1fr; }
     .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
     .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
+    /* Nova inline grids on mobile */
+    #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
     .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .today-columns { grid-template-columns: 1fr; }
     .today-divider { display: none; }
     .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .tori-content { grid-template-rows: auto; height: auto; overflow: visible; }
     .personal-grid-2, .personal-grid-3, .main-grid { height: auto; max-height: none; }
+    #tab-tori .tori-content > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+    .hype-quote, .nova-hype-quote { font-size: 1rem; }
+
+    /* Schedule items: stack day above class+time on mobile */
+    .schedule-item {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .schedule-day {
+      width: 100%;
+      margin-bottom: 1px;
+    }
+    .schedule-class { flex: 1; }
+    .schedule-time { white-space: normal; }
+
+    /* Countdown items: allow name to wrap */
+    .countdown-item { align-items: flex-start; flex-wrap: wrap; }
+    .countdown-info { min-width: 0; word-break: break-word; }
+    .countdown-name { white-space: normal; word-break: break-word; }
+    .countdown-badge { margin-left: auto; }
+
+    /* Chore and reminder items: allow text to wrap */
+    .chore-item, .reminder-item { flex-wrap: wrap; align-items: flex-start; }
+    .chore-name, .reminder-text { white-space: normal; word-break: break-word; flex: 1; min-width: 0; }
+
+    /* Homework items: allow subject/task to wrap */
+    .hw-item { flex-wrap: wrap; }
+    .hw-name { white-space: normal; word-break: break-word; min-width: 0; }
     .top-row { grid-template-columns: 1fr; gap: 8px; max-height: none; }
     .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
     .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
@@ -1691,7 +1729,7 @@
   <div class="tori-content">
 
     <!-- Row 1: This Week I Want To | Hype Tile -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="this-week-panel" id="this-week-panel">
         <span class="this-week-label">This week I want to</span>
@@ -1705,7 +1743,35 @@
 
     </div>
 
-    <!-- Row 2: Reminders | Chores | Schedule -->
+    <!-- Row 2: Next Up | Wrestling Events -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">Next Up</span>
+          </div>
+        </div>
+        <div class="next-up-hero" id="tori-next-up">
+          <div class="next-up-label">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">Wrestling Events</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="countdown-list" id="tori-events"></div>
+      </div>
+
+    </div>
+
+    <!-- Row 3: Reminders | Chores | Schedule -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="panel">
@@ -1753,34 +1819,6 @@
       </div>
 
     </div>
-
-    <!-- Row 3: Next Up | Wrestling Events -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">Next Up</span>
-          </div>
-        </div>
-        <div class="next-up-hero" id="tori-next-up">
-          <div class="next-up-label">Loading...</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent4)">Wrestling Events</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="countdown-list" id="tori-events"></div>
-      </div>
-
-    </div>
   </div>
 </div>
 
@@ -1789,7 +1827,7 @@
   <div class="nova-content">
 
     <!-- Row 1: This Week I Want To | Hype Tile -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="this-week-panel" id="nova-this-week-panel">
         <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
@@ -1804,7 +1842,7 @@
     </div>
 
     <!-- Row 2: Joke | Fun Fact | Cool Fact | Tonight's Dinner -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;flex-shrink:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="fun-fact-panel">
         <span class="fun-fact-label" style="color:var(--accent3)">Joke of the Day</span>
@@ -2481,9 +2519,9 @@
     for (let i = 1; i < blocks.length; i++) {
       const block = blocks[i];
       const summary = (block.match(/SUMMARY:(.+)/) || [])[1]?.trim() || '';
-      const dtRaw   = (block.match(/DTSTART(?:;VALUE=DATE)?:(\d+)/) || [])[1] || '';
+      // Match DTSTART in any format: VALUE=DATE, TZID=..., or bare
+      const dtRaw = (block.match(/DTSTART(?:[^:]*):(\d{8})/) || [])[1] || '';
       if (!summary || !dtRaw) continue;
-      // Parse YYYYMMDD or YYYYMMDDTHHmmssZ
       const y = dtRaw.slice(0,4), mo = dtRaw.slice(4,6), d = dtRaw.slice(6,8);
       const date = new Date(`${y}-${mo}-${d}T00:00:00`);
       if (!isNaN(date)) events.push({ summary, date });
@@ -3611,16 +3649,31 @@
   // HYPE TILES
   // ─────────────────────────────────────────────
   const TORI_HYPE = [
-    "Built different. Also, go drink some water.",
-    "Dean's list. Third in state. Just getting started.",
-    "Olympians are built in the off days too.",
-    "Third this year. First is just a matter of time.",
-    "The mat doesn't care about your mood. Neither do you.",
-    "Rest isn't quitting. It's maintenance.",
-    "Hard days are just plot development.",
-    "You've already done things most people only talk about.",
-    "Tired? Eat something. Still tired? Sleep. Still tired? Unfollow someone.",
-    "Every rep in practice is a rep toward Paris.",
+    "The discipline that gets you to 5am practice is the same one that makes everything else easier.",
+    "You don't wait for confidence. You build it one hard thing at a time.",
+    "Dean's list and a double leg. Not a lot of people can say that.",
+    "Hard days are just the price of doing things worth doing.",
+    "The version of you that shows up tired is still better than most people's best.",
+    "You make things from scratch — recipes, routines, comebacks. That's a skill.",
+    "Other people wonder if they could do it. You already know you can.",
+    "Rest like it matters. It does.",
+    "There's a version of you five years from now who's grateful you didn't quit today.",
+    "Baking teaches you what wrestling confirms — precision, patience, and showing up when it's hard.",
+    "Being someone people trust is rarer than any trophy.",
+    "The mat is just where you practice doing hard things. Life is where you use it.",
+    "You already know how to fall and get back up. Most people are still learning that.",
+    "Not every day is a great day. Show up anyway. That's the whole thing.",
+    "Quiet confidence doesn't need to announce itself.",
+    "Good friends are made by being one first. You've figured that out.",
+    "Olympians have bad days too. They still showed up.",
+    "You're not behind. You're exactly where the work you've put in has taken you.",
+    "Every hard thing you've done is evidence for the next hard thing.",
+    "The people who last aren't the ones who never struggle. They're the ones who keep going anyway.",
+    "You bring the same focus to a recipe as you do to a match. That's not a coincidence.",
+    "Tired is not the same as done.",
+    "The best thing you can be to the people around you is consistent. You already are.",
+    "Excellence is just a lot of ordinary days stacked up. You're stacking them.",
+    "You've earned every single thing you have. Don't forget that.",
   ];
 
   const NOVA_HYPE = [
@@ -4289,21 +4342,20 @@
         <div class="hw-check">✓</div>
         <span class="hw-name">${esc(item.task || item.name || '')}</span>
         ${item.subject ? `<span class="hw-subject">${esc(item.subject)}</span>` : ''}
-        <button class="hw-delete hw-delete-btn" data-hw-id="${esc(String(item.id))}" title="Remove">×</button>
+        <button class="hw-delete hw-delete-btn" data-delete-id="${esc(String(item.id))}" title="Remove">×</button>
       </div>`).join('');
 
-    list.querySelectorAll('.hw-item[data-hw-id]').forEach(item => {
-      item.addEventListener('click', e => {
-        if (e.target.closest('.hw-delete')) return;
-        toggleHomework(Number(item.dataset.hwId), item);
-      });
-    });
-
-    list.querySelectorAll('.hw-delete-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
+    list.addEventListener('click', e => {
+      const deleteBtn = e.target.closest('.hw-delete-btn');
+      if (deleteBtn) {
         e.stopPropagation();
-        deleteHomework(Number(btn.dataset.hwId));
-      });
+        deleteHomework(Number(deleteBtn.dataset.deleteId));
+        return;
+      }
+      const hwItem = e.target.closest('.hw-item[data-hw-id]');
+      if (hwItem) {
+        toggleHomework(Number(hwItem.dataset.hwId), hwItem);
+      }
     });
   }
 
@@ -4323,6 +4375,7 @@
     el.classList.toggle('done');
     const isDone = el.classList.contains('done');
     const fd = new FormData();
+    fd.append('type',   'homework');
     fd.append('action', 'toggle');
     fd.append('idx',    id);
     fd.append('done',   isDone.toString());
@@ -4338,6 +4391,7 @@
   async function deleteHomework(id) {
     try {
       const fd = new FormData();
+      fd.append('type',   'homework');
       fd.append('action', 'delete');
       fd.append('idx',    id);
       await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
@@ -4350,6 +4404,7 @@
   async function clearDoneHomework() {
     try {
       const fd = new FormData();
+      fd.append('type',   'homework');
       fd.append('action', 'clear_done');
       await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
       await loadHomework();
@@ -4435,6 +4490,13 @@
   if (localStorage.getItem('hh_auth_home') === 'true') {
     document.getElementById('pin-home').classList.add('hidden');
     onTabUnlocked('home');
+  }
+
+  // ── HASH ROUTING ──
+  const VALID_TABS = ['home', 'fun', 'parentals', 'tori', 'nova'];
+  const hashTab = window.location.hash.replace('#', '');
+  if (hashTab && VALID_TABS.includes(hashTab)) {
+    switchTab(hashTab);
   }
 </script>
 </body>
