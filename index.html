@@ -5101,8 +5101,8 @@
  }
  el.innerHTML = items.map(b => `
  <div class="bulletin-item">
- <button class="bulletin-delete" onclick="deleteBulletin(${b.id})">×</button>
- <div class="bulletin-who">${esc(b.who || '')}</div>
+ <button class="bulletin-delete" onclick="deleteBulletin(${b.row})">×</button>
+ <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
  <div class="bulletin-text">${esc(b.text || '')}</div>
  <div class="bulletin-date">${esc(b.date || '')}</div>
  </div>`).join('');
