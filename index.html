@@ -3379,8 +3379,7 @@
  list.querySelectorAll('.personal-chore-delete').forEach(btn => {
  btn.addEventListener('click', e => {
  e.stopPropagation();
- const item = btn.closest('.chore-item');
- deletePersonalChore(Number(item.dataset.choreIdx), item.dataset.person, item.dataset.listId, item.dataset.badgeId);
+ deletePersonalChore(Number(btn.dataset.choreIdx), btn.dataset.person, btn.dataset.listId, btn.dataset.badgeId);
  });
  });
  }
