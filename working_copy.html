@@ -277,19 +277,83 @@
 
  /* ── HOME TAB LAYOUT ── */
  .home-content {
- display: grid;
- grid-template-rows: auto auto 1fr;
- gap: 10px;
- min-height: 0;
- height: 100%;
- overflow: hidden;
- }
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-template-areas:
+      "bulletin bulletin today"
+      "bulletin bulletin weekend"
+      "reminder month   month"
+      "grocery  month   month";
+    gap: 8px;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  /* ── HOME PANEL AREA ASSIGNMENTS ── */
+  .home-bulletin-panel  { grid-area: bulletin; }
+  .home-today-panel     { grid-area: today;    }
+  .home-weekend-panel   { grid-area: weekend;  }
+  .home-reminders-panel { grid-area: reminder; }
+  .home-grocery-panel   { grid-area: grocery;  }
+  .home-month-panel     { grid-area: month;    }
+
+  /* All home panels fill their grid cell completely */
+  .home-bulletin-panel,
+  .home-today-panel,
+  .home-weekend-panel,
+  .home-reminders-panel,
+  .home-grocery-panel,
+  .home-month-panel {
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Scrollable content areas within each panel */
+  .home-bulletin-panel .home-bulletin-strip  { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-reminders-panel .reminder-list       { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-month-panel .month-embed             { flex: 1; min-height: 0; height: 0; }
+
+  /* ── SUBTLE SCROLLBARS (home panels) ── */
+  .home-bulletin-strip,
+  .home-today-panel .today-columns,
+  .home-weekend-panel .weekend-cols,
+  .home-reminders-panel .reminder-list,
+  .home-grocery-panel .grocery-grid {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(42,48,69,0.7) transparent;
+  }
+  .home-bulletin-strip::-webkit-scrollbar,
+  .home-today-panel .today-columns::-webkit-scrollbar,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar { width: 3px; }
+  .home-bulletin-strip::-webkit-scrollbar-track,
+  .home-today-panel .today-columns::-webkit-scrollbar-track,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-track,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar-track,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-track { background: transparent; }
+  .home-bulletin-strip::-webkit-scrollbar-thumb,
+  .home-today-panel .today-columns::-webkit-scrollbar-thumb,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar-thumb,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+  .home-bulletin-strip::-webkit-scrollbar-thumb:hover,
+  .home-today-panel .today-columns::-webkit-scrollbar-thumb:hover,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar-thumb:hover,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
  /* ── TODAY TILE ── */
  .today-tile {
- background: var(--surface);
- border: 1px solid var(--border);
- border-radius: 12px;
  padding: 12px 16px;
  min-height: 0;
  }
@@ -431,10 +495,53 @@
  }
 
  /* ── HOME BOTTOM ROW: Month Calendar only ── */
- .home-month-panel { display: flex; flex-direction: column; min-height: 360px; }
- .home-month-panel .month-embed { flex: 1; min-height: 320px; }
+ .home-month-panel { display: flex; flex-direction: column; min-height: 0; }
+ .home-month-panel .month-embed { flex: 1; min-height: 0; width: 100%; height: 0; }
 
- /* ── AGENDA ── */
+ /* ── HOME BULLETIN STRIP ── */
+  .home-bulletin-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 16px;
+    padding: 12px 14px 16px;
+    align-items: flex-start;
+  }
+  .home-bulletin-strip .bulletin-item {
+    flex: 1 1 180px;
+    max-width: 240px;
+    min-width: 150px;
+  }
+
+  /* ── THIS WEEKEND TILE ── */
+  .weekend-tile {
+    overflow: hidden;
+  }
+  .weekend-cols {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0 16px;
+    padding: 10px 16px;
+  }
+  .weekend-divider { background: var(--border); align-self: stretch; }
+  .weekend-col { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .weekend-col-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 4px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .weekend-col-title { font-size: 0.82rem; font-weight: 600; color: var(--accent2); letter-spacing: 0.03em; }
+  .weekend-col-date { font-size: 0.72rem; color: var(--muted); }
+  .weekend-event {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; color: var(--text); line-height: 1.3; padding: 2px 0;
+  }
+  .weekend-event-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent2); flex-shrink: 0;
+  }
+  .weekend-event-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weekend-clear { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
+  /* ── AGENDA ── */
  .agenda-section {
  background: var(--surface);
  border: 1px solid var(--border);
@@ -662,7 +769,33 @@
  }
  .clear-btn:hover { border-color: #e07070; color: #e07070; }
 
- /* ── OVERLAY ── */
+ /* ── QUICK ADD ── */
+.quick-add-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px 4px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.quick-add-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.quick-add-input:focus { border-color: var(--accent); }
+.quick-add-input::placeholder { color: var(--muted); opacity: 0.7; }
+.quick-add-spinner { font-size: 0.75rem; color: var(--muted); min-width: 14px; text-align: center; opacity: 0; transition: opacity 0.15s; }
+.quick-add-spinner.active { opacity: 1; }
+
+/* ── OVERLAY ── */
  .overlay {
  position: fixed; inset: 0;
  background: rgba(0,0,0,0.7);
@@ -743,12 +876,60 @@
 
  /* ── PERSONAL TAB LAYOUTS ── */
  .personal-content {
- display: grid;
- grid-template-rows: auto 1fr;
- gap: 10px;
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
  min-height: 0;
  height: 100%;
  overflow: hidden;
+ }
+
+ /* ── PARENTALS 2×2 GRID ── */
+ .parentals-grid {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   grid-template-rows: 1fr 2fr;
+   grid-template-areas:
+     "reminders todo"
+     "meals     calendar";
+   gap: 8px;
+   min-height: 0;
+   height: 100%;
+   overflow: hidden;
+ }
+ .parentals-reminders { grid-area: reminders; }
+ .parentals-todo      { grid-area: todo;      }
+ .parentals-meals     { grid-area: meals;     }
+ .parentals-calendar  { grid-area: calendar;  }
+
+ /* All parentals panels fill their cell */
+ .parentals-grid .panel {
+   min-height: 0;
+   min-width: 0;
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+ }
+
+ /* Scrollable content areas */
+ .parentals-scroll {
+   flex: 1;
+   overflow-y: auto;
+   min-height: 0;
+   scrollbar-width: thin;
+   scrollbar-color: rgba(42,48,69,0.7) transparent;
+ }
+ .parentals-scroll::-webkit-scrollbar { width: 3px; }
+ .parentals-scroll::-webkit-scrollbar-track { background: transparent; }
+ .parentals-scroll::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+ .parentals-scroll::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+ /* Calendar iframe fills its panel */
+ .parentals-calendar .agenda-embed {
+   flex: 1;
+   min-height: 0;
+   height: 0;
+   width: 100%;
  }
 
  /* Tori ambient glow */
@@ -1443,10 +1624,32 @@
  .nova-mid-row { grid-template-columns: 1fr; }
  .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
- /* Nova inline grids on mobile */
- #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
- #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
- .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
+ .home-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "bulletin"
+      "today"
+      "weekend"
+      "reminder"
+      "grocery"
+      "month";
+    height: auto;
+    overflow: visible;
+  }
+  .home-bulletin-panel,
+  .home-today-panel,
+  .home-weekend-panel,
+  .home-reminders-panel,
+  .home-grocery-panel { max-height: none; overflow: visible; }
+  .home-bulletin-panel .home-bulletin-strip,
+  .home-today-panel .today-columns,
+  .home-weekend-panel .weekend-cols,
+  .home-reminders-panel .reminder-list,
+  .home-grocery-panel .grocery-grid { overflow: visible; max-height: none; flex: none; }
+  .home-month-panel { min-height: 380px; }
+  .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
+  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .today-columns { grid-template-columns: 1fr; }
  .today-divider { display: none; }
  .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
@@ -1486,12 +1689,28 @@
  .home-month-panel { order: 1; min-height: 380px; }
  /* Fun page: bulletin above movies on mobile */
  .fun-bulletin-panel { order: -1; }
+ /* Bulletin board: 2 sticky notes per row on mobile */
+ .bulletin-list {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 14px 12px;
+ }
+ .bulletin-item { max-width: none; transform: none !important; }
  .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
  /* Mobile home order: Reminders | Grocery | Menu | Agenda | Month */
  .home-reminders-panel { order: 1; }
  .home-grocery-panel { order: 2; }
+  .home-content { grid-template-columns: 1fr !important; grid-template-rows: auto !important; }
+  .home-content > * { grid-column: 1 !important; grid-row: auto !important; }
+  .home-bulletin-panel { order: 1; }
+  .today-tile { order: 2; }
+  .weekend-tile { order: 3; }
+  .home-grocery-panel { order: 4; }
+  .home-reminders-panel { order: 5; }
+  .home-month-panel { order: 6; min-height: 380px; }
+  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
  .panel { height: auto; min-height: 100px; }
@@ -1540,9 +1759,18 @@
  .tori-schedule-panel  { order: 6; }
  .tori-chores-panel    { order: 7; }
  .tori-events-panel    { order: 8; }
- /* Mobile Nova stack: reminders before events */
- .nova-reminders-panel { order: 1; }
- .nova-events-panel    { order: 2; }
+ /* Mobile Nova stack: This Week | Jokes+Facts | Events | Reminders | To Do | Homework */
+ .nova-content { display: flex; flex-direction: column; gap: 10px; }
+ .nova-row-1 { order: 1; grid-template-columns: 1fr !important; }
+ .nova-row-2 { order: 2; grid-template-columns: 1fr 1fr !important; }
+ .nova-row-3 { order: 3; grid-template-columns: 1fr !important; }
+ /* Within row 3, force the correct panel order */
+ .nova-events-panel   { order: 1; }
+ .nova-reminders-panel { order: 2; }
+ .nova-chores-panel   { order: 3; }
+ .nova-homework-panel { order: 4; }
+ /* Hype tile visible on mobile, stacks between This Week and joke row */
+ .nova-hype-panel { display: flex; min-height: 100px; }
  }
 
 
@@ -1611,13 +1839,26 @@
  color: var(--muted);
  background: var(--surface2);
  border-radius: 20px;
- padding: 2px 10px;
- white-space: nowrap;
- overflow: hidden;
- text-overflow: ellipsis;
- max-width: 200px;
+ padding: 2px 6px 2px 10px;
+ display: inline-flex;
+ align-items: center;
+ gap: 4px;
+ max-width: 220px;
  border: 1px solid var(--border);
  }
+ .goal-history-delete {
+ background: none;
+ border: none;
+ color: var(--muted);
+ font-size: 0.85rem;
+ cursor: pointer;
+ padding: 0 2px;
+ line-height: 1;
+ flex-shrink: 0;
+ opacity: 0.5;
+ transition: opacity 0.15s, color 0.15s;
+ }
+ .goal-history-delete:hover { opacity: 1; color: #e07070; }
  .this-week-history-label {
  font-size: 0.65rem;
  color: var(--muted);
@@ -1632,54 +1873,97 @@
  .hw-info .hw-name { white-space:normal; }
  .hw-info .hw-subject { font-size:0.7rem; color:var(--muted); }
 
- /* ── BULLETIN BOARD ── */
+ /* ── BULLETIN BOARD — sticky notes ── */
  .bulletin-list {
- padding: 8px 14px;
+ padding: 12px 14px 16px;
  display: flex;
  flex-wrap: wrap;
- gap: 10px;
+ gap: 18px 16px;
+ align-items: flex-start;
  }
  .bulletin-item {
- background: var(--surface2);
- border: 1px solid var(--border);
- border-radius: 10px;
- padding: 10px 14px;
- min-width: 160px;
- max-width: 280px;
+ /* Sticky note base: warm amber tinted dark to match theme */
+ background: linear-gradient(160deg, #2e2610 0%, #261f0a 100%);
+ border: 1px solid rgba(232,184,109,0.22);
+ border-top: 3px solid rgba(232,184,109,0.55);
+ border-radius: 2px 2px 4px 4px;
+ padding: 14px 16px 12px;
+ min-width: 150px;
+ max-width: 240px;
  flex: 1;
  position: relative;
  display: flex;
  flex-direction: column;
- gap: 4px;
+ gap: 6px;
+ /* Slight rotation for authentic feel */
+ transform: rotate(-0.8deg);
+ /* Layered shadow: drop shadow + warm amber glow beneath */
+ box-shadow:
+ 0 4px 8px rgba(0,0,0,0.5),
+ 0 8px 24px rgba(0,0,0,0.35),
+ 0 0 28px rgba(232,184,109,0.12),
+ 0 16px 32px rgba(232,184,109,0.08);
+ transition: transform 0.2s, box-shadow 0.2s;
  }
+ .bulletin-item:nth-child(even) {
+ transform: rotate(0.6deg);
+ }
+ .bulletin-item:hover {
+ transform: rotate(0deg) translateY(-2px);
+ box-shadow:
+ 0 6px 16px rgba(0,0,0,0.55),
+ 0 12px 32px rgba(0,0,0,0.35),
+ 0 0 40px rgba(232,184,109,0.18),
+ 0 20px 40px rgba(232,184,109,0.12);
+ z-index: 2;
+ }
+
+ /* Pin dot at top center */
+ .bulletin-item::before {
+ content: '';
+ position: absolute;
+ top: -5px;
+ left: 50%;
+ transform: translateX(-50%);
+ width: 10px;
+ height: 10px;
+ border-radius: 50%;
+ background: radial-gradient(circle at 35% 35%, #f5d485, #c4960a);
+ box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 6px rgba(232,184,109,0.4);
+ }
+
  .bulletin-who {
- font-size: 0.7rem;
- font-weight: 600;
+ font-size: 0.68rem;
+ font-weight: 700;
  text-transform: uppercase;
- letter-spacing: 0.06em;
- color: var(--accent);
+ letter-spacing: 0.1em;
+ color: rgba(232,184,109,0.75);
+ margin-top: 4px;
  }
  .bulletin-text {
- font-size: 0.85rem;
- color: var(--text);
- line-height: 1.45;
+ font-size: 0.88rem;
+ color: rgba(232,234,240,0.9);
+ line-height: 1.5;
+ font-family: 'DM Sans', sans-serif;
+ word-break: break-word;
  }
  .bulletin-date {
- font-size: 0.68rem;
- color: var(--muted);
- margin-top: 2px;
+ font-size: 0.65rem;
+ color: rgba(136,145,168,0.7);
+ margin-top: 4px;
  }
  .bulletin-delete {
  position: absolute;
- top: 6px;
- right: 8px;
+ top: 8px;
+ right: 10px;
  background: none;
  border: none;
- color: var(--muted);
+ color: rgba(136,145,168,0.4);
  font-size: 1rem;
  cursor: pointer;
  line-height: 1;
  padding: 0;
+ transition: color 0.15s;
  }
  .bulletin-delete:hover { color: #e07070; }
 
@@ -1871,143 +2155,197 @@
 
 <!-- HOME -->
 <div class="tab-panel active" id="tab-home">
- <div class="home-content">
+  <div class="home-content">
 
- <!-- Today at a Glance -->
- <div class="today-tile" id="today-tile">
- <div class="today-columns">
- <div class="today-col">
- <div class="today-col-header">
- <span class="today-col-title">Today</span>
- <span class="today-date" id="today-date-label"></span>
- </div>
- <div class="today-col-body" id="today-body">
- <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
- </div>
- </div>
- <div class="today-divider"></div>
- <div class="today-col">
- <div class="today-col-header">
- <span class="today-col-title">Tomorrow</span>
- <span class="today-date" id="tomorrow-date-label"></span>
- </div>
- <div class="today-col-body" id="tomorrow-body">
- <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
- </div>
- </div>
- </div>
- </div>
+    <!-- Bulletin Board: col 1-2, rows 1-2 -->
+    <div class="panel home-bulletin-panel" style="overflow:hidden">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Bulletin Board</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+        </div>
+      </div>
+      <div class="home-bulletin-strip" id="home-bulletin-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
+      </div>
+    </div>
 
- <!-- Row 1: Reminders | Grocery | Menu -->
- <div class="top-row">
+    <!-- Today / Tomorrow: col 3, row 1 -->
+    <div class="panel home-today-panel today-tile" id="today-tile">
+      <div class="today-columns">
+        <div class="today-col">
+          <div class="today-col-header">
+            <span class="today-col-title">Today</span>
+            <span class="today-date" id="today-date-label"></span>
+          </div>
+          <div class="today-col-body" id="today-body">
+            <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+          </div>
+        </div>
+        <div class="today-divider"></div>
+        <div class="today-col">
+          <div class="today-col-header">
+            <span class="today-col-title">Tomorrow</span>
+            <span class="today-date" id="tomorrow-date-label"></span>
+          </div>
+          <div class="today-col-body" id="tomorrow-body">
+            <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
- <div class="panel home-reminders-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">Reminders</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" onclick="openReminderForm()">+ Add</button>
- </div>
- </div>
- <div class="reminder-list" id="reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
- </div>
- </div>
+    <!-- This Weekend: col 3, row 2 -->
+    <div class="panel home-weekend-panel weekend-tile">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title" style="color:var(--accent2)">This Weekend</span>
+        </div>
+      </div>
+      <div class="weekend-cols">
+        <div class="weekend-col">
+          <div class="weekend-col-header">
+            <span class="weekend-col-title">Saturday</span>
+            <span class="weekend-col-date" id="weekend-sat-date"></span>
+          </div>
+          <div id="weekend-sat-events"><div class="weekend-clear">Loading...</div></div>
+        </div>
+        <div class="weekend-divider"></div>
+        <div class="weekend-col">
+          <div class="weekend-col-header">
+            <span class="weekend-col-title">Sunday</span>
+            <span class="weekend-col-date" id="weekend-sun-date"></span>
+          </div>
+          <div id="weekend-sun-events"><div class="weekend-clear">Loading...</div></div>
+        </div>
+      </div>
+    </div>
 
- <div class="panel home-grocery-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">Grocery List</span>
- </div>
- <div class="section-header-actions">
- <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
- <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
- </div>
- </div>
- <div class="grocery-grid" id="grocery-list">
- <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
- </div>
- </div>
+    <!-- Grocery List: col 1, row 3 -->
+    <div class="panel home-grocery-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Grocery List</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
+          <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
+        </div>
+      </div>
+      <div class="quick-add-wrap">
+        <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
+          onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
+        <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
+      </div>
+      <div class="grocery-grid" id="grocery-list">
+        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+      </div>
+    </div>
 
- <div class="panel home-menu-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">This Week's Menu</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" onclick="openMealForm()">+ Edit</button>
- </div>
- </div>
- <div class="meal-list" id="meal-list">
- <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
- </div>
- </div>
+    <!-- Reminders: col 1, row 4 -->
+    <div class="panel home-reminders-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Reminders</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+        </div>
+      </div>
+      <div class="quick-add-wrap">
+        <input class="quick-add-input" id="qa-reminder-home" placeholder="Quick add" autocomplete="off"
+          onkeydown="if(event.key==='Enter') quickAddReminder('home', this)">
+        <span class="quick-add-spinner" id="qa-reminder-home-spin">↻</span>
+      </div>
+      <div class="reminder-list" id="reminder-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+      </div>
+    </div>
 
- </div>
+    <!-- Month View: col 2-3, rows 3-4 -->
+    <div class="panel home-month-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Month View</span>
+        </div>
+      </div>
+      <iframe class="month-embed"
+        src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+        frameborder="0" scrolling="no"></iframe>
+    </div>
 
- <!-- Row 2: Bulletin Board | Month Calendar -->
- <div class="panel home-month-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">Month View</span>
- </div>
- </div>
- <iframe class="month-embed"
- src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
- frameborder="0" scrolling="no"></iframe>
- </div>
-
-
- </div>
+  </div>
 </div>
 
 <!-- PARENTALS -->
 <div class="tab-panel" id="tab-parentals">
- <div class="personal-content">
- <div class="personal-grid-2">
+ <div class="parentals-grid">
 
- <div class="panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent2)">Reminders</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" onclick="openReminderForm()">+ Add</button>
- </div>
- </div>
- <div class="reminder-list" id="parent-reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
- </div>
- </div>
+  <!-- Row 1 Col 1: Reminders -->
+  <div class="panel parentals-reminders">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">Reminders</span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+    </div>
+   </div>
+   <div class="quick-add-wrap">
+    <input class="quick-add-input" id="qa-reminder-parentals" placeholder="Quick add" autocomplete="off"
+     onkeydown="if(event.key==='Enter') quickAddReminder('parentals', this)">
+    <span class="quick-add-spinner" id="qa-reminder-parentals-spin">↻</span>
+   </div>
+   <div class="reminder-list parentals-scroll" id="parent-reminder-list">
+    <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+   </div>
+  </div>
 
- <div class="panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent2)">To Do</span>
- <span class="section-badge" id="parent-chore-badge"></span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
- </div>
- </div>
- <div class="chore-list" id="parent-chore-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
- </div>
- </div>
+  <!-- Row 1 Col 2: To Do -->
+  <div class="panel parentals-todo">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">To Do</span>
+     <span class="section-badge" id="parent-chore-badge"></span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
+    </div>
+   </div>
+   <div class="chore-list parentals-scroll" id="parent-chore-list">
+    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+   </div>
+  </div>
 
- </div>
+  <!-- Row 2 Col 1: Meal Plan -->
+  <div class="panel parentals-meals">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">This Week's Menu</span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+ Edit</button>
+    </div>
+   </div>
+   <div class="meal-list parentals-scroll" id="meal-list">
+    <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+   </div>
+  </div>
 
- <div class="panel" style="min-height:500px">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent2)">Calendar</span>
- </div>
- </div>
- <iframe class="agenda-embed" style="min-height:450px"
- src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
- frameborder="0" scrolling="no"></iframe>
- </div>
+  <!-- Row 2 Col 2: Calendar -->
+  <div class="panel parentals-calendar">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">Calendar</span>
+    </div>
+   </div>
+   <iframe class="agenda-embed"
+    src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+    frameborder="0" scrolling="no"></iframe>
+  </div>
+
  </div>
 </div>
 
@@ -2143,7 +2481,12 @@
  <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
  </div>
  </div>
- <div class="reminder-list" id="tori-reminder-list">
+ <div class="quick-add-wrap">
+          <input class="quick-add-input" id="qa-reminder-tori" placeholder="Quick add" autocomplete="off"
+            onkeydown="if(event.key==='Enter') quickAddReminder('tori', this)">
+          <span class="quick-add-spinner" id="qa-reminder-tori-spin">↻</span>
+        </div>
+        <div class="reminder-list" id="tori-reminder-list">
  <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
@@ -2200,9 +2543,9 @@
  <div class="nova-content">
 
  <!-- Row 1: This Week I Want To | Hype Tile -->
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0">
+ <div class="nova-row-1" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0">
 
- <div class="this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
+ <div class="this-week-panel nova-this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;align-items:center;gap:10px">
  <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
  <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Tap edit to set your goal...</span>
@@ -2222,7 +2565,7 @@
  </div>
 
  <!-- Row 2: Joke | Fun Fact | Cool Fact | Tonight's Dinner -->
- <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
+ <div class="nova-row-2" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
 
  <div class="fun-fact-panel tile-joke">
  <div class="fun-fact-header">
@@ -2257,7 +2600,7 @@
  </div>
 
  <!-- Row 3: Events | Reminders | Chores | Homework -->
- <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
+ <div class="nova-row-3" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
 
  <div class="panel nova-events-panel">
  <div class="section-header">
@@ -2280,12 +2623,17 @@
  <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+ Add</button>
  </div>
  </div>
- <div class="reminder-list" id="nova-reminder-list">
+ <div class="quick-add-wrap">
+          <input class="quick-add-input" id="qa-reminder-nova" placeholder="Quick add" autocomplete="off"
+            onkeydown="if(event.key==='Enter') quickAddReminder('nova', this)">
+          <span class="quick-add-spinner" id="qa-reminder-nova-spin">↻</span>
+        </div>
+        <div class="reminder-list" id="nova-reminder-list">
  <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
- <div class="panel">
+ <div class="panel nova-chores-panel">
  <div class="section-header">
  <div class="section-header-left">
  <span class="section-title" style="color:var(--accent3)">To Do</span>
@@ -2300,7 +2648,7 @@
  </div>
  </div>
 
- <div class="panel">
+ <div class="panel nova-homework-panel">
  <div class="section-header">
  <div class="section-header-left">
  <span class="section-title" style="color:var(--accent3)">Homework</span>
@@ -2730,7 +3078,7 @@
 
  function checkPin(tab) {
  if (pinEntries[tab] === TAB_PINS[tab]) {
- localStorage.setItem(`hh_auth_${tab}`, 'true');
+ sessionStorage.setItem(`hh_auth_${tab}`, 'true');
  document.getElementById(`pin-${tab}`).classList.add('hidden');
  onTabUnlocked(tab);
  } else {
@@ -2748,7 +3096,7 @@
  }
 
  function requirePin(tab) {
- if (localStorage.getItem(`hh_auth_${tab}`) !== 'true') {
+ if (sessionStorage.getItem(`hh_auth_${tab}`) !== 'true') {
  const pinEl = document.getElementById(`pin-${tab}`);
  if (pinEl) pinEl.classList.remove('hidden');
  return false;
@@ -2787,11 +3135,13 @@
  loadChores();
  loadReminders();
  loadGroceryList();
- loadMealPlan();
  loadTodayTile();
+    loadHomeBulletin();
+    loadWeekendTile();
  } else if (tab === 'parentals') {
  loadParentChores();
  loadParentReminders();
+    loadMealPlan();
  } else if (tab === 'fun') {
  loadBulletin();
  loadFunMovies();
@@ -2827,10 +3177,16 @@
  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
  const isWeekday = today.getDay() >= 1 && today.getDay() <= 5;
  const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+ // Null Gaurd
+ if (chore.dueDate) {
+  const due = normalizeDate(chore.dueDate);
+  if (!due) return false; // add this line
+  return due.getTime() === today.getTime();
+}
 
  // One-time: only show on the due date
  if (chore.dueDate) {
- const due = new Date(chore.dueDate + 'T00:00:00');
+ const due = normalizeDate(chore.dueDate);
  return due.getTime() === today.getTime();
  }
 
@@ -2847,19 +3203,25 @@
  // TODAY AT A GLANCE
  // ─────────────────────────────────────────────
  function buildTodayColumn(date, reminderItems, choreItems, eventItems) {
- const today = new Date(); today.setHours(0,0,0,0);
- const isToday = date.getTime() === today.getTime();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const isToday = date.getTime() === today.getTime();
 
- const dueReminders = reminderItems.filter(r => {
- if (!r.date) return false;
- const d = new Date(r.date + 'T00:00:00');
- return isToday ? d <= date : d.getTime() === date.getTime();
- });
+  const dueReminders = reminderItems.filter(r => {
+  if (!r.date) return false;
+  const d = normalizeDate(r.date);
+  if (!d) return false;
+  return isToday ? d <= date : d.getTime() === date.getTime();
+});
+              
+  // For today: use choreMatchesToday for frequency-based + due date ones
+  // For tomorrow: only show chores with an explicit due date on that date
+  const dueChores = choreItems.filter(c => {
+  if (!c.dueDate) return false;
+  const d = normalizeDate(c.dueDate);
+  if (!d) return false;
+  return d.getTime() === date.getTime();
+});
 
- const dueChores = choreItems.filter(c => {
- if (!c.dueDate) return false;
- return new Date(c.dueDate + 'T00:00:00').getTime() === date.getTime();
- });
 
  const dayEvents = eventItems.filter(ev => {
  const evDate = new Date(ev.date); evDate.setHours(0,0,0,0);
@@ -2880,7 +3242,7 @@
  const remCol = dueReminders.length
  ? '<div class="today-subcol"><div class="today-section-label">📌 Reminders</div>' +
  dueReminders.map(r => {
- const d = r.date ? new Date(r.date + 'T00:00:00') : null;
+ const d = r.date ? normalizeDate(r.date) : null;
  const isOld = isToday && d && d < today;
  return '<div class="today-item ' + (isOld ? 'overdue' : 'soon') + '">' +
  '<div class="today-item-dot"></div>' +
@@ -2914,19 +3276,17 @@
  if (dateLabel) dateLabel.textContent = dayNames[today.getDay()] + ', ' + MONTHS[today.getMonth()] + ' ' + today.getDate();
  if (tmrLabel) tmrLabel.textContent = dayNames[tomorrow.getDay()] + ', ' + MONTHS[tomorrow.getMonth()] + ' ' + tomorrow.getDate();
 
- const [reminders, chores, events] = await Promise.allSettled([
- apiFetch(SCRIPTS.CHORES + '?type=reminders').then(r => r.json()),
- apiFetch(SCRIPTS.CHORES + '?type=chores').then(r => r.json()),
- fetch(FAMILY_ICS).then(r => r.text()).then(parseICSEvents).catch(() => []),
- ]);
+ const [reminders, chores] = await Promise.allSettled([
+  apiFetch(SCRIPTS.CHORES + '?type=reminders').then(r => r.json()),
+  apiFetch(SCRIPTS.CHORES + '?type=chores').then(r => r.json()),
+]);
 
- const reminderItems = reminders.status === 'fulfilled' ? reminders.value : [];
- const choreItems = chores.status === 'fulfilled' ? chores.value : [];
- const eventItems = events.status === 'fulfilled' ? events.value : [];
+const reminderItems = reminders.status === 'fulfilled' ? reminders.value : [];
+const choreItems = chores.status === 'fulfilled' ? chores.value : [];
 
- todayBody.innerHTML = buildTodayColumn(today, reminderItems, choreItems, eventItems);
- tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, eventItems);
- }
+todayBody.innerHTML = buildTodayColumn(today, reminderItems, choreItems, []);
+tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, []);
+}
 
  // SCHOOL CALENDAR (Cashmere ICS)
  // ─────────────────────────────────────────────
@@ -3056,14 +3416,26 @@
  // ─────────────────────────────────────────────
  // DATE HELPERS
  // ─────────────────────────────────────────────
+ // Safely parse any date string GAS might return (ISO yyyy-MM-dd or Date.toString())
+ function normalizeDate(dateStr) {
+  if (!dateStr) return null;
+  const clean = String(dateStr).split('T')[0].trim();
+  let d = new Date(clean + 'T00:00:00');
+  if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
+  d = new Date(dateStr);
+  if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
+  return null;
+}
+
  function getDayDiff(dateStr) {
- const today = new Date();
- today.setHours(0, 0, 0, 0);
- const target = new Date(dateStr + 'T00:00:00');
+ const today = new Date(); today.setHours(0, 0, 0, 0);
+ const target = normalizeDate(dateStr);
+ if (!target) return NaN;
  return Math.round((target - today) / 86400000);
  }
 
  function countdownBadge(diff) {
+ if (isNaN(diff)) return { text: '', cls: 'upcoming' };
  if (diff < 0) return { text: `${Math.abs(diff)}d ago`, cls: 'past' };
  if (diff === 0) return { text: 'TODAY', cls: 'today' };
  if (diff <= 7) return { text: `${diff}d away`, cls: 'soon' };
@@ -3073,6 +3445,7 @@
  function choreDateBadgeClass(dateStr) {
  if (!dateStr) return 'upcoming';
  const diff = getDayDiff(dateStr);
+ if (isNaN(diff)) return 'upcoming';
  if (diff < 0) return 'past';
  if (diff === 0) return 'today';
  if (diff <= 7) return 'soon';
@@ -3080,15 +3453,16 @@
  }
 
  function formatDateShort(dateStr) {
- const d = new Date(dateStr + 'T00:00:00');
+ const d = normalizeDate(dateStr);
+ if (!d) return '';
  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
  }
 
  function formatReminderDate(dateStr) {
  if (!dateStr || !dateStr.trim()) return '';
  const today = new Date(); today.setHours(0, 0, 0, 0);
- const parsed = new Date(dateStr + 'T00:00:00');
- if (isNaN(parsed)) return '';
+ const parsed = normalizeDate(dateStr);
+ if (!parsed) return '';
  const diff = Math.round((parsed - today) / 86400000);
  if (diff === 0) return 'Today';
  if (diff === 1) return 'Tomorrow';
@@ -3102,7 +3476,7 @@
  function renderEventList(events, containerId, deleteFnName, editFnName) {
  const el = document.getElementById(containerId);
  if (!el) return;
- const sorted = [...events].sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+ const sorted = [...events].sort((a, b) => normalizeDate(a.date) - normalizeDate(b.date));
  const upcoming = sorted.filter(e => getDayDiff(e.date) >= -30);
  if (upcoming.length === 0) {
  el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No upcoming events</div>';
@@ -3159,7 +3533,7 @@
  if (!el) return;
  const upcoming = [...events]
  .filter(e => getDayDiff(e.date) >= 0)
- .sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+ .sort((a, b) => normalizeDate(a.date) - normalizeDate(b.date));
 
  if (upcoming.length === 0) {
  el.innerHTML = '<div class="next-up-label">No upcoming events</div>';
@@ -3295,7 +3669,8 @@
  list.querySelectorAll('.personal-chore-delete').forEach(btn => {
  btn.addEventListener('click', e => {
  e.stopPropagation();
- deletePersonalChore(Number(btn.dataset.choreIdx), btn.dataset.person, btn.dataset.listId, btn.dataset.badgeId);
+ const item = btn.closest('.chore-item');
+ deletePersonalChore(Number(item.dataset.choreIdx), item.dataset.person, item.dataset.listId, item.dataset.badgeId);
  });
  });
  }
@@ -3324,28 +3699,31 @@
  }
 
  async function deletePersonalChore(idx, person, listId, badgeId) {
- const script = person === 'home' ? SCRIPTS.CHORES
- : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
- try {
- const fd = new FormData();
- fd.append('action', 'delete');
- fd.append('type', 'chores');
- fd.append('idx', idx);
- await apiFetch(script, { method: 'POST', body: fd });
- if (person === 'home') { await loadChores(); loadParentChores(); }
- else if (person === 'tori') await loadToriChores();
- else await loadNovaChores();
- } catch (e) {
- err('deletePersonalChore failed:', e.message);
- }
- }
+  const script = person === 'home' ? SCRIPTS.CHORES
+    : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+  try {
+    const fd = new FormData();
+    fd.append('action', 'delete');
+    fd.append('type', 'chores');
+    fd.append('idx', idx);
+    await apiFetch(script, { method: 'POST', body: fd });
+    if (person === 'home') {
+      if (document.getElementById('chore-list')) await loadChores();
+      if (document.getElementById('parent-chore-list')) await loadParentChores();
+    } else if (person === 'tori') await loadToriChores();
+    else await loadNovaChores();
+  } catch (e) {
+    err('deletePersonalChore failed:', e.message);
+  }
+}
 
  async function loadToriChores() {
  const list = document.getElementById('tori-chore-list');
  if (!list) return;
  try {
  const res = await apiFetch(SCRIPTS.TORI + '?type=chores');
- const chores = await res.json();
+ const data = await res.json();
+ const chores = Array.isArray(data) ? data : [];
  renderPersonalChoreList(chores, 'tori-chore-list', 'tori-chore-badge', 'tori');
  } catch (e) {
  list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
@@ -3357,7 +3735,8 @@
  if (!list) return;
  try {
  const res = await apiFetch(SCRIPTS.NOVA + '?type=chores');
- const chores = await res.json();
+ const data = await res.json();
+ const chores = Array.isArray(data) ? data : [];
  renderPersonalChoreList(chores, 'nova-chore-list', 'nova-chore-badge', 'nova');
  } catch (e) {
  list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
@@ -3549,6 +3928,47 @@
  function closeReminderForm() {
  document.getElementById('reminder-overlay').classList.add('hidden');
  }
+
+  // ─────────────────────────────────────────────
+    // QUICK ADD — REMINDERS & GROCERY
+    // ─────────────────────────────────────────────
+    async function quickAddReminder(section, inputEl) {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      const spin = document.getElementById(inputEl.id + '-spin');
+      inputEl.disabled = true;
+      if (spin) spin.classList.add('active');
+      try {
+        const fd = new FormData();
+        fd.append('action', 'add');
+        fd.append('type', 'reminders');
+        fd.append('text', text);
+        fd.append('date', '');
+        const scriptMap = { home: SCRIPTS.CHORES, parentals: SCRIPTS.CHORES, tori: SCRIPTS.TORI, nova: SCRIPTS.NOVA };
+        await apiFetch(scriptMap[section], { method: 'POST', body: fd });
+        inputEl.value = '';
+        if (section === 'home' || section === 'parentals') { loadReminders(); loadParentReminders(); }
+        else if (section === 'tori') loadToriReminders();
+        else if (section === 'nova') loadNovaReminders();
+      } catch (e) { err('quickAddReminder failed:', e.message); }
+      finally { inputEl.disabled = false; inputEl.focus(); if (spin) spin.classList.remove('active'); }
+    }
+
+    async function quickAddGrocery(inputEl) {
+      const item = inputEl.value.trim();
+      if (!item) return;
+      const spin = document.getElementById('qa-grocery-spin');
+      inputEl.disabled = true;
+      if (spin) spin.classList.add('active');
+      try {
+        const fd = new FormData();
+        fd.append('item', item);
+        await apiFetch(SCRIPTS.GROCERY, { method: 'POST', body: fd });
+        inputEl.value = '';
+        loadGroceryList();
+      } catch (e) { err('quickAddGrocery failed:', e.message); }
+      finally { inputEl.disabled = false; inputEl.focus(); if (spin) spin.classList.remove('active'); }
+    }
 
  async function submitReminder() {
  const btn = getSubmitBtn('reminder-overlay');
@@ -4024,25 +4444,28 @@
  // TORI: THIS WEEK I WANT TO
  // ─────────────────────────────────────────────
  // Goal history helpers (stored in localStorage as JSON array of {text, date})
- function archiveGoal(key, text) {
- if (!text) return;
- const history = JSON.parse(localStorage.getItem(key) || '[]');
- history.unshift({ text, date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) });
- localStorage.setItem(key, JSON.stringify(history.slice(0, 3)));
- }
- function renderGoalHistory(containerId, key) {
+ // ─────────────────────────────────────────────
+ // THIS WEEK — sheet-backed, Tori + Nova
+ // Sheet rows: 1=current, 2-4=past (max 3 past)
+ // Each row: col A = goal text, col B = date saved
+ // ─────────────────────────────────────────────
+
+ function renderGoalHistory(containerId, history, person) {
  const listEl = document.getElementById(containerId);
  const toggleId = containerId + '-toggle';
  const toggleEl = document.getElementById(toggleId);
  if (!listEl) return;
- const history = JSON.parse(localStorage.getItem(key) || '[]');
- if (!history.length) {
+ if (!history || !history.length) {
  if (toggleEl) toggleEl.style.display = 'none';
- listEl.innerHTML = ''; return;
+ listEl.innerHTML = '';
+ return;
  }
  if (toggleEl) toggleEl.style.display = 'block';
- listEl.innerHTML = history.map(h =>
- `<span class="this-week-history-item" title="${h.date}">${h.text}</span>`
+ listEl.innerHTML = history.map((h, i) =>
+ `<span class="this-week-history-item" title="${h.date || ''}">
+ ${h.text}
+ <button class="goal-history-delete" onclick="deleteGoalHistory('${person}',${i+2})" title="Delete">×</button>
+ </span>`
  ).join('');
  }
 
@@ -4055,20 +4478,32 @@
  if (btn) btn.textContent = visible ? 'Past goals ▾' : 'Past goals ▴';
  }
 
+ async function deleteGoalHistory(person, rowNum) {
+ try {
+ const fd = new FormData();
+ fd.append('type', person + '_this_week');
+ fd.append('action', 'delete_history');
+ fd.append('row', rowNum);
+ await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+ } catch(e) {}
+ if (person === 'tori') loadThisWeek();
+ else loadNovaThisWeek();
+ }
+
  async function loadThisWeek() {
  const el = document.getElementById('this-week-display');
  if (!el) return;
  try {
  const res = await apiFetch(SCRIPTS.CHORES + '?type=tori_this_week');
  const data = await res.json();
- const val = data.value || '';
+ const val = data.current || '';
  if (val) { el.textContent = val; el.classList.remove('empty'); }
- else { el.textContent = 'Tap edit to set your intention...'; el.classList.add('empty'); }
+ else { el.textContent = 'Tap edit to set your goal'; el.classList.add('empty'); }
+ renderGoalHistory('this-week-history', data.history || [], 'tori');
  } catch(e) {
- el.textContent = 'Tap edit to set your intention...';
+ el.textContent = 'Tap edit to set your goal';
  el.classList.add('empty');
  }
- renderGoalHistory('this-week-history', 'tori_goal_history');
  }
 
  function startThisWeekEdit() {
@@ -4090,15 +4525,70 @@
  saveBtn.onclick = async () => {
  const val = input.value.trim();
  saveBtn.textContent = '...'; saveBtn.disabled = true;
- if (current) archiveGoal('tori_goal_history', current);
  try {
  const fd = new FormData();
- fd.append('type', 'tori_this_week'); fd.append('value', val);
+ fd.append('type', 'tori_this_week');
+ fd.append('action', 'set');
+ fd.append('value', val);
+ fd.append('previous', current);
  await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
  } catch(e) {}
  inputRow.replaceWith(display);
  saveBtn.replaceWith(editBtn);
  loadThisWeek();
+ };
+ inputRow.appendChild(input); inputRow.appendChild(charCount);
+ display.replaceWith(inputRow);
+ editBtn.replaceWith(saveBtn);
+ input.focus();
+ }
+
+ async function loadNovaThisWeek() {
+ const el = document.getElementById('nova-this-week-display');
+ if (!el) return;
+ try {
+ const res = await apiFetch(SCRIPTS.CHORES + '?type=nova_this_week');
+ const data = await res.json();
+ const val = data.current || '';
+ if (val) { el.textContent = val; el.classList.remove('empty'); }
+ else { el.textContent = 'Tap edit to set your goal'; el.classList.add('empty'); }
+ renderGoalHistory('nova-this-week-history', data.history || [], 'nova');
+ } catch(e) {
+ el.textContent = 'Tap edit to set your goal';
+ el.classList.add('empty');
+ }
+ }
+
+ function startNovaThisWeekEdit() {
+ const panel = document.getElementById('nova-this-week-panel');
+ const display = document.getElementById('nova-this-week-display');
+ const editBtn = panel.querySelector('.this-week-edit-btn');
+ const current = display.classList.contains('empty') ? '' : display.textContent;
+ const inputRow = document.createElement('div');
+ inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;min-width:0';
+ const input = document.createElement('input');
+ input.type = 'text'; input.className = 'this-week-input';
+ input.value = current; input.placeholder = 'What do you want to do this week?'; input.maxLength = 120;
+ const charCount = document.createElement('span');
+ charCount.style.cssText = 'font-size:0.68rem;color:var(--muted);white-space:nowrap';
+ charCount.textContent = current.length + '/120';
+ input.oninput = () => charCount.textContent = input.value.length + '/120';
+ const saveBtn = document.createElement('button');
+ saveBtn.className = 'this-week-save-btn'; saveBtn.style.background = 'var(--accent3)'; saveBtn.textContent = 'Save';
+ saveBtn.onclick = async () => {
+ const val = input.value.trim();
+ saveBtn.textContent = '...'; saveBtn.disabled = true;
+ try {
+ const fd = new FormData();
+ fd.append('type', 'nova_this_week');
+ fd.append('action', 'set');
+ fd.append('value', val);
+ fd.append('previous', current);
+ await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+ } catch(e) {}
+ inputRow.replaceWith(display);
+ saveBtn.replaceWith(editBtn);
+ loadNovaThisWeek();
  };
  inputRow.appendChild(input); inputRow.appendChild(charCount);
  display.replaceWith(inputRow);
@@ -4266,57 +4756,6 @@
  "Some turtles can breathe through their butts — it's called cloacal respiration.",
  "The Milky Way galaxy smells like rum and tastes like raspberries, according to astronomers.",
  ];
-
- async function loadNovaThisWeek() {
- const el = document.getElementById('nova-this-week-display');
- if (!el) return;
- try {
- const res = await apiFetch(SCRIPTS.CHORES + '?type=nova_this_week');
- const data = await res.json();
- const val = data.value || '';
- if (val) { el.textContent = val; el.classList.remove('empty'); }
- else { el.textContent = 'Tap edit to set your goal...'; el.classList.add('empty'); }
- } catch(e) {
- el.textContent = 'Tap edit to set your goal...';
- el.classList.add('empty');
- }
- renderGoalHistory('nova-this-week-history', 'nova_goal_history');
- }
-
- function startNovaThisWeekEdit() {
- const panel = document.getElementById('nova-this-week-panel');
- const display = document.getElementById('nova-this-week-display');
- const editBtn = panel.querySelector('.this-week-edit-btn');
- const current = display.classList.contains('empty') ? '' : display.textContent;
- const inputRow = document.createElement('div');
- inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;min-width:0';
- const input = document.createElement('input');
- input.type = 'text'; input.className = 'this-week-input';
- input.value = current; input.placeholder = 'What do you want to do this week?'; input.maxLength = 120;
- const charCount = document.createElement('span');
- charCount.style.cssText = 'font-size:0.68rem;color:var(--muted);white-space:nowrap';
- charCount.textContent = current.length + '/120';
- input.oninput = () => charCount.textContent = input.value.length + '/120';
- const saveBtn = document.createElement('button');
- saveBtn.className = 'this-week-save-btn'; saveBtn.style.background = 'var(--accent3)'; saveBtn.textContent = 'Save';
- saveBtn.onclick = async () => {
- const val = input.value.trim();
- saveBtn.textContent = '...'; saveBtn.disabled = true;
- if (current) archiveGoal('nova_goal_history', current);
- try {
- const fd = new FormData();
- fd.append('type', 'nova_this_week'); fd.append('value', val);
- await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
- } catch(e) {}
- inputRow.replaceWith(display);
- saveBtn.replaceWith(editBtn);
- loadNovaThisWeek();
- };
- inputRow.appendChild(input); inputRow.appendChild(charCount);
- display.replaceWith(inputRow);
- editBtn.replaceWith(saveBtn);
- input.focus();
- }
 
  let novaJokeIdx = null, novaFactIdx = null, novaCoolIdx = null;
  function loadNovaJokeAndFact() {
@@ -4854,7 +5293,7 @@
  }
  list.innerHTML = hw.map(item => {
  const dueStr = item.due ? ` · Due ${item.due}` : '';
- const isOverdue = item.due && !item.done && new Date(item.due + 'T00:00:00') < new Date(new Date().toDateString());
+ const isOverdue = item.due && !item.done && normalizeDate(item.due) < new Date(new Date().toDateString());
  return `
  <div class="hw-item ${item.done ? 'done' : ''}" data-hw-id="${esc(String(item.id))}">
  <div class="hw-check">✓</div>
@@ -5013,7 +5452,7 @@
  // Wire schedule dropdowns to show/hide date input
 
 
- if (localStorage.getItem('hh_auth_home') === 'true') {
+ if (sessionStorage.getItem('hh_auth_home') === 'true') {
  document.getElementById('pin-home').classList.add('hidden');
  onTabUnlocked('home');
  }
@@ -5089,7 +5528,81 @@
  loadBulletin();
  }
 
- async function loadBulletin() {
+
+    // ─────────────────────────────────────────────
+    // HOME BULLETIN — shows up to 4 most recent posts
+    // ─────────────────────────────────────────────
+    async function loadHomeBulletin() {
+      const el = document.getElementById('home-bulletin-list');
+      if (!el) return;
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=bulletin');
+        const items = await res.json();
+        if (!items.length) {
+          el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Nothing posted yet — be the first!</div>';
+          return;
+        }
+        el.innerHTML = items.slice(0, 4).map(b => {
+          let dateStr = '';
+          if (b.date) {
+            const d = new Date(b.date);
+            if (!isNaN(d.getTime())) dateStr = (d.getMonth()+1) + '/' + d.getDate();
+            else dateStr = b.date;
+          }
+          return `<div class="bulletin-item">
+            <button class="bulletin-delete" onclick="deleteBulletin(${b.row});loadHomeBulletin()">×</button>
+            <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
+            <div class="bulletin-text">${esc(b.text || '')}</div>
+            ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+          </div>`;
+        }).join('');
+      } catch(e) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Unavailable</div>';
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // THIS WEEKEND TILE — pulls from family ICS
+    // ─────────────────────────────────────────────
+    async function loadWeekendTile() {
+      const satEl = document.getElementById('weekend-sat-events');
+      const sunEl = document.getElementById('weekend-sun-events');
+      const satDateEl = document.getElementById('weekend-sat-date');
+      const sunDateEl = document.getElementById('weekend-sun-date');
+      if (!satEl || !sunEl) return;
+
+      const renderEvents = (el, events, dateStr) => {
+        // Show the date label
+        const labelEl = dateStr === 'sat' ? satDateEl : sunDateEl;
+        if (!events.length) {
+          el.innerHTML = '<div class="weekend-clear">Nothing scheduled</div>';
+          return;
+        }
+        el.innerHTML = events.map(e =>
+          `<div class="weekend-event"><div class="weekend-event-dot"></div><span class="weekend-event-text">${esc(e.summary)}</span></div>`
+        ).join('');
+      };
+
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=weekend');
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Set date labels
+        const fmt = s => { const d = new Date(s + 'T12:00:00'); return (d.getMonth()+1) + '/' + d.getDate(); };
+        if (satDateEl) satDateEl.textContent = fmt(data.saturday.date);
+        if (sunDateEl) sunDateEl.textContent = fmt(data.sunday.date);
+
+        renderEvents(satEl, data.saturday.events, 'sat');
+        renderEvents(sunEl, data.sunday.events, 'sun');
+      } catch(e) {
+        satEl.innerHTML = '<div class="weekend-clear">Unavailable</div>';
+        sunEl.innerHTML = '<div class="weekend-clear">Unavailable</div>';
+        err('loadWeekendTile failed:', e.message);
+      }
+    }
+
+     async function loadBulletin() {
  const el = document.getElementById('bulletin-list');
  if (!el) return;
  try {
@@ -5099,13 +5612,25 @@
  el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px 0">Nothing posted yet — be the first!</div>';
  return;
  }
- el.innerHTML = items.map(b => `
+ el.innerHTML = items.map(b => {
+ // Normalize date: handle ISO string, serial number, or already-formatted string
+ let dateStr = '';
+ if (b.date) {
+ const d = new Date(b.date);
+ if (!isNaN(d.getTime())) {
+ dateStr = (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+ } else {
+ dateStr = b.date; // already formatted
+ }
+ }
+ return `
  <div class="bulletin-item">
- <button class="bulletin-delete" onclick="deleteBulletin(${b.id})">×</button>
- <div class="bulletin-who">${esc(b.who || '')}</div>
+ <button class="bulletin-delete" onclick="deleteBulletin(${b.row})">×</button>
+ <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
  <div class="bulletin-text">${esc(b.text || '')}</div>
- <div class="bulletin-date">${esc(b.date || '')}</div>
- </div>`).join('');
+ ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+ </div>`;
+ }).join('');
  } catch(e) {
  el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
  }

@@ -277,19 +277,83 @@
 
  /* ── HOME TAB LAYOUT ── */
  .home-content {
- display: grid;
- grid-template-rows: auto auto 1fr;
- gap: 10px;
- min-height: 0;
- height: 100%;
- overflow: hidden;
- }
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-template-areas:
+      "bulletin bulletin today"
+      "bulletin bulletin weekend"
+      "reminder month   month"
+      "grocery  month   month";
+    gap: 8px;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  /* ── HOME PANEL AREA ASSIGNMENTS ── */
+  .home-bulletin-panel  { grid-area: bulletin; }
+  .home-today-panel     { grid-area: today;    }
+  .home-weekend-panel   { grid-area: weekend;  }
+  .home-reminders-panel { grid-area: reminder; }
+  .home-grocery-panel   { grid-area: grocery;  }
+  .home-month-panel     { grid-area: month;    }
+
+  /* All home panels fill their grid cell completely */
+  .home-bulletin-panel,
+  .home-today-panel,
+  .home-weekend-panel,
+  .home-reminders-panel,
+  .home-grocery-panel,
+  .home-month-panel {
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Scrollable content areas within each panel */
+  .home-bulletin-panel .home-bulletin-strip  { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-reminders-panel .reminder-list       { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-month-panel .month-embed             { flex: 1; min-height: 0; height: 0; }
+
+  /* ── SUBTLE SCROLLBARS (home panels) ── */
+  .home-bulletin-strip,
+  .home-today-panel .today-columns,
+  .home-weekend-panel .weekend-cols,
+  .home-reminders-panel .reminder-list,
+  .home-grocery-panel .grocery-grid {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(42,48,69,0.7) transparent;
+  }
+  .home-bulletin-strip::-webkit-scrollbar,
+  .home-today-panel .today-columns::-webkit-scrollbar,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar { width: 3px; }
+  .home-bulletin-strip::-webkit-scrollbar-track,
+  .home-today-panel .today-columns::-webkit-scrollbar-track,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-track,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar-track,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-track { background: transparent; }
+  .home-bulletin-strip::-webkit-scrollbar-thumb,
+  .home-today-panel .today-columns::-webkit-scrollbar-thumb,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar-thumb,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+  .home-bulletin-strip::-webkit-scrollbar-thumb:hover,
+  .home-today-panel .today-columns::-webkit-scrollbar-thumb:hover,
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover,
+  .home-reminders-panel .reminder-list::-webkit-scrollbar-thumb:hover,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
  /* ── TODAY TILE ── */
  .today-tile {
- background: var(--surface);
- border: 1px solid var(--border);
- border-radius: 12px;
  padding: 12px 16px;
  min-height: 0;
  }
@@ -431,10 +495,53 @@
  }
 
  /* ── HOME BOTTOM ROW: Month Calendar only ── */
- .home-month-panel { display: flex; flex-direction: column; min-height: 360px; }
- .home-month-panel .month-embed { flex: 1; min-height: 320px; }
+ .home-month-panel { display: flex; flex-direction: column; min-height: 0; }
+ .home-month-panel .month-embed { flex: 1; min-height: 0; width: 100%; height: 0; }
 
- /* ── AGENDA ── */
+ /* ── HOME BULLETIN STRIP ── */
+  .home-bulletin-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 16px;
+    padding: 12px 14px 16px;
+    align-items: flex-start;
+  }
+  .home-bulletin-strip .bulletin-item {
+    flex: 1 1 180px;
+    max-width: 240px;
+    min-width: 150px;
+  }
+
+  /* ── THIS WEEKEND TILE ── */
+  .weekend-tile {
+    overflow: hidden;
+  }
+  .weekend-cols {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0 16px;
+    padding: 10px 16px;
+  }
+  .weekend-divider { background: var(--border); align-self: stretch; }
+  .weekend-col { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .weekend-col-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 4px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .weekend-col-title { font-size: 0.82rem; font-weight: 600; color: var(--accent2); letter-spacing: 0.03em; }
+  .weekend-col-date { font-size: 0.72rem; color: var(--muted); }
+  .weekend-event {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; color: var(--text); line-height: 1.3; padding: 2px 0;
+  }
+  .weekend-event-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent2); flex-shrink: 0;
+  }
+  .weekend-event-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weekend-clear { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
+  /* ── AGENDA ── */
  .agenda-section {
  background: var(--surface);
  border: 1px solid var(--border);
@@ -662,7 +769,33 @@
  }
  .clear-btn:hover { border-color: #e07070; color: #e07070; }
 
- /* ── OVERLAY ── */
+ /* ── QUICK ADD ── */
+.quick-add-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px 4px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.quick-add-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.quick-add-input:focus { border-color: var(--accent); }
+.quick-add-input::placeholder { color: var(--muted); opacity: 0.7; }
+.quick-add-spinner { font-size: 0.75rem; color: var(--muted); min-width: 14px; text-align: center; opacity: 0; transition: opacity 0.15s; }
+.quick-add-spinner.active { opacity: 1; }
+
+/* ── OVERLAY ── */
  .overlay {
  position: fixed; inset: 0;
  background: rgba(0,0,0,0.7);
@@ -743,12 +876,60 @@
 
  /* ── PERSONAL TAB LAYOUTS ── */
  .personal-content {
- display: grid;
- grid-template-rows: auto 1fr;
- gap: 10px;
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
  min-height: 0;
  height: 100%;
  overflow: hidden;
+ }
+
+ /* ── PARENTALS 2×2 GRID ── */
+ .parentals-grid {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   grid-template-rows: 1fr 2fr;
+   grid-template-areas:
+     "reminders todo"
+     "meals     calendar";
+   gap: 8px;
+   min-height: 0;
+   height: 100%;
+   overflow: hidden;
+ }
+ .parentals-reminders { grid-area: reminders; }
+ .parentals-todo      { grid-area: todo;      }
+ .parentals-meals     { grid-area: meals;     }
+ .parentals-calendar  { grid-area: calendar;  }
+
+ /* All parentals panels fill their cell */
+ .parentals-grid .panel {
+   min-height: 0;
+   min-width: 0;
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+ }
+
+ /* Scrollable content areas */
+ .parentals-scroll {
+   flex: 1;
+   overflow-y: auto;
+   min-height: 0;
+   scrollbar-width: thin;
+   scrollbar-color: rgba(42,48,69,0.7) transparent;
+ }
+ .parentals-scroll::-webkit-scrollbar { width: 3px; }
+ .parentals-scroll::-webkit-scrollbar-track { background: transparent; }
+ .parentals-scroll::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+ .parentals-scroll::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+ /* Calendar iframe fills its panel */
+ .parentals-calendar .agenda-embed {
+   flex: 1;
+   min-height: 0;
+   height: 0;
+   width: 100%;
  }
 
  /* Tori ambient glow */
@@ -1443,7 +1624,32 @@
  .nova-mid-row { grid-template-columns: 1fr; }
  .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
- .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
+ .home-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "bulletin"
+      "today"
+      "weekend"
+      "reminder"
+      "grocery"
+      "month";
+    height: auto;
+    overflow: visible;
+  }
+  .home-bulletin-panel,
+  .home-today-panel,
+  .home-weekend-panel,
+  .home-reminders-panel,
+  .home-grocery-panel { max-height: none; overflow: visible; }
+  .home-bulletin-panel .home-bulletin-strip,
+  .home-today-panel .today-columns,
+  .home-weekend-panel .weekend-cols,
+  .home-reminders-panel .reminder-list,
+  .home-grocery-panel .grocery-grid { overflow: visible; max-height: none; flex: none; }
+  .home-month-panel { min-height: 380px; }
+  .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
+  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .today-columns { grid-template-columns: 1fr; }
  .today-divider { display: none; }
  .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
@@ -1496,6 +1702,15 @@
  /* Mobile home order: Reminders | Grocery | Menu | Agenda | Month */
  .home-reminders-panel { order: 1; }
  .home-grocery-panel { order: 2; }
+  .home-content { grid-template-columns: 1fr !important; grid-template-rows: auto !important; }
+  .home-content > * { grid-column: 1 !important; grid-row: auto !important; }
+  .home-bulletin-panel { order: 1; }
+  .today-tile { order: 2; }
+  .weekend-tile { order: 3; }
+  .home-grocery-panel { order: 4; }
+  .home-reminders-panel { order: 5; }
+  .home-month-panel { order: 6; min-height: 380px; }
+  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
  .panel { height: auto; min-height: 100px; }
@@ -1940,143 +2155,197 @@
 
 <!-- HOME -->
 <div class="tab-panel active" id="tab-home">
- <div class="home-content">
+  <div class="home-content">
 
- <!-- Today at a Glance -->
- <div class="today-tile" id="today-tile">
- <div class="today-columns">
- <div class="today-col">
- <div class="today-col-header">
- <span class="today-col-title">Today</span>
- <span class="today-date" id="today-date-label"></span>
- </div>
- <div class="today-col-body" id="today-body">
- <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
- </div>
- </div>
- <div class="today-divider"></div>
- <div class="today-col">
- <div class="today-col-header">
- <span class="today-col-title">Tomorrow</span>
- <span class="today-date" id="tomorrow-date-label"></span>
- </div>
- <div class="today-col-body" id="tomorrow-body">
- <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
- </div>
- </div>
- </div>
- </div>
+    <!-- Bulletin Board: col 1-2, rows 1-2 -->
+    <div class="panel home-bulletin-panel" style="overflow:hidden">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Bulletin Board</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+        </div>
+      </div>
+      <div class="home-bulletin-strip" id="home-bulletin-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
+      </div>
+    </div>
 
- <!-- Row 1: Reminders | Grocery | Menu -->
- <div class="top-row">
+    <!-- Today / Tomorrow: col 3, row 1 -->
+    <div class="panel home-today-panel today-tile" id="today-tile">
+      <div class="today-columns">
+        <div class="today-col">
+          <div class="today-col-header">
+            <span class="today-col-title">Today</span>
+            <span class="today-date" id="today-date-label"></span>
+          </div>
+          <div class="today-col-body" id="today-body">
+            <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+          </div>
+        </div>
+        <div class="today-divider"></div>
+        <div class="today-col">
+          <div class="today-col-header">
+            <span class="today-col-title">Tomorrow</span>
+            <span class="today-date" id="tomorrow-date-label"></span>
+          </div>
+          <div class="today-col-body" id="tomorrow-body">
+            <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
- <div class="panel home-reminders-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">Reminders</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" onclick="openReminderForm()">+ Add</button>
- </div>
- </div>
- <div class="reminder-list" id="reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
- </div>
- </div>
+    <!-- This Weekend: col 3, row 2 -->
+    <div class="panel home-weekend-panel weekend-tile">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title" style="color:var(--accent2)">This Weekend</span>
+        </div>
+      </div>
+      <div class="weekend-cols">
+        <div class="weekend-col">
+          <div class="weekend-col-header">
+            <span class="weekend-col-title">Saturday</span>
+            <span class="weekend-col-date" id="weekend-sat-date"></span>
+          </div>
+          <div id="weekend-sat-events"><div class="weekend-clear">Loading...</div></div>
+        </div>
+        <div class="weekend-divider"></div>
+        <div class="weekend-col">
+          <div class="weekend-col-header">
+            <span class="weekend-col-title">Sunday</span>
+            <span class="weekend-col-date" id="weekend-sun-date"></span>
+          </div>
+          <div id="weekend-sun-events"><div class="weekend-clear">Loading...</div></div>
+        </div>
+      </div>
+    </div>
 
- <div class="panel home-grocery-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">Grocery List</span>
- </div>
- <div class="section-header-actions">
- <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
- <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
- </div>
- </div>
- <div class="grocery-grid" id="grocery-list">
- <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
- </div>
- </div>
+    <!-- Grocery List: col 1, row 3 -->
+    <div class="panel home-grocery-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Grocery List</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
+          <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
+        </div>
+      </div>
+      <div class="quick-add-wrap">
+        <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
+          onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
+        <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
+      </div>
+      <div class="grocery-grid" id="grocery-list">
+        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+      </div>
+    </div>
 
- <div class="panel home-menu-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">This Week's Menu</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" onclick="openMealForm()">+ Edit</button>
- </div>
- </div>
- <div class="meal-list" id="meal-list">
- <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
- </div>
- </div>
+    <!-- Reminders: col 1, row 4 -->
+    <div class="panel home-reminders-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Reminders</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+        </div>
+      </div>
+      <div class="quick-add-wrap">
+        <input class="quick-add-input" id="qa-reminder-home" placeholder="Quick add" autocomplete="off"
+          onkeydown="if(event.key==='Enter') quickAddReminder('home', this)">
+        <span class="quick-add-spinner" id="qa-reminder-home-spin">↻</span>
+      </div>
+      <div class="reminder-list" id="reminder-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+      </div>
+    </div>
 
- </div>
+    <!-- Month View: col 2-3, rows 3-4 -->
+    <div class="panel home-month-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Month View</span>
+        </div>
+      </div>
+      <iframe class="month-embed"
+        src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+        frameborder="0" scrolling="no"></iframe>
+    </div>
 
- <!-- Row 2: Bulletin Board | Month Calendar -->
- <div class="panel home-month-panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title">Month View</span>
- </div>
- </div>
- <iframe class="month-embed"
- src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
- frameborder="0" scrolling="no"></iframe>
- </div>
-
-
- </div>
+  </div>
 </div>
 
 <!-- PARENTALS -->
 <div class="tab-panel" id="tab-parentals">
- <div class="personal-content">
- <div class="personal-grid-2">
+ <div class="parentals-grid">
 
- <div class="panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent2)">Reminders</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" onclick="openReminderForm()">+ Add</button>
- </div>
- </div>
- <div class="reminder-list" id="parent-reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
- </div>
- </div>
+  <!-- Row 1 Col 1: Reminders -->
+  <div class="panel parentals-reminders">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">Reminders</span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" onclick="openReminderForm()">+ Add</button>
+    </div>
+   </div>
+   <div class="quick-add-wrap">
+    <input class="quick-add-input" id="qa-reminder-parentals" placeholder="Quick add" autocomplete="off"
+     onkeydown="if(event.key==='Enter') quickAddReminder('parentals', this)">
+    <span class="quick-add-spinner" id="qa-reminder-parentals-spin">↻</span>
+   </div>
+   <div class="reminder-list parentals-scroll" id="parent-reminder-list">
+    <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+   </div>
+  </div>
 
- <div class="panel">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent2)">To Do</span>
- <span class="section-badge" id="parent-chore-badge"></span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
- </div>
- </div>
- <div class="chore-list" id="parent-chore-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
- </div>
- </div>
+  <!-- Row 1 Col 2: To Do -->
+  <div class="panel parentals-todo">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">To Do</span>
+     <span class="section-badge" id="parent-chore-badge"></span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
+    </div>
+   </div>
+   <div class="chore-list parentals-scroll" id="parent-chore-list">
+    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+   </div>
+  </div>
 
- </div>
+  <!-- Row 2 Col 1: Meal Plan -->
+  <div class="panel parentals-meals">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">This Week's Menu</span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+ Edit</button>
+    </div>
+   </div>
+   <div class="meal-list parentals-scroll" id="meal-list">
+    <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+   </div>
+  </div>
 
- <div class="panel" style="min-height:500px">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent2)">Calendar</span>
- </div>
- </div>
- <iframe class="agenda-embed" style="min-height:450px"
- src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
- frameborder="0" scrolling="no"></iframe>
- </div>
+  <!-- Row 2 Col 2: Calendar -->
+  <div class="panel parentals-calendar">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">Calendar</span>
+    </div>
+   </div>
+   <iframe class="agenda-embed"
+    src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+    frameborder="0" scrolling="no"></iframe>
+  </div>
+
  </div>
 </div>
 
@@ -2212,7 +2481,12 @@
  <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
  </div>
  </div>
- <div class="reminder-list" id="tori-reminder-list">
+ <div class="quick-add-wrap">
+          <input class="quick-add-input" id="qa-reminder-tori" placeholder="Quick add" autocomplete="off"
+            onkeydown="if(event.key==='Enter') quickAddReminder('tori', this)">
+          <span class="quick-add-spinner" id="qa-reminder-tori-spin">↻</span>
+        </div>
+        <div class="reminder-list" id="tori-reminder-list">
  <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
@@ -2349,7 +2623,12 @@
  <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+ Add</button>
  </div>
  </div>
- <div class="reminder-list" id="nova-reminder-list">
+ <div class="quick-add-wrap">
+          <input class="quick-add-input" id="qa-reminder-nova" placeholder="Quick add" autocomplete="off"
+            onkeydown="if(event.key==='Enter') quickAddReminder('nova', this)">
+          <span class="quick-add-spinner" id="qa-reminder-nova-spin">↻</span>
+        </div>
+        <div class="reminder-list" id="nova-reminder-list">
  <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
@@ -2856,11 +3135,13 @@
  loadChores();
  loadReminders();
  loadGroceryList();
- loadMealPlan();
  loadTodayTile();
+    loadHomeBulletin();
+    loadWeekendTile();
  } else if (tab === 'parentals') {
  loadParentChores();
  loadParentReminders();
+    loadMealPlan();
  } else if (tab === 'fun') {
  loadBulletin();
  loadFunMovies();
@@ -3647,6 +3928,47 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
  function closeReminderForm() {
  document.getElementById('reminder-overlay').classList.add('hidden');
  }
+
+  // ─────────────────────────────────────────────
+    // QUICK ADD — REMINDERS & GROCERY
+    // ─────────────────────────────────────────────
+    async function quickAddReminder(section, inputEl) {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      const spin = document.getElementById(inputEl.id + '-spin');
+      inputEl.disabled = true;
+      if (spin) spin.classList.add('active');
+      try {
+        const fd = new FormData();
+        fd.append('action', 'add');
+        fd.append('type', 'reminders');
+        fd.append('text', text);
+        fd.append('date', '');
+        const scriptMap = { home: SCRIPTS.CHORES, parentals: SCRIPTS.CHORES, tori: SCRIPTS.TORI, nova: SCRIPTS.NOVA };
+        await apiFetch(scriptMap[section], { method: 'POST', body: fd });
+        inputEl.value = '';
+        if (section === 'home' || section === 'parentals') { loadReminders(); loadParentReminders(); }
+        else if (section === 'tori') loadToriReminders();
+        else if (section === 'nova') loadNovaReminders();
+      } catch (e) { err('quickAddReminder failed:', e.message); }
+      finally { inputEl.disabled = false; inputEl.focus(); if (spin) spin.classList.remove('active'); }
+    }
+
+    async function quickAddGrocery(inputEl) {
+      const item = inputEl.value.trim();
+      if (!item) return;
+      const spin = document.getElementById('qa-grocery-spin');
+      inputEl.disabled = true;
+      if (spin) spin.classList.add('active');
+      try {
+        const fd = new FormData();
+        fd.append('item', item);
+        await apiFetch(SCRIPTS.GROCERY, { method: 'POST', body: fd });
+        inputEl.value = '';
+        loadGroceryList();
+      } catch (e) { err('quickAddGrocery failed:', e.message); }
+      finally { inputEl.disabled = false; inputEl.focus(); if (spin) spin.classList.remove('active'); }
+    }
 
  async function submitReminder() {
  const btn = getSubmitBtn('reminder-overlay');
@@ -5206,7 +5528,81 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
  loadBulletin();
  }
 
- async function loadBulletin() {
+
+    // ─────────────────────────────────────────────
+    // HOME BULLETIN — shows up to 4 most recent posts
+    // ─────────────────────────────────────────────
+    async function loadHomeBulletin() {
+      const el = document.getElementById('home-bulletin-list');
+      if (!el) return;
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=bulletin');
+        const items = await res.json();
+        if (!items.length) {
+          el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Nothing posted yet — be the first!</div>';
+          return;
+        }
+        el.innerHTML = items.slice(0, 4).map(b => {
+          let dateStr = '';
+          if (b.date) {
+            const d = new Date(b.date);
+            if (!isNaN(d.getTime())) dateStr = (d.getMonth()+1) + '/' + d.getDate();
+            else dateStr = b.date;
+          }
+          return `<div class="bulletin-item">
+            <button class="bulletin-delete" onclick="deleteBulletin(${b.row});loadHomeBulletin()">×</button>
+            <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
+            <div class="bulletin-text">${esc(b.text || '')}</div>
+            ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+          </div>`;
+        }).join('');
+      } catch(e) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Unavailable</div>';
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // THIS WEEKEND TILE — pulls from family ICS
+    // ─────────────────────────────────────────────
+    async function loadWeekendTile() {
+      const satEl = document.getElementById('weekend-sat-events');
+      const sunEl = document.getElementById('weekend-sun-events');
+      const satDateEl = document.getElementById('weekend-sat-date');
+      const sunDateEl = document.getElementById('weekend-sun-date');
+      if (!satEl || !sunEl) return;
+
+      const renderEvents = (el, events, dateStr) => {
+        // Show the date label
+        const labelEl = dateStr === 'sat' ? satDateEl : sunDateEl;
+        if (!events.length) {
+          el.innerHTML = '<div class="weekend-clear">Nothing scheduled</div>';
+          return;
+        }
+        el.innerHTML = events.map(e =>
+          `<div class="weekend-event"><div class="weekend-event-dot"></div><span class="weekend-event-text">${esc(e.summary)}</span></div>`
+        ).join('');
+      };
+
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=weekend');
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Set date labels
+        const fmt = s => { const d = new Date(s + 'T12:00:00'); return (d.getMonth()+1) + '/' + d.getDate(); };
+        if (satDateEl) satDateEl.textContent = fmt(data.saturday.date);
+        if (sunDateEl) sunDateEl.textContent = fmt(data.sunday.date);
+
+        renderEvents(satEl, data.saturday.events, 'sat');
+        renderEvents(sunEl, data.sunday.events, 'sun');
+      } catch(e) {
+        satEl.innerHTML = '<div class="weekend-clear">Unavailable</div>';
+        sunEl.innerHTML = '<div class="weekend-clear">Unavailable</div>';
+        err('loadWeekendTile failed:', e.message);
+      }
+    }
+
+     async function loadBulletin() {
  const el = document.getElementById('bulletin-list');
  if (!el) return;
  try {
