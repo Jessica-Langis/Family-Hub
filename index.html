@@ -1618,13 +1618,26 @@
  color: var(--muted);
  background: var(--surface2);
  border-radius: 20px;
- padding: 2px 10px;
- white-space: nowrap;
- overflow: hidden;
- text-overflow: ellipsis;
- max-width: 200px;
+ padding: 2px 6px 2px 10px;
+ display: inline-flex;
+ align-items: center;
+ gap: 4px;
+ max-width: 220px;
  border: 1px solid var(--border);
  }
+ .goal-history-delete {
+ background: none;
+ border: none;
+ color: var(--muted);
+ font-size: 0.85rem;
+ cursor: pointer;
+ padding: 0 2px;
+ line-height: 1;
+ flex-shrink: 0;
+ opacity: 0.5;
+ transition: opacity 0.15s, color 0.15s;
+ }
+ .goal-history-delete:hover { opacity: 1; color: #e07070; }
  .this-week-history-label {
  font-size: 0.65rem;
  color: var(--muted);
@@ -4074,25 +4087,28 @@
  // TORI: THIS WEEK I WANT TO
  // ─────────────────────────────────────────────
  // Goal history helpers (stored in localStorage as JSON array of {text, date})
- function archiveGoal(key, text) {
- if (!text) return;
- const history = JSON.parse(localStorage.getItem(key) || '[]');
- history.unshift({ text, date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) });
- localStorage.setItem(key, JSON.stringify(history.slice(0, 3)));
- }
- function renderGoalHistory(containerId, key) {
+ // ─────────────────────────────────────────────
+ // THIS WEEK — sheet-backed, Tori + Nova
+ // Sheet rows: 1=current, 2-4=past (max 3 past)
+ // Each row: col A = goal text, col B = date saved
+ // ─────────────────────────────────────────────
+
+ function renderGoalHistory(containerId, history, person) {
  const listEl = document.getElementById(containerId);
  const toggleId = containerId + '-toggle';
  const toggleEl = document.getElementById(toggleId);
  if (!listEl) return;
- const history = JSON.parse(localStorage.getItem(key) || '[]');
- if (!history.length) {
+ if (!history || !history.length) {
  if (toggleEl) toggleEl.style.display = 'none';
- listEl.innerHTML = ''; return;
+ listEl.innerHTML = '';
+ return;
  }
  if (toggleEl) toggleEl.style.display = 'block';
- listEl.innerHTML = history.map(h =>
- `<span class="this-week-history-item" title="${h.date}">${h.text}</span>`
+ listEl.innerHTML = history.map((h, i) =>
+ `<span class="this-week-history-item" title="${h.date || ''}">
+ ${h.text}
+ <button class="goal-history-delete" onclick="deleteGoalHistory('${person}',${i+2})" title="Delete">×</button>
+ </span>`
  ).join('');
  }
 
@@ -4105,20 +4121,32 @@
  if (btn) btn.textContent = visible ? 'Past goals ▾' : 'Past goals ▴';
  }
 
+ async function deleteGoalHistory(person, rowNum) {
+ try {
+ const fd = new FormData();
+ fd.append('type', person + '_this_week');
+ fd.append('action', 'delete_history');
+ fd.append('row', rowNum);
+ await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+ } catch(e) {}
+ if (person === 'tori') loadThisWeek();
+ else loadNovaThisWeek();
+ }
+
  async function loadThisWeek() {
  const el = document.getElementById('this-week-display');
  if (!el) return;
  try {
  const res = await apiFetch(SCRIPTS.CHORES + '?type=tori_this_week');
  const data = await res.json();
- const val = data.value || '';
+ const val = data.current || '';
  if (val) { el.textContent = val; el.classList.remove('empty'); }
- else { el.textContent = 'Tap edit to set your intention...'; el.classList.add('empty'); }
+ else { el.textContent = 'Tap edit to set your goal'; el.classList.add('empty'); }
+ renderGoalHistory('this-week-history', data.history || [], 'tori');
  } catch(e) {
- el.textContent = 'Tap edit to set your intention...';
+ el.textContent = 'Tap edit to set your goal';
  el.classList.add('empty');
  }
- renderGoalHistory('this-week-history', 'tori_goal_history');
  }
 
  function startThisWeekEdit() {
@@ -4140,15 +4168,70 @@
  saveBtn.onclick = async () => {
  const val = input.value.trim();
  saveBtn.textContent = '...'; saveBtn.disabled = true;
- if (current) archiveGoal('tori_goal_history', current);
  try {
  const fd = new FormData();
- fd.append('type', 'tori_this_week'); fd.append('value', val);
+ fd.append('type', 'tori_this_week');
+ fd.append('action', 'set');
+ fd.append('value', val);
+ fd.append('previous', current);
  await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
  } catch(e) {}
  inputRow.replaceWith(display);
  saveBtn.replaceWith(editBtn);
  loadThisWeek();
+ };
+ inputRow.appendChild(input); inputRow.appendChild(charCount);
+ display.replaceWith(inputRow);
+ editBtn.replaceWith(saveBtn);
+ input.focus();
+ }
+
+ async function loadNovaThisWeek() {
+ const el = document.getElementById('nova-this-week-display');
+ if (!el) return;
+ try {
+ const res = await apiFetch(SCRIPTS.CHORES + '?type=nova_this_week');
+ const data = await res.json();
+ const val = data.current || '';
+ if (val) { el.textContent = val; el.classList.remove('empty'); }
+ else { el.textContent = 'Tap edit to set your goal'; el.classList.add('empty'); }
+ renderGoalHistory('nova-this-week-history', data.history || [], 'nova');
+ } catch(e) {
+ el.textContent = 'Tap edit to set your goal';
+ el.classList.add('empty');
+ }
+ }
+
+ function startNovaThisWeekEdit() {
+ const panel = document.getElementById('nova-this-week-panel');
+ const display = document.getElementById('nova-this-week-display');
+ const editBtn = panel.querySelector('.this-week-edit-btn');
+ const current = display.classList.contains('empty') ? '' : display.textContent;
+ const inputRow = document.createElement('div');
+ inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;min-width:0';
+ const input = document.createElement('input');
+ input.type = 'text'; input.className = 'this-week-input';
+ input.value = current; input.placeholder = 'What do you want to do this week?'; input.maxLength = 120;
+ const charCount = document.createElement('span');
+ charCount.style.cssText = 'font-size:0.68rem;color:var(--muted);white-space:nowrap';
+ charCount.textContent = current.length + '/120';
+ input.oninput = () => charCount.textContent = input.value.length + '/120';
+ const saveBtn = document.createElement('button');
+ saveBtn.className = 'this-week-save-btn'; saveBtn.style.background = 'var(--accent3)'; saveBtn.textContent = 'Save';
+ saveBtn.onclick = async () => {
+ const val = input.value.trim();
+ saveBtn.textContent = '...'; saveBtn.disabled = true;
+ try {
+ const fd = new FormData();
+ fd.append('type', 'nova_this_week');
+ fd.append('action', 'set');
+ fd.append('value', val);
+ fd.append('previous', current);
+ await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+ } catch(e) {}
+ inputRow.replaceWith(display);
+ saveBtn.replaceWith(editBtn);
+ loadNovaThisWeek();
  };
  inputRow.appendChild(input); inputRow.appendChild(charCount);
  display.replaceWith(inputRow);
@@ -4316,57 +4399,6 @@
  "Some turtles can breathe through their butts — it's called cloacal respiration.",
  "The Milky Way galaxy smells like rum and tastes like raspberries, according to astronomers.",
  ];
-
- async function loadNovaThisWeek() {
- const el = document.getElementById('nova-this-week-display');
- if (!el) return;
- try {
- const res = await apiFetch(SCRIPTS.CHORES + '?type=nova_this_week');
- const data = await res.json();
- const val = data.value || '';
- if (val) { el.textContent = val; el.classList.remove('empty'); }
- else { el.textContent = 'Tap edit to set your goal...'; el.classList.add('empty'); }
- } catch(e) {
- el.textContent = 'Tap edit to set your goal...';
- el.classList.add('empty');
- }
- renderGoalHistory('nova-this-week-history', 'nova_goal_history');
- }
-
- function startNovaThisWeekEdit() {
- const panel = document.getElementById('nova-this-week-panel');
- const display = document.getElementById('nova-this-week-display');
- const editBtn = panel.querySelector('.this-week-edit-btn');
- const current = display.classList.contains('empty') ? '' : display.textContent;
- const inputRow = document.createElement('div');
- inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;min-width:0';
- const input = document.createElement('input');
- input.type = 'text'; input.className = 'this-week-input';
- input.value = current; input.placeholder = 'What do you want to do this week?'; input.maxLength = 120;
- const charCount = document.createElement('span');
- charCount.style.cssText = 'font-size:0.68rem;color:var(--muted);white-space:nowrap';
- charCount.textContent = current.length + '/120';
- input.oninput = () => charCount.textContent = input.value.length + '/120';
- const saveBtn = document.createElement('button');
- saveBtn.className = 'this-week-save-btn'; saveBtn.style.background = 'var(--accent3)'; saveBtn.textContent = 'Save';
- saveBtn.onclick = async () => {
- const val = input.value.trim();
- saveBtn.textContent = '...'; saveBtn.disabled = true;
- if (current) archiveGoal('nova_goal_history', current);
- try {
- const fd = new FormData();
- fd.append('type', 'nova_this_week'); fd.append('value', val);
- await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
- } catch(e) {}
- inputRow.replaceWith(display);
- saveBtn.replaceWith(editBtn);
- loadNovaThisWeek();
- };
- inputRow.appendChild(input); inputRow.appendChild(charCount);
- display.replaceWith(inputRow);
- editBtn.replaceWith(saveBtn);
- input.focus();
- }
 
  let novaJokeIdx = null, novaFactIdx = null, novaCoolIdx = null;
  function loadNovaJokeAndFact() {
