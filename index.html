@@ -1381,6 +1381,19 @@
     .meal-list { overflow: visible; flex: none; }
     .personal-grid-2, .personal-grid-3 { grid-template-columns: 1fr; }
 
+    /* Wrestling events: single column on mobile */
+    .countdown-list.two-col { grid-template-columns: 1fr; }
+
+    /* Next Up split: stack vertically on mobile */
+    .next-up-split { grid-template-columns: 1fr; }
+    .next-up-primary { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 12px; }
+    .next-up-secondary { padding-left: 0; padding-top: 10px; }
+
+    /* This Week tile: keep layout clean on mobile */
+    .this-week-panel { flex-direction: column !important; align-items: stretch !important; }
+    .this-week-panel > div:first-child { flex-wrap: wrap; gap: 6px; }
+    .this-week-text { white-space: normal !important; }
+
     .topbar { flex-direction: column; gap: 10px; text-align: center; padding: 12px 14px; }
     .home-title { font-size: 1rem; }
     #clock { font-size: 1.5rem; }
