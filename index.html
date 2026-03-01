@@ -1486,6 +1486,13 @@
  .home-month-panel { order: 1; min-height: 380px; }
  /* Fun page: bulletin above movies on mobile */
  .fun-bulletin-panel { order: -1; }
+ /* Bulletin board: 2 sticky notes per row on mobile */
+ .bulletin-list {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 14px 12px;
+ }
+ .bulletin-item { max-width: none; transform: none !important; }
  .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
@@ -1640,7 +1647,6 @@
  gap: 18px 16px;
  align-items: flex-start;
  }
-
  .bulletin-item {
  /* Sticky note base: warm amber tinted dark to match theme */
  background: linear-gradient(160deg, #2e2610 0%, #261f0a 100%);
@@ -5143,13 +5149,25 @@
  el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px 0">Nothing posted yet — be the first!</div>';
  return;
  }
- el.innerHTML = items.map(b => `
+ el.innerHTML = items.map(b => {
+ // Normalize date: handle ISO string, serial number, or already-formatted string
+ let dateStr = '';
+ if (b.date) {
+ const d = new Date(b.date);
+ if (!isNaN(d.getTime())) {
+ dateStr = (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+ } else {
+ dateStr = b.date; // already formatted
+ }
+ }
+ return `
  <div class="bulletin-item">
  <button class="bulletin-delete" onclick="deleteBulletin(${b.row})">×</button>
  <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
  <div class="bulletin-text">${esc(b.text || '')}</div>
- <div class="bulletin-date">${esc(b.date || '')}</div>
- </div>`).join('');
+ ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+ </div>`;
+ }).join('');
  } catch(e) {
  el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
  }
