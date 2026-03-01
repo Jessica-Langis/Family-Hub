@@ -1443,9 +1443,6 @@
  .nova-mid-row { grid-template-columns: 1fr; }
  .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
- /* Nova inline grids on mobile */
- #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
- #tab-nova .nova-content > div[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
  .home-content { grid-template-rows: auto; height: auto; overflow: visible; }
  .today-columns { grid-template-columns: 1fr; }
  .today-divider { display: none; }
@@ -1547,9 +1544,18 @@
  .tori-schedule-panel  { order: 6; }
  .tori-chores-panel    { order: 7; }
  .tori-events-panel    { order: 8; }
- /* Mobile Nova stack: reminders before events */
- .nova-reminders-panel { order: 1; }
- .nova-events-panel    { order: 2; }
+ /* Mobile Nova stack: This Week | Jokes+Facts | Events | Reminders | To Do | Homework */
+ .nova-content { display: flex; flex-direction: column; gap: 10px; }
+ .nova-row-1 { order: 1; grid-template-columns: 1fr !important; }
+ .nova-row-2 { order: 2; grid-template-columns: 1fr 1fr !important; }
+ .nova-row-3 { order: 3; grid-template-columns: 1fr !important; }
+ /* Within row 3, force the correct panel order */
+ .nova-events-panel   { order: 1; }
+ .nova-reminders-panel { order: 2; }
+ .nova-chores-panel   { order: 3; }
+ .nova-homework-panel { order: 4; }
+ /* Hype tile hidden on mobile — merged with this-week row */
+ .nova-hype-panel { display: none; }
  }
 
 
@@ -2263,9 +2269,9 @@
  <div class="nova-content">
 
  <!-- Row 1: This Week I Want To | Hype Tile -->
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0">
+ <div class="nova-row-1" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0">
 
- <div class="this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
+ <div class="this-week-panel nova-this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;align-items:center;gap:10px">
  <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
  <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Tap edit to set your goal...</span>
@@ -2285,7 +2291,7 @@
  </div>
 
  <!-- Row 2: Joke | Fun Fact | Cool Fact | Tonight's Dinner -->
- <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
+ <div class="nova-row-2" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
 
  <div class="fun-fact-panel tile-joke">
  <div class="fun-fact-header">
@@ -2320,7 +2326,7 @@
  </div>
 
  <!-- Row 3: Events | Reminders | Chores | Homework -->
- <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
+ <div class="nova-row-3" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0">
 
  <div class="panel nova-events-panel">
  <div class="section-header">
@@ -2348,7 +2354,7 @@
  </div>
  </div>
 
- <div class="panel">
+ <div class="panel nova-chores-panel">
  <div class="section-header">
  <div class="section-header-left">
  <span class="section-title" style="color:var(--accent3)">To Do</span>
@@ -2363,7 +2369,7 @@
  </div>
  </div>
 
- <div class="panel">
+ <div class="panel nova-homework-panel">
  <div class="section-header">
  <div class="section-header-left">
  <span class="section-title" style="color:var(--accent3)">Homework</span>
@@ -2893,7 +2899,7 @@
 
  // One-time: only show on the due date
  if (chore.dueDate) {
- const due = new Date(chore.dueDate + 'T00:00:00');
+ const due = normalizeDate(chore.dueDate);
  return due.getTime() === today.getTime();
  }
 
@@ -2915,13 +2921,13 @@
 
  const dueReminders = reminderItems.filter(r => {
  if (!r.date) return false;
- const d = new Date(r.date + 'T00:00:00');
+ const d = normalizeDate(r.date);
  return isToday ? d <= date : d.getTime() === date.getTime();
  });
 
  const dueChores = choreItems.filter(c => {
  if (!c.dueDate) return false;
- return new Date(c.dueDate + 'T00:00:00').getTime() === date.getTime();
+ return normalizeDate(c.dueDate).getTime() === date.getTime();
  });
 
  const dayEvents = eventItems.filter(ev => {
@@ -2943,7 +2949,7 @@
  const remCol = dueReminders.length
  ? '<div class="today-subcol"><div class="today-section-label">📌 Reminders</div>' +
  dueReminders.map(r => {
- const d = r.date ? new Date(r.date + 'T00:00:00') : null;
+ const d = r.date ? normalizeDate(r.date) : null;
  const isOld = isToday && d && d < today;
  return '<div class="today-item ' + (isOld ? 'overdue' : 'soon') + '">' +
  '<div class="today-item-dot"></div>' +
@@ -3119,14 +3125,27 @@
  // ─────────────────────────────────────────────
  // DATE HELPERS
  // ─────────────────────────────────────────────
+ // Safely parse any date string GAS might return (ISO yyyy-MM-dd or Date.toString())
+ function normalizeDate(dateStr) {
+ if (!dateStr) return null;
+ // Try appending T00:00:00 first (works for yyyy-MM-dd)
+ let d = normalizeDate(dateStr);
+ if (!isNaN(d.getTime())) return d;
+ // Fall back to direct parse (handles Date.toString() style)
+ d = new Date(dateStr);
+ if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
+ return null;
+ }
+
  function getDayDiff(dateStr) {
- const today = new Date();
- today.setHours(0, 0, 0, 0);
- const target = new Date(dateStr + 'T00:00:00');
+ const today = new Date(); today.setHours(0, 0, 0, 0);
+ const target = normalizeDate(dateStr);
+ if (!target) return NaN;
  return Math.round((target - today) / 86400000);
  }
 
  function countdownBadge(diff) {
+ if (isNaN(diff)) return { text: '', cls: 'upcoming' };
  if (diff < 0) return { text: `${Math.abs(diff)}d ago`, cls: 'past' };
  if (diff === 0) return { text: 'TODAY', cls: 'today' };
  if (diff <= 7) return { text: `${diff}d away`, cls: 'soon' };
@@ -3136,6 +3155,7 @@
  function choreDateBadgeClass(dateStr) {
  if (!dateStr) return 'upcoming';
  const diff = getDayDiff(dateStr);
+ if (isNaN(diff)) return 'upcoming';
  if (diff < 0) return 'past';
  if (diff === 0) return 'today';
  if (diff <= 7) return 'soon';
@@ -3143,15 +3163,16 @@
  }
 
  function formatDateShort(dateStr) {
- const d = new Date(dateStr + 'T00:00:00');
+ const d = normalizeDate(dateStr);
+ if (!d) return '';
  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
  }
 
  function formatReminderDate(dateStr) {
  if (!dateStr || !dateStr.trim()) return '';
  const today = new Date(); today.setHours(0, 0, 0, 0);
- const parsed = new Date(dateStr + 'T00:00:00');
- if (isNaN(parsed)) return '';
+ const parsed = normalizeDate(dateStr);
+ if (!parsed) return '';
  const diff = Math.round((parsed - today) / 86400000);
  if (diff === 0) return 'Today';
  if (diff === 1) return 'Tomorrow';
@@ -3165,7 +3186,7 @@
  function renderEventList(events, containerId, deleteFnName, editFnName) {
  const el = document.getElementById(containerId);
  if (!el) return;
- const sorted = [...events].sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+ const sorted = [...events].sort((a, b) => normalizeDate(a.date) - normalizeDate(b.date));
  const upcoming = sorted.filter(e => getDayDiff(e.date) >= -30);
  if (upcoming.length === 0) {
  el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">No upcoming events</div>';
@@ -3222,7 +3243,7 @@
  if (!el) return;
  const upcoming = [...events]
  .filter(e => getDayDiff(e.date) >= 0)
- .sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+ .sort((a, b) => normalizeDate(a.date) - normalizeDate(b.date));
 
  if (upcoming.length === 0) {
  el.innerHTML = '<div class="next-up-label">No upcoming events</div>';
@@ -4936,7 +4957,7 @@
  }
  list.innerHTML = hw.map(item => {
  const dueStr = item.due ? ` · Due ${item.due}` : '';
- const isOverdue = item.due && !item.done && new Date(item.due + 'T00:00:00') < new Date(new Date().toDateString());
+ const isOverdue = item.due && !item.done && normalizeDate(item.due) < new Date(new Date().toDateString());
  return `
  <div class="hw-item ${item.done ? 'done' : ''}" data-hw-id="${esc(String(item.id))}">
  <div class="hw-check">✓</div>
