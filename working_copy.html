@@ -748,7 +748,7 @@
 
   .tori-content {
     display: grid;
-    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-rows: 0.6fr 1.4fr 1fr;
     gap: 10px;
     min-height: 0;
     height: 100%;
@@ -1010,6 +1010,13 @@
     flex: 1;
   }
 
+  .countdown-list.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    overflow-y: hidden;
+  }
+
   .countdown-item {
     display: flex;
     align-items: center;
@@ -1151,6 +1158,40 @@
     gap: 6px;
     flex: 1;
     justify-content: center;
+    overflow: hidden;
+  }
+
+  .next-up-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    height: 100%;
+  }
+
+  .next-up-primary {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-right: 16px;
+    border-right: 1px solid var(--border);
+    justify-content: center;
+  }
+
+  .next-up-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 16px;
+    justify-content: center;
+  }
+
+  .next-up-secondary-label {
+    font-size: 0.62rem;
+    color: var(--accent4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 2px;
   }
 
   .next-up-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
@@ -1355,6 +1396,173 @@
     .tori-events-panel   { order: 1; }
     .tori-schedule-panel { order: 2; }
   }
+
+
+  .this-week-history-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 2px 0;
+    text-decoration: underline dotted;
+    letter-spacing: 0.02em;
+  }
+  .this-week-history-btn:hover { color: var(--accent4); }
+
+  /* ── HYPE REFRESH BUTTON ── */
+  .hype-refresh-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    background: none;
+    border: 1px solid rgba(168,130,200,0.3);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(168,130,200,0.6);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .hype-refresh-btn:hover { color: var(--accent4); border-color: var(--accent4); transform: rotate(90deg); }
+  .hype-refresh-nova { border-color: rgba(135,206,235,0.3); color: rgba(135,206,235,0.6); }
+  .hype-refresh-nova:hover { color: var(--accent3); border-color: var(--accent3); }
+
+  /* ── FACT SHUFFLE BUTTON ── */
+  .fun-fact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .fact-shuffle-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.15s, transform 0.2s;
+  }
+  .fact-shuffle-btn:hover { color: var(--accent3); transform: rotate(90deg); }
+
+  /* ── THIS WEEK HISTORY ── */
+  .this-week-history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .this-week-history-item {
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface2);
+    border-radius: 20px;
+    padding: 2px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    border: 1px solid var(--border);
+  }
+  .this-week-history-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 4px;
+    opacity: 0.6;
+  }
+
+
+  .hw-info { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
+  .hw-info .hw-name { white-space:normal; }
+  .hw-info .hw-subject { font-size:0.7rem; color:var(--muted); }
+
+  /* ── BULLETIN BOARD ── */
+  .bulletin-list {
+    padding: 8px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .bulletin-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    min-width: 160px;
+    max-width: 280px;
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .bulletin-who {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+  .bulletin-text {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .bulletin-date {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .bulletin-delete {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .bulletin-delete:hover { color: #e07070; }
+
+  /* ── PERSONAL BESTS ── */
+  .pb-list {
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .pb-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .pb-info { flex: 1; min-width: 0; }
+  .pb-category { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .pb-value { font-size: 0.95rem; font-weight: 600; color: var(--accent4); }
+  .pb-notes { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+  .pb-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .pb-edit-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.82rem; padding: 2px; }
+  .pb-edit-btn:hover { color: var(--accent4); }
+  .pb-delete-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 2px; line-height: 1; }
+  .pb-delete-btn:hover { color: #e07070; }
+
 </style>
 </head>
 <body>
@@ -1589,6 +1797,30 @@
     </div>
 
     <!-- Row 2: Agenda | Month -->
+    <!-- Family Photo Tile -->
+    <div class="panel" style="margin-bottom:10px;display:flex;align-items:center;gap:16px;padding:14px 18px">
+      <div style="width:64px;height:64px;border-radius:12px;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">📷</div>
+      <div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:2px">Family Photos</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Photo display coming soon — source to be decided</div>
+      </div>
+    </div>
+
+    <!-- Bulletin Board -->
+    <div class="panel" style="margin-bottom:10px">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">📌 Bulletin Board</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+        </div>
+      </div>
+      <div class="bulletin-list" id="bulletin-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+      </div>
+    </div>
+
     <div class="main-grid">
 
       <div class="agenda-section">
@@ -1671,6 +1903,38 @@
 <div class="tab-panel" id="tab-fun">
   <div class="personal-content">
 
+    <!-- Entertainment Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left"><span class="section-title" style="color:var(--accent5)">🎬 Jessica</span></div>
+          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openEntForm('jessica')">+ Add</button></div>
+        </div>
+        <div class="fun-list" id="ent-jessica-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left"><span class="section-title" style="color:var(--accent2)">🎬 Jesse</span></div>
+          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent2)" onclick="openEntForm('jesse')">+ Add</button></div>
+        </div>
+        <div class="fun-list" id="ent-jesse-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left"><span class="section-title" style="color:var(--accent4)">🎬 Tori</span></div>
+          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent4)" onclick="openEntForm('tori')">+ Add</button></div>
+        </div>
+        <div class="fun-list" id="ent-tori-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left"><span class="section-title" style="color:var(--accent3)">🎬 Nova</span></div>
+          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openEntForm('nova')">+ Add</button></div>
+        </div>
+        <div class="fun-list" id="ent-nova-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
+      </div>
+    </div>
+
     <div class="personal-grid-3">
 
       <!-- Movies & Shows -->
@@ -1731,14 +1995,21 @@
     <!-- Row 1: This Week I Want To | Hype Tile -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
-      <div class="this-week-panel" id="this-week-panel">
-        <span class="this-week-label">This week I want to</span>
-        <span class="this-week-text empty" id="this-week-display">Tap edit to set your intention...</span>
-        <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Edit</button>
+      <div class="this-week-panel" id="this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="this-week-label">This week I want to</span>
+          <span class="this-week-text empty" id="this-week-display" style="white-space:normal">Tap edit to set your intention...</span>
+          <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Edit</button>
+        </div>
+        <div id="this-week-history-toggle" style="display:none">
+          <button class="this-week-history-btn" onclick="toggleGoalHistory('this-week-history', 'this-week-history-toggle')">Past goals ▾</button>
+          <div id="this-week-history" class="this-week-history" style="display:none"></div>
+        </div>
       </div>
 
       <div class="hype-panel">
         <div class="hype-quote" id="tori-hype-quote"></div>
+        <button class="hype-refresh-btn" onclick="shuffleToriHype()" title="New quote">↻</button>
       </div>
 
     </div>
@@ -1766,13 +2037,13 @@
             <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
           </div>
         </div>
-        <div class="countdown-list" id="tori-events"></div>
+        <div class="countdown-list two-col" id="tori-events"></div>
       </div>
 
     </div>
 
-    <!-- Row 3: Reminders | Chores | Schedule -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
+    <!-- Row 3: Reminders | Chores | Schedule | Personal Bests -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="panel">
         <div class="section-header">
@@ -1818,6 +2089,21 @@
         </div>
       </div>
 
+      <!-- Personal Bests -->
+      <div class="panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent4)">Personal Bests</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" style="background:var(--accent4)" onclick="openPBForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="pb-list" id="tori-pb-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1829,14 +2115,21 @@
     <!-- Row 1: This Week I Want To | Hype Tile -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
-      <div class="this-week-panel" id="nova-this-week-panel">
-        <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
-        <span class="this-week-text empty" id="nova-this-week-display">Tap edit to set your goal...</span>
-        <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Edit</button>
+      <div class="this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
+          <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Tap edit to set your goal...</span>
+          <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Edit</button>
+        </div>
+        <div id="nova-this-week-history-toggle" style="display:none">
+          <button class="this-week-history-btn" onclick="toggleGoalHistory('nova-this-week-history', 'nova-this-week-history-toggle')">Past goals ▾</button>
+          <div id="nova-this-week-history" class="this-week-history" style="display:none"></div>
+        </div>
       </div>
 
       <div class="nova-hype-panel">
         <div class="nova-hype-quote" id="nova-hype-quote"></div>
+        <button class="hype-refresh-btn hype-refresh-nova" onclick="shuffleNovaHype()" title="New quote">↻</button>
       </div>
 
     </div>
@@ -1845,17 +2138,26 @@
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;min-height:0;overflow:hidden">
 
       <div class="fun-fact-panel">
-        <span class="fun-fact-label" style="color:var(--accent3)">Joke of the Day</span>
+        <div class="fun-fact-header">
+          <span class="fun-fact-label" style="color:var(--accent3)">Joke of the Day</span>
+          <button class="fact-shuffle-btn" onclick="shuffleNovaJoke()" title="New joke">↻</button>
+        </div>
         <div class="fun-fact-text" id="nova-joke"></div>
       </div>
 
       <div class="fun-fact-panel">
-        <span class="fun-fact-label" style="color:var(--accent3)">Fun Fact</span>
+        <div class="fun-fact-header">
+          <span class="fun-fact-label" style="color:var(--accent3)">Fun Fact</span>
+          <button class="fact-shuffle-btn" onclick="shuffleNovaFact()" title="New fact">↻</button>
+        </div>
         <div class="fun-fact-text" id="nova-fact"></div>
       </div>
 
       <div class="fun-fact-panel">
-        <span class="fun-fact-label" style="color:var(--accent3)">Did You Know</span>
+        <div class="fun-fact-header">
+          <span class="fun-fact-label" style="color:var(--accent3)">Did You Know</span>
+          <button class="fact-shuffle-btn" onclick="shuffleNovaCoolFact()" title="New fact">↻</button>
+        </div>
         <div class="fun-fact-text" id="nova-cool-fact"></div>
       </div>
 
@@ -2029,6 +2331,34 @@
   </div>
 </div>
 
+<!-- BULLETIN BOARD OVERLAY -->
+<div id="bulletin-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">📌 Post to Bulletin Board</div>
+    <input type="text" id="bulletin-who-input" class="overlay-input" placeholder="Who is this from? (e.g. Mom)" autocomplete="off" />
+    <textarea id="bulletin-text-input" class="overlay-input" placeholder="What do you want to say?" rows="3" style="resize:none;font-family:inherit"></textarea>
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeBulletinForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitBulletin()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONAL BEST OVERLAY -->
+<div id="pb-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title" id="pb-overlay-title" style="color:var(--accent4)">🏆 Add Personal Best</div>
+    <input type="text" id="pb-category-input" class="overlay-input" placeholder="Category (e.g. Bench Press, Mile Time)" autocomplete="off" />
+    <input type="text" id="pb-value-input" class="overlay-input" placeholder="Value (e.g. 135 lbs, 6:42)" autocomplete="off" />
+    <input type="text" id="pb-notes-input" class="overlay-input" placeholder="Notes (optional)" autocomplete="off" />
+    <input type="hidden" id="pb-edit-idx" value="" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closePBForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent4)" id="pb-submit-btn" onclick="submitPB()">Add</button>
+    </div>
+  </div>
+</div>
+
 <!-- TORI REMINDER OVERLAY -->
 <div id="tori-reminder-overlay" class="overlay hidden">
   <div class="overlay-box">
@@ -2140,9 +2470,24 @@
     <div class="overlay-title">📖 Add Homework</div>
     <input type="text" id="hw-input" class="overlay-input" placeholder="e.g. Read chapter 5" autocomplete="off" />
     <input type="text" id="hw-subject-input" class="overlay-input" placeholder="Subject (e.g. Math)" autocomplete="off" />
+    <input type="date" id="hw-due-input" class="overlay-input" />
     <div class="overlay-actions">
       <button class="overlay-btn cancel" onclick="closeHomeworkForm()">Cancel</button>
       <button class="overlay-btn submit" style="background:var(--accent3);color:#0f1117" onclick="submitHomework()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENTERTAINMENT OVERLAY -->
+<div id="ent-form-overlay" class="overlay hidden" data-person="">
+  <div class="overlay-box">
+    <div class="overlay-title" id="ent-form-title">🎬 Add to Watchlist</div>
+    <input type="text" id="ent-title-input" class="overlay-input" placeholder="Title (movie, show, book, restaurant...)" autocomplete="off" />
+    <input type="text" id="ent-type-input" class="overlay-input" placeholder="Type (e.g. Movie, Show, Book, Restaurant)" autocomplete="off" />
+    <input type="text" id="ent-notes-input" class="overlay-input" placeholder="Notes / link (optional)" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeEntForm()">Cancel</button>
+      <button class="overlay-btn submit" style="background:var(--accent5);color:#0f1117" onclick="submitEntItem()">Add</button>
     </div>
   </div>
 </div>
@@ -2371,6 +2716,7 @@
       loadGroceryList();
       loadMealPlan();
       loadTodayTile();
+      loadBulletin();
     } else if (tab === 'parentals') {
       loadParentChores();
       loadParentReminders();
@@ -2378,6 +2724,7 @@
       loadFunMovies();
       loadFunBooks();
       loadFunMeals();
+      loadAllEntLists();
     } else if (tab === 'tori') {
       loadToriChores();
       loadToriReminders();
@@ -2385,6 +2732,7 @@
       loadToriEvents();
       loadThisWeek();
       loadToriHype();
+      loadPBs();
     } else if (tab === 'nova') {
       loadNovaChores();
       loadNovaEvents();
@@ -2743,35 +3091,37 @@
       return;
     }
 
-    const next    = upcoming[0];
-    const diff    = getDayDiff(next.date);
+    const next  = upcoming[0];
+    const diff  = getDayDiff(next.date);
     const isToday = diff === 0;
 
-    let html = `
-      <div class="next-up-label">${esc(next.type)}</div>
-      <div class="next-up-name">${esc(next.name)}</div>
-      <div class="next-up-sub">${formatDateShort(next.date)}${next.location ? ' · ' + esc(next.location) : ''}</div>
-      <div class="next-up-countdown ${isToday ? 'today-color' : ''}">${isToday ? 'TODAY' : diff}</div>
-      <div class="next-up-unit">${isToday ? '' : 'days away'}</div>
+    const primaryHtml = `
+      <div class="next-up-primary">
+        <div class="next-up-label">${esc(next.type)}</div>
+        <div class="next-up-name">${esc(next.name)}</div>
+        <div class="next-up-sub">${formatDateShort(next.date)}${next.location ? ' · ' + esc(next.location) : ''}</div>
+        <div class="next-up-countdown ${isToday ? 'today-color' : ''}">${isToday ? 'TODAY' : diff}</div>
+        <div class="next-up-unit">${isToday ? '' : 'days away'}</div>
+      </div>
     `;
 
+    let secondaryHtml = '';
     if (upcoming.length > 1) {
       const second = upcoming[1];
       const diff2  = getDayDiff(second.date);
       const badge2 = countdownBadge(diff2);
-      html += `
-        <div class="next-up-divider"></div>
-        <div class="next-up-second">
-          <div class="next-up-second-info">
-            <span class="next-up-second-type">${esc(second.type)}</span>
-            <span class="next-up-second-name">${esc(second.name)}</span>
-            <span class="next-up-second-date">${formatDateShort(second.date)}${second.location ? ' · ' + esc(second.location) : ''}</span>
-          </div>
-          <div class="countdown-badge ${badge2.cls}">${badge2.text}</div>
+      secondaryHtml = `
+        <div class="next-up-secondary">
+          <div class="next-up-secondary-label">Next Up</div>
+          <div class="next-up-second-type">${esc(second.type)}</div>
+          <div class="next-up-second-name">${esc(second.name)}</div>
+          <div class="next-up-second-date">${formatDateShort(second.date)}${second.location ? ' · ' + esc(second.location) : ''}</div>
+          <div class="countdown-badge ${badge2.cls}" style="margin-top:8px;display:inline-block">${badge2.text}</div>
         </div>
       `;
     }
-    el.innerHTML = html;
+
+    el.innerHTML = `<div class="next-up-split">${primaryHtml}${secondaryHtml}</div>`;
   }
 
   // ─────────────────────────────────────────────
@@ -3598,6 +3948,38 @@
 
   // TORI: THIS WEEK I WANT TO
   // ─────────────────────────────────────────────
+  // Goal history helpers (stored in localStorage as JSON array of {text, date})
+  function archiveGoal(key, text) {
+    if (!text) return;
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    history.unshift({ text, date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) });
+    localStorage.setItem(key, JSON.stringify(history.slice(0, 3)));
+  }
+  function renderGoalHistory(containerId, key) {
+    const listEl   = document.getElementById(containerId);
+    const toggleId = containerId + '-toggle';
+    const toggleEl = document.getElementById(toggleId);
+    if (!listEl) return;
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!history.length) {
+      if (toggleEl) toggleEl.style.display = 'none';
+      listEl.innerHTML = ''; return;
+    }
+    if (toggleEl) toggleEl.style.display = 'block';
+    listEl.innerHTML = history.map(h =>
+      `<span class="this-week-history-item" title="${h.date}">${h.text}</span>`
+    ).join('');
+  }
+
+  function toggleGoalHistory(containerId, toggleId) {
+    const listEl = document.getElementById(containerId);
+    const btn    = document.querySelector(`#${toggleId} .this-week-history-btn`);
+    if (!listEl) return;
+    const visible = listEl.style.display !== 'none';
+    listEl.style.display = visible ? 'none' : 'flex';
+    if (btn) btn.textContent = visible ? 'Past goals ▾' : 'Past goals ▴';
+  }
+
   async function loadThisWeek() {
     const el = document.getElementById('this-week-display');
     if (!el) return;
@@ -3611,6 +3993,7 @@
       el.textContent = 'Tap edit to set your intention...';
       el.classList.add('empty');
     }
+    renderGoalHistory('this-week-history', 'tori_goal_history');
   }
 
   function startThisWeekEdit() {
@@ -3618,29 +4001,32 @@
     const display = document.getElementById('this-week-display');
     const editBtn = panel.querySelector('.this-week-edit-btn');
     const current = display.classList.contains('empty') ? '' : display.textContent;
-    const input   = document.createElement('input');
-    input.type = 'text';
-    input.className = 'this-week-input';
-    input.value = current;
-    input.placeholder = 'What do you want to do this week?';
+    const inputRow = document.createElement('div');
+    inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;min-width:0';
+    const input = document.createElement('input');
+    input.type = 'text'; input.className = 'this-week-input';
+    input.value = current; input.placeholder = 'What do you want to do this week?'; input.maxLength = 120;
+    const charCount = document.createElement('span');
+    charCount.style.cssText = 'font-size:0.68rem;color:var(--muted);white-space:nowrap';
+    charCount.textContent = current.length + '/120';
+    input.oninput = () => charCount.textContent = input.value.length + '/120';
     const saveBtn = document.createElement('button');
-    saveBtn.className = 'this-week-save-btn';
-    saveBtn.textContent = 'Save';
+    saveBtn.className = 'this-week-save-btn'; saveBtn.textContent = 'Save';
     saveBtn.onclick = async () => {
       const val = input.value.trim();
-      saveBtn.textContent = '...';
-      saveBtn.disabled = true;
+      saveBtn.textContent = '...'; saveBtn.disabled = true;
+      if (current) archiveGoal('tori_goal_history', current);
       try {
         const fd = new FormData();
-        fd.append('type',  'tori_this_week');
-        fd.append('value', val);
+        fd.append('type', 'tori_this_week'); fd.append('value', val);
         await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
       } catch(e) {}
-      input.replaceWith(display);
+      inputRow.replaceWith(display);
       saveBtn.replaceWith(editBtn);
       loadThisWeek();
     };
-    display.replaceWith(input);
+    inputRow.appendChild(input); inputRow.appendChild(charCount);
+    display.replaceWith(inputRow);
     editBtn.replaceWith(saveBtn);
     input.focus();
   }
@@ -3706,18 +4092,47 @@
     return arr[((hash % arr.length) + arr.length) % arr.length];
   }
 
+  function pickDailyIndex(arr) {
+    const day = new Date().toDateString();
+    let hash = 0;
+    for (let i = 0; i < day.length; i++) hash = (hash * 31 + day.charCodeAt(i)) % arr.length;
+    return ((hash % arr.length) + arr.length) % arr.length;
+  }
+
+  let toriHypeIdx = null;
   function loadToriHype() {
     const el = document.getElementById('tori-hype-quote');
     if (!el) return;
-    el.textContent = pickDailyItem(TORI_HYPE);
-    setTimeout(() => el.classList.add('visible'), 100);
+    if (toriHypeIdx === null) toriHypeIdx = pickDailyIndex(TORI_HYPE);
+    el.classList.remove('visible');
+    setTimeout(() => { el.textContent = TORI_HYPE[toriHypeIdx]; el.classList.add('visible'); }, 100);
+  }
+  function shuffleToriHype() {
+    const el = document.getElementById('tori-hype-quote');
+    if (!el) return;
+    let next;
+    do { next = Math.floor(Math.random() * TORI_HYPE.length); } while (next === toriHypeIdx && TORI_HYPE.length > 1);
+    toriHypeIdx = next;
+    el.classList.remove('visible');
+    setTimeout(() => { el.textContent = TORI_HYPE[toriHypeIdx]; el.classList.add('visible'); }, 200);
   }
 
+  let novaHypeIdx = null;
   function loadNovaHype() {
     const el = document.getElementById('nova-hype-quote');
     if (!el) return;
-    el.textContent = pickDailyItem(NOVA_HYPE);
-    setTimeout(() => el.classList.add('visible'), 100);
+    if (novaHypeIdx === null) novaHypeIdx = pickDailyIndex(NOVA_HYPE);
+    el.classList.remove('visible');
+    setTimeout(() => { el.textContent = NOVA_HYPE[novaHypeIdx]; el.classList.add('visible'); }, 100);
+  }
+  function shuffleNovaHype() {
+    const el = document.getElementById('nova-hype-quote');
+    if (!el) return;
+    let next;
+    do { next = Math.floor(Math.random() * NOVA_HYPE.length); } while (next === novaHypeIdx && NOVA_HYPE.length > 1);
+    novaHypeIdx = next;
+    el.classList.remove('visible');
+    setTimeout(() => { el.textContent = NOVA_HYPE[novaHypeIdx]; el.classList.add('visible'); }, 200);
   }
 
   // ─────────────────────────────────────────────
@@ -3790,6 +4205,7 @@
       el.textContent = 'Tap edit to set your goal...';
       el.classList.add('empty');
     }
+    renderGoalHistory('nova-this-week-history', 'nova_goal_history');
   }
 
   function startNovaThisWeekEdit() {
@@ -3797,41 +4213,65 @@
     const display = document.getElementById('nova-this-week-display');
     const editBtn = panel.querySelector('.this-week-edit-btn');
     const current = display.classList.contains('empty') ? '' : display.textContent;
-    const input   = document.createElement('input');
-    input.type = 'text';
-    input.className = 'this-week-input';
-    input.value = current;
-    input.placeholder = 'What do you want to do this week?';
+    const inputRow = document.createElement('div');
+    inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;min-width:0';
+    const input = document.createElement('input');
+    input.type = 'text'; input.className = 'this-week-input';
+    input.value = current; input.placeholder = 'What do you want to do this week?'; input.maxLength = 120;
+    const charCount = document.createElement('span');
+    charCount.style.cssText = 'font-size:0.68rem;color:var(--muted);white-space:nowrap';
+    charCount.textContent = current.length + '/120';
+    input.oninput = () => charCount.textContent = input.value.length + '/120';
     const saveBtn = document.createElement('button');
-    saveBtn.className = 'this-week-save-btn';
-    saveBtn.style.background = 'var(--accent3)';
-    saveBtn.textContent = 'Save';
+    saveBtn.className = 'this-week-save-btn'; saveBtn.style.background = 'var(--accent3)'; saveBtn.textContent = 'Save';
     saveBtn.onclick = async () => {
       const val = input.value.trim();
-      saveBtn.textContent = '...';
-      saveBtn.disabled = true;
+      saveBtn.textContent = '...'; saveBtn.disabled = true;
+      if (current) archiveGoal('nova_goal_history', current);
       try {
         const fd = new FormData();
-        fd.append('type',  'nova_this_week');
-        fd.append('value', val);
+        fd.append('type', 'nova_this_week'); fd.append('value', val);
         await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
       } catch(e) {}
-      input.replaceWith(display);
+      inputRow.replaceWith(display);
       saveBtn.replaceWith(editBtn);
       loadNovaThisWeek();
     };
-    display.replaceWith(input);
+    inputRow.appendChild(input); inputRow.appendChild(charCount);
+    display.replaceWith(inputRow);
     editBtn.replaceWith(saveBtn);
     input.focus();
   }
 
+  let novaJokeIdx = null, novaFactIdx = null, novaCoolIdx = null;
   function loadNovaJokeAndFact() {
     const jokeEl = document.getElementById('nova-joke');
     const factEl = document.getElementById('nova-fact');
     const coolEl = document.getElementById('nova-cool-fact');
-    if (jokeEl) jokeEl.textContent = pickDailyItem(NOVA_JOKES);
-    if (factEl) factEl.textContent = pickDailyItem(NOVA_FACTS);
-    if (coolEl) coolEl.textContent = pickDailyItem(NOVA_COOL_FACTS);
+    if (novaJokeIdx === null) novaJokeIdx = pickDailyIndex(NOVA_JOKES);
+    if (novaFactIdx === null) novaFactIdx = pickDailyIndex(NOVA_FACTS);
+    if (novaCoolIdx === null) novaCoolIdx = pickDailyIndex(NOVA_COOL_FACTS);
+    if (jokeEl) jokeEl.textContent = NOVA_JOKES[novaJokeIdx];
+    if (factEl) factEl.textContent = NOVA_FACTS[novaFactIdx];
+    if (coolEl) coolEl.textContent = NOVA_COOL_FACTS[novaCoolIdx];
+  }
+  function shuffleNovaJoke() {
+    const el = document.getElementById('nova-joke');
+    if (!el) return;
+    let next; do { next = Math.floor(Math.random() * NOVA_JOKES.length); } while (next === novaJokeIdx && NOVA_JOKES.length > 1);
+    novaJokeIdx = next; el.textContent = NOVA_JOKES[novaJokeIdx];
+  }
+  function shuffleNovaFact() {
+    const el = document.getElementById('nova-fact');
+    if (!el) return;
+    let next; do { next = Math.floor(Math.random() * NOVA_FACTS.length); } while (next === novaFactIdx && NOVA_FACTS.length > 1);
+    novaFactIdx = next; el.textContent = NOVA_FACTS[novaFactIdx];
+  }
+  function shuffleNovaCoolFact() {
+    const el = document.getElementById('nova-cool-fact');
+    if (!el) return;
+    let next; do { next = Math.floor(Math.random() * NOVA_COOL_FACTS.length); } while (next === novaCoolIdx && NOVA_COOL_FACTS.length > 1);
+    novaCoolIdx = next; el.textContent = NOVA_COOL_FACTS[novaCoolIdx];
   }
 
   // ─────────────────────────────────────────────
@@ -4337,13 +4777,19 @@
       if (progress) progress.style.width = '100%';
       return;
     }
-    list.innerHTML = hw.map(item => `
+    list.innerHTML = hw.map(item => {
+      const dueStr = item.due ? ` · Due ${item.due}` : '';
+      const isOverdue = item.due && !item.done && new Date(item.due + 'T00:00:00') < new Date(new Date().toDateString());
+      return `
       <div class="hw-item ${item.done ? 'done' : ''}" data-hw-id="${esc(String(item.id))}">
         <div class="hw-check">✓</div>
-        <span class="hw-name">${esc(item.task || item.name || '')}</span>
-        ${item.subject ? `<span class="hw-subject">${esc(item.subject)}</span>` : ''}
+        <div class="hw-info">
+          <span class="hw-name">${esc(item.task || item.name || '')}</span>
+          ${item.subject || item.due ? `<span class="hw-subject" style="${isOverdue ? 'color:#e07070' : ''}">${esc(item.subject || '')}${dueStr}</span>` : ''}
+        </div>
         <button class="hw-delete hw-delete-btn" data-delete-id="${esc(String(item.id))}" title="Remove">×</button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     list.addEventListener('click', e => {
       const deleteBtn = e.target.closest('.hw-delete-btn');
@@ -4417,6 +4863,7 @@
     document.getElementById('hw-overlay').classList.remove('hidden');
     document.getElementById('hw-input').value         = '';
     document.getElementById('hw-subject-input').value = '';
+    document.getElementById('hw-due-input').value     = '';
     document.getElementById('hw-input').focus();
   }
   function closeHomeworkForm() {
@@ -4427,6 +4874,7 @@
     const btn     = getSubmitBtn('hw-overlay');
     const name    = document.getElementById('hw-input').value.trim();
     const subject = document.getElementById('hw-subject-input').value.trim();
+    const due     = document.getElementById('hw-due-input').value || '';
     if (!name) return;
     setLoading(btn);
     try {
@@ -4434,6 +4882,7 @@
       fd.append('action',  'add');
       fd.append('name',    name);
       fd.append('subject', subject);
+      fd.append('due',     due);
       await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd });
       clearLoading(btn);
       closeHomeworkForm();
@@ -4461,6 +4910,9 @@
     { id: 'personal-chore-overlay', enter: submitPersonalChore,  escape: closePersonalChoreForm },
     { id: 'nova-notes-overlay',      enter: submitNovaNote,       escape: closeNovaNotesForm     },
     { id: 'fun-form-overlay',        enter: submitFunForm,        escape: closeFunForm           },
+    { id: 'bulletin-overlay',  enter: submitBulletin,  escape: closeBulletinForm },
+    { id: 'pb-overlay',         enter: submitPB,        escape: closePBForm       },
+    { id: 'ent-form-overlay',   enter: submitEntItem,   escape: closeEntForm      },
   ];
 
   document.addEventListener('keydown', e => {
@@ -4498,6 +4950,239 @@
   if (hashTab && VALID_TABS.includes(hashTab)) {
     switchTab(hashTab);
   }
+
+  // ─────────────────────────────────────────────
+  // SWIPE GESTURES (tab navigation)
+  // ─────────────────────────────────────────────
+  (function() {
+    const TAB_ORDER = ['home', 'parentals', 'tori', 'nova', 'fun'];
+    let touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
+      const active = document.querySelector('.tab-panel.active');
+      if (!active) return;
+      const cur = active.id.replace('tab-', '');
+      const idx = TAB_ORDER.indexOf(cur);
+      if (idx === -1) return;
+      if (dx < 0 && idx < TAB_ORDER.length - 1) switchTab(TAB_ORDER[idx + 1]);
+      else if (dx > 0 && idx > 0) switchTab(TAB_ORDER[idx - 1]);
+    }, { passive: true });
+  })();
+
+  // ─────────────────────────────────────────────
+  // BULLETIN BOARD
+  // ─────────────────────────────────────────────
+  function openBulletinForm() {
+    document.getElementById('bulletin-overlay').classList.remove('hidden');
+    document.getElementById('bulletin-who-input').value  = '';
+    document.getElementById('bulletin-text-input').value = '';
+    document.getElementById('bulletin-who-input').focus();
+  }
+  function closeBulletinForm() {
+    document.getElementById('bulletin-overlay').classList.add('hidden');
+  }
+
+  async function submitBulletin() {
+    const who  = document.getElementById('bulletin-who-input').value.trim();
+    const text = document.getElementById('bulletin-text-input').value.trim();
+    if (!text) return;
+    const btn = document.querySelector('#bulletin-overlay .overlay-btn.submit');
+    if (btn) { btn.textContent = '...'; btn.disabled = true; }
+    try {
+      const fd = new FormData();
+      fd.append('type', 'bulletin'); fd.append('action', 'add');
+      fd.append('who', who || 'Someone'); fd.append('text', text);
+      fd.append('date', new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }));
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+    } catch(e) {}
+    if (btn) { btn.textContent = 'Post'; btn.disabled = false; }
+    closeBulletinForm();
+    loadBulletin();
+  }
+
+  async function deleteBulletin(id) {
+    try {
+      const fd = new FormData();
+      fd.append('type', 'bulletin'); fd.append('action', 'delete'); fd.append('id', id);
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+    } catch(e) {}
+    loadBulletin();
+  }
+
+  async function loadBulletin() {
+    const el = document.getElementById('bulletin-list');
+    if (!el) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.CHORES + '?type=bulletin');
+      const items = await res.json();
+      if (!items.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px 0">Nothing posted yet — be the first!</div>';
+        return;
+      }
+      el.innerHTML = items.map(b => `
+        <div class="bulletin-item">
+          <button class="bulletin-delete" onclick="deleteBulletin(${b.id})">×</button>
+          <div class="bulletin-who">${esc(b.who || '')}</div>
+          <div class="bulletin-text">${esc(b.text || '')}</div>
+          <div class="bulletin-date">${esc(b.date || '')}</div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // PERSONAL BESTS (Tori) — stored in localStorage
+  // ─────────────────────────────────────────────
+  const PB_KEY = 'tori_personal_bests';
+
+  function loadPBs() {
+    const el = document.getElementById('tori-pb-list');
+    if (!el) return;
+    const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
+    if (!pbs.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">No records yet — add your first!</div>';
+      return;
+    }
+    el.innerHTML = pbs.map((pb, i) => `
+      <div class="pb-item">
+        <div class="pb-info">
+          <div class="pb-category">${esc(pb.category || '')}</div>
+          <div class="pb-value">${esc(pb.value || '')}</div>
+          ${pb.notes ? `<div class="pb-notes">${esc(pb.notes)}</div>` : ''}
+        </div>
+        <div class="pb-actions">
+          <button class="pb-edit-btn" onclick="openPBForm(${i})" title="Edit">✏</button>
+          <button class="pb-delete-btn" onclick="deletePB(${i})" title="Delete">×</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function openPBForm(editIdx) {
+    const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
+    const isEdit = editIdx !== undefined;
+    const pb = isEdit ? pbs[editIdx] : null;
+    document.getElementById('pb-overlay').classList.remove('hidden');
+    document.getElementById('pb-overlay-title').textContent = isEdit ? '✏️ Edit Personal Best' : '🏆 Add Personal Best';
+    document.getElementById('pb-submit-btn').textContent = isEdit ? 'Save' : 'Add';
+    document.getElementById('pb-category-input').value = pb ? pb.category : '';
+    document.getElementById('pb-value-input').value    = pb ? pb.value    : '';
+    document.getElementById('pb-notes-input').value    = pb ? pb.notes    : '';
+    document.getElementById('pb-edit-idx').value       = isEdit ? editIdx : '';
+    document.getElementById('pb-category-input').focus();
+  }
+
+  function closePBForm() {
+    document.getElementById('pb-overlay').classList.add('hidden');
+  }
+
+  function submitPB() {
+    const category = document.getElementById('pb-category-input').value.trim();
+    const value    = document.getElementById('pb-value-input').value.trim();
+    const notes    = document.getElementById('pb-notes-input').value.trim();
+    const editIdx  = document.getElementById('pb-edit-idx').value;
+    if (!category || !value) return;
+    const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
+    const entry = { category, value, notes };
+    if (editIdx !== '') pbs[parseInt(editIdx)] = entry;
+    else pbs.push(entry);
+    localStorage.setItem(PB_KEY, JSON.stringify(pbs));
+    closePBForm();
+    loadPBs();
+  }
+
+  function deletePB(idx) {
+    const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
+    pbs.splice(idx, 1);
+    localStorage.setItem(PB_KEY, JSON.stringify(pbs));
+    loadPBs();
+  }
+
+  // ─────────────────────────────────────────────
+  // ENTERTAINMENT WATCHLISTS (Fun page)
+  // ─────────────────────────────────────────────
+  const ENT_PEOPLE = ['jessica','jesse','tori','nova'];
+
+  function openEntForm(person) {
+    const overlay = document.getElementById('ent-form-overlay');
+    overlay.dataset.person = person;
+    overlay.classList.remove('hidden');
+    const label = person.charAt(0).toUpperCase() + person.slice(1);
+    document.getElementById('ent-form-title').textContent = `🎬 Add to ${label}'s Watchlist`;
+    document.getElementById('ent-title-input').value = '';
+    document.getElementById('ent-type-input').value  = '';
+    document.getElementById('ent-notes-input').value = '';
+    document.getElementById('ent-title-input').focus();
+  }
+
+  function closeEntForm() {
+    document.getElementById('ent-form-overlay').classList.add('hidden');
+  }
+
+  async function submitEntItem() {
+    const person = document.getElementById('ent-form-overlay').dataset.person;
+    const title  = document.getElementById('ent-title-input').value.trim();
+    const type   = document.getElementById('ent-type-input').value.trim();
+    const notes  = document.getElementById('ent-notes-input').value.trim();
+    if (!title) return;
+    const btn = document.querySelector('#ent-form-overlay .overlay-btn.submit');
+    if (btn) { btn.textContent = '...'; btn.disabled = true; }
+    try {
+      const fd = new FormData();
+      fd.append('type', 'entertainment'); fd.append('action', 'add');
+      fd.append('person', person); fd.append('title', title);
+      fd.append('enttype', type); fd.append('notes', notes);
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+    } catch(e) {}
+    if (btn) { btn.textContent = 'Add'; btn.disabled = false; }
+    closeEntForm();
+    loadEntList(person);
+  }
+
+  async function deleteEntItem(person, id) {
+    try {
+      const fd = new FormData();
+      fd.append('type', 'entertainment'); fd.append('action', 'delete');
+      fd.append('person', person); fd.append('id', id);
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+    } catch(e) {}
+    loadEntList(person);
+  }
+
+  async function loadEntList(person) {
+    const el = document.getElementById(`ent-${person}-list`);
+    if (!el) return;
+    try {
+      const res   = await apiFetch(SCRIPTS.CHORES + `?type=entertainment&person=${person}`);
+      const items = await res.json();
+      if (!items.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Nothing added yet</div>';
+        return;
+      }
+      el.innerHTML = items.map(item => `
+        <div class="fun-item">
+          <div class="fun-item-info" style="flex:1;min-width:0">
+            <div class="fun-item-title">${esc(item.title || '')}</div>
+            ${item.enttype ? `<div class="fun-item-meta">${esc(item.enttype)}</div>` : ''}
+            ${item.notes   ? `<div class="fun-item-meta" style="color:var(--muted)">${esc(item.notes)}</div>` : ''}
+          </div>
+          <button class="fun-item-delete" onclick="deleteEntItem('${person}', ${item.id})">×</button>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+    }
+  }
+
+  function loadAllEntLists() {
+    ENT_PEOPLE.forEach(p => loadEntList(p));
+  }
+
 </script>
 </body>
 </html>
