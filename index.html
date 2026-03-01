@@ -2896,6 +2896,12 @@
  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
  const isWeekday = today.getDay() >= 1 && today.getDay() <= 5;
  const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+ // Null Gaurd
+ if (chore.dueDate) {
+  const due = normalizeDate(chore.dueDate);
+  if (!due) return false; // add this line
+  return due.getTime() === today.getTime();
+}
 
  // One-time: only show on the due date
  if (chore.dueDate) {
@@ -2916,19 +2922,25 @@
  // TODAY AT A GLANCE
  // ─────────────────────────────────────────────
  function buildTodayColumn(date, reminderItems, choreItems, eventItems) {
- const today = new Date(); today.setHours(0,0,0,0);
- const isToday = date.getTime() === today.getTime();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const isToday = date.getTime() === today.getTime();
 
- const dueReminders = reminderItems.filter(r => {
- if (!r.date) return false;
- const d = normalizeDate(r.date);
- return isToday ? d <= date : d.getTime() === date.getTime();
- });
+  const dueReminders = reminderItems.filter(r => {
+  if (!r.date) return false;
+  const d = normalizeDate(r.date);
+  if (!d) return false;
+  return isToday ? d <= date : d.getTime() === date.getTime();
+});
+              
+  // For today: use choreMatchesToday for frequency-based + due date ones
+  // For tomorrow: only show chores with an explicit due date on that date
+  const dueChores = choreItems.filter(c => {
+  if (!c.dueDate) return false;
+  const d = normalizeDate(c.dueDate);
+  if (!d) return false;
+  return d.getTime() === date.getTime();
+});
 
- const dueChores = choreItems.filter(c => {
- if (!c.dueDate) return false;
- return normalizeDate(c.dueDate).getTime() === date.getTime();
- });
 
  const dayEvents = eventItems.filter(ev => {
  const evDate = new Date(ev.date); evDate.setHours(0,0,0,0);
@@ -2983,19 +2995,17 @@
  if (dateLabel) dateLabel.textContent = dayNames[today.getDay()] + ', ' + MONTHS[today.getMonth()] + ' ' + today.getDate();
  if (tmrLabel) tmrLabel.textContent = dayNames[tomorrow.getDay()] + ', ' + MONTHS[tomorrow.getMonth()] + ' ' + tomorrow.getDate();
 
- const [reminders, chores, events] = await Promise.allSettled([
- apiFetch(SCRIPTS.CHORES + '?type=reminders').then(r => r.json()),
- apiFetch(SCRIPTS.CHORES + '?type=chores').then(r => r.json()),
- fetch(FAMILY_ICS).then(r => r.text()).then(parseICSEvents).catch(() => []),
- ]);
+ const [reminders, chores] = await Promise.allSettled([
+  apiFetch(SCRIPTS.CHORES + '?type=reminders').then(r => r.json()),
+  apiFetch(SCRIPTS.CHORES + '?type=chores').then(r => r.json()),
+]);
 
- const reminderItems = reminders.status === 'fulfilled' ? reminders.value : [];
- const choreItems = chores.status === 'fulfilled' ? chores.value : [];
- const eventItems = events.status === 'fulfilled' ? events.value : [];
+const reminderItems = reminders.status === 'fulfilled' ? reminders.value : [];
+const choreItems = chores.status === 'fulfilled' ? chores.value : [];
 
- todayBody.innerHTML = buildTodayColumn(today, reminderItems, choreItems, eventItems);
- tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, eventItems);
- }
+todayBody.innerHTML = buildTodayColumn(today, reminderItems, choreItems, []);
+tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, []);
+}
 
  // SCHOOL CALENDAR (Cashmere ICS)
  // ─────────────────────────────────────────────
@@ -3128,10 +3138,9 @@
  // Safely parse any date string GAS might return (ISO yyyy-MM-dd or Date.toString())
  function normalizeDate(dateStr) {
   if (!dateStr) return null;
-  // Try ISO yyyy-MM-dd first (avoids timezone offset)
-  let d = new Date(dateStr + 'T00:00:00');
+  const clean = String(dateStr).split('T')[0].trim();
+  let d = new Date(clean + 'T00:00:00');
   if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
-  // Fall back to direct parse (handles Date.toString() style from GAS)
   d = new Date(dateStr);
   if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
   return null;
@@ -3409,21 +3418,23 @@
  }
 
  async function deletePersonalChore(idx, person, listId, badgeId) {
- const script = person === 'home' ? SCRIPTS.CHORES
- : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
- try {
- const fd = new FormData();
- fd.append('action', 'delete');
- fd.append('type', 'chores');
- fd.append('idx', idx);
- await apiFetch(script, { method: 'POST', body: fd });
- if (person === 'home') { await loadChores(); loadParentChores(); }
- else if (person === 'tori') await loadToriChores();
- else await loadNovaChores();
- } catch (e) {
- err('deletePersonalChore failed:', e.message);
- }
- }
+  const script = person === 'home' ? SCRIPTS.CHORES
+    : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+  try {
+    const fd = new FormData();
+    fd.append('action', 'delete');
+    fd.append('type', 'chores');
+    fd.append('idx', idx);
+    await apiFetch(script, { method: 'POST', body: fd });
+    if (person === 'home') {
+      if (document.getElementById('chore-list')) await loadChores();
+      if (document.getElementById('parent-chore-list')) await loadParentChores();
+    } else if (person === 'tori') await loadToriChores();
+    else await loadNovaChores();
+  } catch (e) {
+    err('deletePersonalChore failed:', e.message);
+  }
+}
 
  async function loadToriChores() {
  const list = document.getElementById('tori-chore-list');
