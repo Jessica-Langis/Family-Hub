@@ -2799,7 +2799,7 @@
 
  function checkPin(tab) {
  if (pinEntries[tab] === TAB_PINS[tab]) {
- localStorage.setItem(`hh_auth_${tab}`, 'true');
+ sessionStorage.setItem(`hh_auth_${tab}`, 'true');
  document.getElementById(`pin-${tab}`).classList.add('hidden');
  onTabUnlocked(tab);
  } else {
@@ -2817,7 +2817,7 @@
  }
 
  function requirePin(tab) {
- if (localStorage.getItem(`hh_auth_${tab}`) !== 'true') {
+ if (sessionStorage.getItem(`hh_auth_${tab}`) !== 'true') {
  const pinEl = document.getElementById(`pin-${tab}`);
  if (pinEl) pinEl.classList.remove('hidden');
  return false;
@@ -3127,15 +3127,15 @@
  // ─────────────────────────────────────────────
  // Safely parse any date string GAS might return (ISO yyyy-MM-dd or Date.toString())
  function normalizeDate(dateStr) {
- if (!dateStr) return null;
- // Try appending T00:00:00 first (works for yyyy-MM-dd)
- let d = normalizeDate(dateStr);
- if (!isNaN(d.getTime())) return d;
- // Fall back to direct parse (handles Date.toString() style)
- d = new Date(dateStr);
- if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
- return null;
- }
+  if (!dateStr) return null;
+  // Try ISO yyyy-MM-dd first (avoids timezone offset)
+  let d = new Date(dateStr + 'T00:00:00');
+  if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
+  // Fall back to direct parse (handles Date.toString() style from GAS)
+  d = new Date(dateStr);
+  if (!isNaN(d.getTime())) { d.setHours(0,0,0,0); return d; }
+  return null;
+}
 
  function getDayDiff(dateStr) {
  const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -5119,7 +5119,7 @@
  // Wire schedule dropdowns to show/hide date input
 
 
- if (localStorage.getItem('hh_auth_home') === 'true') {
+ if (sessionStorage.getItem('hh_auth_home') === 'true') {
  document.getElementById('pin-home').classList.add('hidden');
  onTabUnlocked('home');
  }
