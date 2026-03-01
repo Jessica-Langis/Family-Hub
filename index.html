@@ -2892,25 +2892,24 @@
  // CHORE SCHEDULE HELPER
  // ─────────────────────────────────────────────
  function choreMatchesToday(chore) {
- const today = new Date(); today.setHours(0,0,0,0);
- const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
- const isWeekday = today.getDay() >= 1 && today.getDay() <= 5;
- const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
+  const isWeekday = today.getDay() >= 1 && today.getDay() <= 5;
+  const isWeekend = today.getDay() === 0 || today.getDay() === 6;
 
- // One-time: only show on the due date
- if (chore.dueDate) {
- const due = normalizeDate(chore.dueDate);
- return due.getTime() === today.getTime();
- }
+  if (chore.dueDate) {
+    const due = new Date(chore.dueDate + 'T00:00:00');
+    // Show if due today OR overdue (but not if already done)
+    return due <= today;
+  }
 
- // Recurring frequency
- const f = (chore.frequency || '').trim();
- if (!f) return true; // no frequency = always show
- if (f === 'Daily') return true;
- if (f === 'Weekdays') return isWeekday;
- if (f === 'Weekends') return isWeekend;
- return f === dayName;
- }
+  const f = (chore.frequency || '').trim();
+  if (!f) return true;
+  if (f === 'Daily') return true;
+  if (f === 'Weekdays') return isWeekday;
+  if (f === 'Weekends') return isWeekend;
+  return f === dayName;
+}
 
  // ─────────────────────────────────────────────
  // TODAY AT A GLANCE
@@ -3379,7 +3378,8 @@
  list.querySelectorAll('.personal-chore-delete').forEach(btn => {
  btn.addEventListener('click', e => {
  e.stopPropagation();
- deletePersonalChore(Number(btn.dataset.choreIdx), btn.dataset.person, btn.dataset.listId, btn.dataset.badgeId);
+ const item = btn.closest('.chore-item');
+ deletePersonalChore(Number(item.dataset.choreIdx), item.dataset.person, item.dataset.listId, item.dataset.badgeId);
  });
  });
  }
