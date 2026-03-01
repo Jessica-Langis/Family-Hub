@@ -278,13 +278,12 @@
  /* ── HOME TAB LAYOUT ── */
  .home-content {
     display: grid;
-    grid-template-columns: 1fr 1fr 2fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
     grid-template-areas:
-      "bulletin bulletin today"
-      "bulletin bulletin weekend"
-      "reminder month   month"
-      "grocery  month   month";
+      "bulletin today"
+      "bulletin month"
+      "weekend  month";
     gap: 8px;
     min-height: 0;
     height: 100%;
@@ -296,16 +295,12 @@
   .home-bulletin-panel  { grid-area: bulletin; }
   .home-today-panel     { grid-area: today;    }
   .home-weekend-panel   { grid-area: weekend;  }
-  .home-reminders-panel { grid-area: reminder; }
-  .home-grocery-panel   { grid-area: grocery;  }
   .home-month-panel     { grid-area: month;    }
 
   /* All home panels fill their grid cell completely */
   .home-bulletin-panel,
   .home-today-panel,
   .home-weekend-panel,
-  .home-reminders-panel,
-  .home-grocery-panel,
   .home-month-panel {
     min-height: 0;
     min-width: 0;
@@ -318,39 +313,27 @@
   .home-bulletin-panel .home-bulletin-strip  { flex: 1; overflow-y: auto; min-height: 0; }
   .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
   .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-reminders-panel .reminder-list       { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
   .home-month-panel .month-embed             { flex: 1; min-height: 0; height: 0; }
 
   /* ── SUBTLE SCROLLBARS (home panels) ── */
   .home-bulletin-strip,
   .home-today-panel .today-columns,
-  .home-weekend-panel .weekend-cols,
-  .home-reminders-panel .reminder-list,
-  .home-grocery-panel .grocery-grid {
+  .home-weekend-panel .weekend-cols {
     scrollbar-width: thin;
     scrollbar-color: rgba(42,48,69,0.7) transparent;
   }
   .home-bulletin-strip::-webkit-scrollbar,
   .home-today-panel .today-columns::-webkit-scrollbar,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar,
-  .home-reminders-panel .reminder-list::-webkit-scrollbar,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar { width: 3px; }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar { width: 3px; }
   .home-bulletin-strip::-webkit-scrollbar-track,
   .home-today-panel .today-columns::-webkit-scrollbar-track,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar-track,
-  .home-reminders-panel .reminder-list::-webkit-scrollbar-track,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar-track { background: transparent; }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-track { background: transparent; }
   .home-bulletin-strip::-webkit-scrollbar-thumb,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb,
-  .home-reminders-panel .reminder-list::-webkit-scrollbar-thumb,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
   .home-bulletin-strip::-webkit-scrollbar-thumb:hover,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb:hover,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover,
-  .home-reminders-panel .reminder-list::-webkit-scrollbar-thumb:hover,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover { background: var(--border); }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
  /* ── TODAY TILE ── */
  .today-tile {
@@ -884,14 +867,14 @@
  overflow: hidden;
  }
 
- /* ── PARENTALS 2×2 GRID ── */
+ /* ── PARENTALS GRID: R1=3col, R2=grocery+calendar ── */
  .parentals-grid {
    display: grid;
-   grid-template-columns: 1fr 1fr;
-   grid-template-rows: 1fr 2fr;
+   grid-template-columns: 1fr 1fr 1fr;
+   grid-template-rows: 1fr 1.4fr;
    grid-template-areas:
-     "reminders todo"
-     "meals     calendar";
+     "reminders todo      meals"
+     "grocery   calendar  calendar";
    gap: 8px;
    min-height: 0;
    height: 100%;
@@ -900,6 +883,7 @@
  .parentals-reminders { grid-area: reminders; }
  .parentals-todo      { grid-area: todo;      }
  .parentals-meals     { grid-area: meals;     }
+ .parentals-grocery   { grid-area: grocery;   }
  .parentals-calendar  { grid-area: calendar;  }
 
  /* All parentals panels fill their cell */
@@ -1631,25 +1615,36 @@
       "bulletin"
       "today"
       "weekend"
-      "reminder"
-      "grocery"
       "month";
     height: auto;
     overflow: visible;
   }
   .home-bulletin-panel,
   .home-today-panel,
-  .home-weekend-panel,
-  .home-reminders-panel,
-  .home-grocery-panel { max-height: none; overflow: visible; }
+  .home-weekend-panel { max-height: none; overflow: visible; }
   .home-bulletin-panel .home-bulletin-strip,
   .home-today-panel .today-columns,
-  .home-weekend-panel .weekend-cols,
-  .home-reminders-panel .reminder-list,
-  .home-grocery-panel .grocery-grid { overflow: visible; max-height: none; flex: none; }
+  .home-weekend-panel .weekend-cols { overflow: visible; max-height: none; flex: none; }
   .home-month-panel { min-height: 380px; }
   .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
+ /* Parentals mobile: single column stack */
+ .parentals-grid {
+   grid-template-columns: 1fr;
+   grid-template-rows: auto;
+   grid-template-areas:
+     "reminders"
+     "todo"
+     "meals"
+     "grocery"
+     "calendar";
+   height: auto;
+   overflow: visible;
+ }
+ .parentals-grid .panel { max-height: none; overflow: visible; }
+ .parentals-scroll { overflow: visible; max-height: none; flex: none; }
+ .parentals-calendar { min-height: 380px; }
+ .parentals-calendar .agenda-embed { height: 340px; }
  .today-columns { grid-template-columns: 1fr; }
  .today-divider { display: none; }
  .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
@@ -2224,45 +2219,8 @@
     </div>
 
     <!-- Grocery List: col 1, row 3 -->
-    <div class="panel home-grocery-panel">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title">Grocery List</span>
-        </div>
-        <div class="section-header-actions">
-          <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
-          <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
-        </div>
-      </div>
-      <div class="quick-add-wrap">
-        <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
-          onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
-        <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
-      </div>
-      <div class="grocery-grid" id="grocery-list">
-        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
-      </div>
-    </div>
 
     <!-- Reminders: col 1, row 4 -->
-    <div class="panel home-reminders-panel">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title">Reminders</span>
-        </div>
-        <div class="section-header-actions">
-          <button class="add-btn" onclick="openReminderForm()">+ Add</button>
-        </div>
-      </div>
-      <div class="quick-add-wrap">
-        <input class="quick-add-input" id="qa-reminder-home" placeholder="Quick add" autocomplete="off"
-          onkeydown="if(event.key==='Enter') quickAddReminder('home', this)">
-        <span class="quick-add-spinner" id="qa-reminder-home-spin">↻</span>
-      </div>
-      <div class="reminder-list" id="reminder-list">
-        <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-      </div>
-    </div>
 
     <!-- Month View: col 2-3, rows 3-4 -->
     <div class="panel home-month-panel">
@@ -2283,7 +2241,7 @@
 <div class="tab-panel" id="tab-parentals">
  <div class="parentals-grid">
 
-  <!-- Row 1 Col 1: Reminders -->
+  <!-- R1C1: Reminders -->
   <div class="panel parentals-reminders">
    <div class="section-header">
     <div class="section-header-left">
@@ -2303,7 +2261,7 @@
    </div>
   </div>
 
-  <!-- Row 1 Col 2: To Do -->
+  <!-- R1C2: To Do -->
   <div class="panel parentals-todo">
    <div class="section-header">
     <div class="section-header-left">
@@ -2319,7 +2277,7 @@
    </div>
   </div>
 
-  <!-- Row 2 Col 1: Meal Plan -->
+  <!-- R1C3: This Week's Menu -->
   <div class="panel parentals-meals">
    <div class="section-header">
     <div class="section-header-left">
@@ -2334,7 +2292,28 @@
    </div>
   </div>
 
-  <!-- Row 2 Col 2: Calendar -->
+  <!-- R2C1: Grocery List -->
+  <div class="panel parentals-grocery">
+   <div class="section-header">
+    <div class="section-header-left">
+     <span class="section-title" style="color:var(--accent2)">Grocery List</span>
+    </div>
+    <div class="section-header-actions">
+     <button class="add-btn" style="background:var(--muted);color:#0f1117" onclick="clearBoughtGroceries()">Clear Bought</button>
+     <button class="add-btn" style="background:var(--accent2)" onclick="openGroceryForm()">+ Add</button>
+    </div>
+   </div>
+   <div class="quick-add-wrap">
+    <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
+     onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
+    <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
+   </div>
+   <div class="grocery-grid parentals-scroll" id="grocery-list">
+    <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+   </div>
+  </div>
+
+  <!-- R2C2-3: Calendar -->
   <div class="panel parentals-calendar">
    <div class="section-header">
     <div class="section-header-left">
