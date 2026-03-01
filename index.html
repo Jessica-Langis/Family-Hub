@@ -1394,11 +1394,17 @@
     .this-week-panel > div:first-child { flex-wrap: wrap; gap: 6px; }
     .this-week-text { white-space: normal !important; }
 
-    .topbar { flex-direction: column; gap: 10px; text-align: center; padding: 12px 14px; }
-    .home-title { font-size: 1rem; }
-    #clock { font-size: 1.5rem; }
-    .weather-block { justify-content: center; flex-wrap: wrap; gap: 6px; }
-    .weather-day { min-width: 60px; flex: 1; padding: 6px 8px; }
+    .topbar { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px; padding: 8px 10px; overflow: hidden; }
+    .home-title { font-size: 0.85rem; flex-shrink: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .clock-block { flex-shrink: 0; text-align: center; }
+    #clock { font-size: 1.1rem; white-space: nowrap; }
+    #date { font-size: 0.65rem; }
+    .weather-block { justify-content: flex-end; flex-wrap: nowrap; flex-shrink: 0; gap: 4px; align-self: stretch; align-items: center; }
+    .weather-day { min-width: unset; flex: none; padding: 4px 6px; text-align: center; }
+    .weather-day .temp { font-size: 0.68rem; margin: 2px 0 1px; }
+    .weather-day .condition { display: none; }
+    .weather-day .icon { font-size: 1rem; margin-bottom: 1px; }
+    .weather-day .day-name { font-size: 0.58rem; }
 
     .pin-keypad { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(4, 80px); }
     .pin-key { font-size: 1.6rem; border-radius: 14px; }
@@ -1834,32 +1840,7 @@
       </div>
     </div>
 
-    <div class="main-grid">
 
-      <div class="agenda-section">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">📅 Agenda</span>
-            <span class="section-badge">Upcoming Events</span>
-          </div>
-        </div>
-        <iframe class="agenda-embed"
-          src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-          frameborder="0" scrolling="no"></iframe>
-      </div>
-
-      <div class="month-section">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">📆 Month View</span>
-          </div>
-        </div>
-        <iframe class="month-embed"
-          src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-          frameborder="0" scrolling="no"></iframe>
-      </div>
-
-    </div>
   </div>
 </div>
 
@@ -1915,38 +1896,6 @@
 <!-- FUN -->
 <div class="tab-panel" id="tab-fun">
   <div class="personal-content">
-
-    <!-- Entertainment Row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left"><span class="section-title" style="color:var(--accent5)">🎬 Jessica</span></div>
-          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openEntForm('jessica')">+ Add</button></div>
-        </div>
-        <div class="fun-list" id="ent-jessica-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left"><span class="section-title" style="color:var(--accent2)">🎬 Jesse</span></div>
-          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent2)" onclick="openEntForm('jesse')">+ Add</button></div>
-        </div>
-        <div class="fun-list" id="ent-jesse-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left"><span class="section-title" style="color:var(--accent4)">🎬 Tori</span></div>
-          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent4)" onclick="openEntForm('tori')">+ Add</button></div>
-        </div>
-        <div class="fun-list" id="ent-tori-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="section-header">
-          <div class="section-header-left"><span class="section-title" style="color:var(--accent3)">🎬 Nova</span></div>
-          <div class="section-header-actions"><button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openEntForm('nova')">+ Add</button></div>
-        </div>
-        <div class="fun-list" id="ent-nova-list"><div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div></div>
-      </div>
-    </div>
 
     <div class="personal-grid-3">
 
@@ -2491,20 +2440,6 @@
   </div>
 </div>
 
-<!-- ENTERTAINMENT OVERLAY -->
-<div id="ent-form-overlay" class="overlay hidden" data-person="">
-  <div class="overlay-box">
-    <div class="overlay-title" id="ent-form-title">🎬 Add to Watchlist</div>
-    <input type="text" id="ent-title-input" class="overlay-input" placeholder="Title (movie, show, book, restaurant...)" autocomplete="off" />
-    <input type="text" id="ent-type-input" class="overlay-input" placeholder="Type (e.g. Movie, Show, Book, Restaurant)" autocomplete="off" />
-    <input type="text" id="ent-notes-input" class="overlay-input" placeholder="Notes / link (optional)" autocomplete="off" />
-    <div class="overlay-actions">
-      <button class="overlay-btn cancel" onclick="closeEntForm()">Cancel</button>
-      <button class="overlay-btn submit" style="background:var(--accent5);color:#0f1117" onclick="submitEntItem()">Add</button>
-    </div>
-  </div>
-</div>
-
 <!-- FUN FORM OVERLAY (movies/books/meals) -->
 <div id="fun-form-overlay" class="overlay hidden" data-type="">
   <div class="overlay-box">
@@ -2737,7 +2672,6 @@
       loadFunMovies();
       loadFunBooks();
       loadFunMeals();
-      loadAllEntLists();
     } else if (tab === 'tori') {
       loadToriChores();
       loadToriReminders();
@@ -2968,11 +2902,13 @@
     if (!wb) return;
     try {
       const lat = 47.5221, lon = -120.4699;
+      const isMobile = window.innerWidth <= 768;
+      const days = isMobile ? 3 : 5;
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=5`;
       const res = await apiFetch(url);
       const data = await res.json();
       const dayCodes = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      wb.innerHTML = data.daily.time.slice(0, 5).map((t, i) => {
+      wb.innerHTML = data.daily.time.slice(0, days).map((t, i) => {
         const d    = new Date(t + 'T12:00:00');
         const code = data.daily.weathercode[i];
         const max  = Math.round(data.daily.temperature_2m_max[i]);
@@ -2990,6 +2926,7 @@
   }
   loadWeather();
   setInterval(loadWeather, 30 * 60 * 1000);
+  window.addEventListener('resize', loadWeather);
 
   // ─────────────────────────────────────────────
   // DATE HELPERS
@@ -4925,7 +4862,6 @@
     { id: 'fun-form-overlay',        enter: submitFunForm,        escape: closeFunForm           },
     { id: 'bulletin-overlay',  enter: submitBulletin,  escape: closeBulletinForm },
     { id: 'pb-overlay',         enter: submitPB,        escape: closePBForm       },
-    { id: 'ent-form-overlay',   enter: submitEntItem,   escape: closeEntForm      },
   ];
 
   document.addEventListener('keydown', e => {
@@ -5117,84 +5053,6 @@
     loadPBs();
   }
 
-  // ─────────────────────────────────────────────
-  // ENTERTAINMENT WATCHLISTS (Fun page)
-  // ─────────────────────────────────────────────
-  const ENT_PEOPLE = ['jessica','jesse','tori','nova'];
-
-  function openEntForm(person) {
-    const overlay = document.getElementById('ent-form-overlay');
-    overlay.dataset.person = person;
-    overlay.classList.remove('hidden');
-    const label = person.charAt(0).toUpperCase() + person.slice(1);
-    document.getElementById('ent-form-title').textContent = `🎬 Add to ${label}'s Watchlist`;
-    document.getElementById('ent-title-input').value = '';
-    document.getElementById('ent-type-input').value  = '';
-    document.getElementById('ent-notes-input').value = '';
-    document.getElementById('ent-title-input').focus();
-  }
-
-  function closeEntForm() {
-    document.getElementById('ent-form-overlay').classList.add('hidden');
-  }
-
-  async function submitEntItem() {
-    const person = document.getElementById('ent-form-overlay').dataset.person;
-    const title  = document.getElementById('ent-title-input').value.trim();
-    const type   = document.getElementById('ent-type-input').value.trim();
-    const notes  = document.getElementById('ent-notes-input').value.trim();
-    if (!title) return;
-    const btn = document.querySelector('#ent-form-overlay .overlay-btn.submit');
-    if (btn) { btn.textContent = '...'; btn.disabled = true; }
-    try {
-      const fd = new FormData();
-      fd.append('type', 'entertainment'); fd.append('action', 'add');
-      fd.append('person', person); fd.append('title', title);
-      fd.append('enttype', type); fd.append('notes', notes);
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-    } catch(e) {}
-    if (btn) { btn.textContent = 'Add'; btn.disabled = false; }
-    closeEntForm();
-    loadEntList(person);
-  }
-
-  async function deleteEntItem(person, id) {
-    try {
-      const fd = new FormData();
-      fd.append('type', 'entertainment'); fd.append('action', 'delete');
-      fd.append('person', person); fd.append('id', id);
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
-    } catch(e) {}
-    loadEntList(person);
-  }
-
-  async function loadEntList(person) {
-    const el = document.getElementById(`ent-${person}-list`);
-    if (!el) return;
-    try {
-      const res   = await apiFetch(SCRIPTS.CHORES + `?type=entertainment&person=${person}`);
-      const items = await res.json();
-      if (!items.length) {
-        el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Nothing added yet</div>';
-        return;
-      }
-      el.innerHTML = items.map(item => `
-        <div class="fun-item">
-          <div class="fun-item-info" style="flex:1;min-width:0">
-            <div class="fun-item-title">${esc(item.title || '')}</div>
-            ${item.enttype ? `<div class="fun-item-meta">${esc(item.enttype)}</div>` : ''}
-            ${item.notes   ? `<div class="fun-item-meta" style="color:var(--muted)">${esc(item.notes)}</div>` : ''}
-          </div>
-          <button class="fun-item-delete" onclick="deleteEntItem('${person}', ${item.id})">×</button>
-        </div>`).join('');
-    } catch(e) {
-      el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
-    }
-  }
-
-  function loadAllEntLists() {
-    ENT_PEOPLE.forEach(p => loadEntList(p));
-  }
 
 </script>
 </body>
