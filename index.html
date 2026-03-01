@@ -1632,54 +1632,98 @@
  .hw-info .hw-name { white-space:normal; }
  .hw-info .hw-subject { font-size:0.7rem; color:var(--muted); }
 
- /* ── BULLETIN BOARD ── */
+ /* ── BULLETIN BOARD — sticky notes ── */
  .bulletin-list {
- padding: 8px 14px;
+ padding: 12px 14px 16px;
  display: flex;
  flex-wrap: wrap;
- gap: 10px;
+ gap: 18px 16px;
+ align-items: flex-start;
  }
+
  .bulletin-item {
- background: var(--surface2);
- border: 1px solid var(--border);
- border-radius: 10px;
- padding: 10px 14px;
- min-width: 160px;
- max-width: 280px;
+ /* Sticky note base: warm amber tinted dark to match theme */
+ background: linear-gradient(160deg, #2e2610 0%, #261f0a 100%);
+ border: 1px solid rgba(232,184,109,0.22);
+ border-top: 3px solid rgba(232,184,109,0.55);
+ border-radius: 2px 2px 4px 4px;
+ padding: 14px 16px 12px;
+ min-width: 150px;
+ max-width: 240px;
  flex: 1;
  position: relative;
  display: flex;
  flex-direction: column;
- gap: 4px;
+ gap: 6px;
+ /* Slight rotation for authentic feel */
+ transform: rotate(-0.8deg);
+ /* Layered shadow: drop shadow + warm amber glow beneath */
+ box-shadow:
+ 0 4px 8px rgba(0,0,0,0.5),
+ 0 8px 24px rgba(0,0,0,0.35),
+ 0 0 28px rgba(232,184,109,0.12),
+ 0 16px 32px rgba(232,184,109,0.08);
+ transition: transform 0.2s, box-shadow 0.2s;
  }
+ .bulletin-item:nth-child(even) {
+ transform: rotate(0.6deg);
+ }
+ .bulletin-item:hover {
+ transform: rotate(0deg) translateY(-2px);
+ box-shadow:
+ 0 6px 16px rgba(0,0,0,0.55),
+ 0 12px 32px rgba(0,0,0,0.35),
+ 0 0 40px rgba(232,184,109,0.18),
+ 0 20px 40px rgba(232,184,109,0.12);
+ z-index: 2;
+ }
+
+ /* Pin dot at top center */
+ .bulletin-item::before {
+ content: '';
+ position: absolute;
+ top: -5px;
+ left: 50%;
+ transform: translateX(-50%);
+ width: 10px;
+ height: 10px;
+ border-radius: 50%;
+ background: radial-gradient(circle at 35% 35%, #f5d485, #c4960a);
+ box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 6px rgba(232,184,109,0.4);
+ }
+
  .bulletin-who {
- font-size: 0.7rem;
- font-weight: 600;
+ font-size: 0.68rem;
+ font-weight: 700;
  text-transform: uppercase;
- letter-spacing: 0.06em;
- color: var(--accent);
+ letter-spacing: 0.1em;
+ color: rgba(232,184,109,0.75);
+ margin-top: 4px;
  }
  .bulletin-text {
- font-size: 0.85rem;
- color: var(--text);
- line-height: 1.45;
+ font-size: 0.88rem;
+ color: rgba(232,234,240,0.9);
+ line-height: 1.5;
+ font-family: 'DM Sans', sans-serif;
+ word-break: break-word;
  }
  .bulletin-date {
- font-size: 0.68rem;
- color: var(--muted);
- margin-top: 2px;
+ font-size: 0.65rem;
+ color: rgba(136,145,168,0.7);
+ margin-top: 4px;
  }
  .bulletin-delete {
  position: absolute;
- top: 6px;
- right: 8px;
+ top: 8px;
+ right: 10px;
  background: none;
  border: none;
- color: var(--muted);
+ color: rgba(136,145,168,0.4);
  font-size: 1rem;
  cursor: pointer;
  line-height: 1;
  padding: 0;
+ transition: color 0.15s;
  }
  .bulletin-delete:hover { color: #e07070; }
 
