@@ -148,6 +148,7 @@
   #date { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 
   .weather-block { display: flex; gap: 12px; align-items: center; }
+  .topbar-bottom-row { display: contents; } /* transparent wrapper on desktop */
 
   .weather-day {
     text-align: center;
@@ -1394,12 +1395,13 @@
     .this-week-panel > div:first-child { flex-wrap: wrap; gap: 6px; }
     .this-week-text { white-space: normal !important; }
 
-    .topbar { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px; padding: 8px 10px; overflow: hidden; }
-    .home-title { font-size: 0.85rem; flex-shrink: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .clock-block { flex-shrink: 0; text-align: center; }
+    .topbar { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 6px; padding: 10px 12px; overflow: hidden; }
+    .topbar-bottom-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
+    .home-title { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .clock-block { flex-shrink: 0; text-align: left; }
     #clock { font-size: 1.1rem; white-space: nowrap; }
     #date { font-size: 0.65rem; }
-    .weather-block { justify-content: flex-end; flex-wrap: nowrap; flex-shrink: 0; gap: 4px; align-self: stretch; align-items: center; }
+    .weather-block { justify-content: flex-end; flex-wrap: nowrap; flex-shrink: 0; gap: 4px; align-items: center; }
     .weather-day { min-width: unset; flex: none; padding: 4px 6px; text-align: center; }
     .weather-day .temp { font-size: 0.68rem; margin: 2px 0 1px; }
     .weather-day .condition { display: none; }
@@ -1723,16 +1725,18 @@
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
   <div class="home-title" id="topbar-title">🏡 What Is It Today?</div>
-  <div class="clock-block">
-    <div id="clock">--:--</div>
-    <div id="date">Loading...</div>
-  </div>
-  <div class="weather-block" id="weather">
-    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
-    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
-    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
-    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
-    <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+  <div class="topbar-bottom-row">
+    <div class="clock-block">
+      <div id="clock">--:--</div>
+      <div id="date">Loading...</div>
+    </div>
+    <div class="weather-block" id="weather">
+      <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+      <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+      <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+      <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+      <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+    </div>
   </div>
 </div>
 
