@@ -3129,7 +3129,7 @@
 
  function checkPin(tab) {
  if (pinEntries[tab] === TAB_PINS[tab]) {
- sessionStorage.setItem(`hh_auth_${tab}`, 'true');
+ localStorage.setItem(`hh_auth_${tab}`, 'true');
  document.getElementById(`pin-${tab}`).classList.add('hidden');
  onTabUnlocked(tab);
  } else {
@@ -3147,7 +3147,7 @@
  }
 
  function requirePin(tab) {
- if (sessionStorage.getItem(`hh_auth_${tab}`) !== 'true') {
+ if (localStorage.getItem(`hh_auth_${tab}`) !== 'true') {
  const pinEl = document.getElementById(`pin-${tab}`);
  if (pinEl) pinEl.classList.remove('hidden');
  return false;
@@ -5503,7 +5503,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
  // Wire schedule dropdowns to show/hide date input
 
 
- if (sessionStorage.getItem('hh_auth_home') === 'true') {
+ if (localStorage.getItem('hh_auth_home') === 'true') {
  document.getElementById('pin-home').classList.add('hidden');
  onTabUnlocked('home');
  }
