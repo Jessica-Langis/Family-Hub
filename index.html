@@ -24,84 +24,6 @@
 
  * { margin: 0; padding: 0; box-sizing: border-box; }
 
- /* ── PIN OVERLAY ── */
- .pin-overlay {
- position: fixed;
- inset: 0;
- background: var(--bg);
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- z-index: 9999;
- gap: 28px;
- }
- .pin-overlay.hidden { display: none; }
-
- .pin-title {
- font-family: 'Plus Jakarta Sans', sans-serif;
- font-size: 1.6rem;
- font-weight: 600;
- color: var(--accent);
- letter-spacing: 0.03em;
- }
-
- .pin-subtitle {
- font-size: 0.85rem;
- color: var(--muted);
- margin-top: -18px;
- text-align: center;
- }
-
- .pin-dots { display: flex; gap: 16px; }
-
- .pin-dot {
- width: 18px; height: 18px;
- border-radius: 50%;
- border: 2px solid var(--border);
- background: transparent;
- transition: all 0.15s;
- }
- .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
-
- .pin-keypad {
- display: grid;
- grid-template-columns: repeat(3, 72px);
- grid-template-rows: repeat(4, 72px);
- gap: 12px;
- }
-
- .pin-key {
- background: var(--surface);
- border: 1px solid var(--border);
- border-radius: 12px;
- color: var(--text);
- font-family: 'Plus Jakarta Sans', sans-serif;
- font-size: 1.4rem;
- font-weight: 500;
- cursor: pointer;
- transition: background 0.15s, border-color 0.15s, transform 0.1s;
- display: flex; align-items: center; justify-content: center;
- user-select: none;
- }
- .pin-key:hover { background: var(--surface2); border-color: var(--accent); }
- .pin-key:active { transform: scale(0.93); }
- .pin-key.empty { background: transparent; border-color: transparent; cursor: default; }
- .pin-key.delete { font-size: 1rem; color: var(--muted); }
-
- .pin-error {
- font-size: 0.8rem; color: #e07070;
- height: 1rem; text-align: center;
- }
-
- @keyframes shake {
- 0%, 100% { transform: translateX(0); }
- 20% { transform: translateX(-10px); }
- 40% { transform: translateX(10px); }
- 60% { transform: translateX(-8px); }
- 80% { transform: translateX(8px); }
- }
- .pin-dots.shake { animation: shake 0.4s ease; }
 
  /* ── BODY / LAYOUT ── */
  body {
@@ -277,13 +199,8 @@
 
  /* ── HOME TAB LAYOUT ── */
  .home-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-areas:
-      "bulletin today"
-      "bulletin month"
-      "weekend  month";
+    display: flex;
+    flex-direction: row;
     gap: 8px;
     min-height: 0;
     height: 100%;
@@ -291,18 +208,43 @@
     padding-bottom: 0;
   }
 
-  /* ── HOME PANEL AREA ASSIGNMENTS ── */
-  .home-bulletin-panel  { grid-area: bulletin; }
-  .home-today-panel     { grid-area: today;    }
-  .home-weekend-panel   { grid-area: weekend;  }
-  .home-month-panel     { grid-area: month;    }
+  /* Left column: 4 stacked tiles */
+  .home-left-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    overflow: hidden;
+  }
 
-  /* All home panels fill their grid cell completely */
+  /* Right column: bulletin + month stacked */
+  .home-right-col {
+    flex: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Left column panel sizing */
+  .home-today-panel    { flex: 1.2; min-height: 0; }
+  .home-weekend-panel  { flex: 1; min-height: 0; }
+  .home-grocery-panel  { flex: 1; min-height: 0; }
+  .home-whereami-panel { flex: 0.8; min-height: 0; }
+
+  /* Right column panel sizing */
+  .home-bulletin-panel { flex: 0 0 36%; min-height: 0; }
+  .home-month-panel    { flex: 1; min-height: 0; }
+
+  /* All home panels */
   .home-bulletin-panel,
   .home-today-panel,
   .home-weekend-panel,
+  .home-whereami-panel,
+  .home-grocery-panel,
   .home-month-panel {
-    min-height: 0;
     min-width: 0;
     overflow: hidden;
     display: flex;
@@ -313,27 +255,74 @@
   .home-bulletin-panel .home-bulletin-strip  { flex: 1; overflow-y: auto; min-height: 0; }
   .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
   .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-whereami-panel .whereami-list         { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
   .home-month-panel .month-embed             { flex: 1; min-height: 0; height: 0; }
 
   /* ── SUBTLE SCROLLBARS (home panels) ── */
   .home-bulletin-strip,
   .home-today-panel .today-columns,
-  .home-weekend-panel .weekend-cols {
+  .home-weekend-panel .weekend-cols,
+  .home-whereami-panel .whereami-list,
+  .home-grocery-panel .grocery-grid {
     scrollbar-width: thin;
     scrollbar-color: rgba(42,48,69,0.7) transparent;
   }
   .home-bulletin-strip::-webkit-scrollbar,
   .home-today-panel .today-columns::-webkit-scrollbar,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar { width: 3px; }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar,
+  .home-whereami-panel .whereami-list::-webkit-scrollbar,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar { width: 3px; }
   .home-bulletin-strip::-webkit-scrollbar-track,
   .home-today-panel .today-columns::-webkit-scrollbar-track,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar-track { background: transparent; }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-track,
+  .home-whereami-panel .whereami-list::-webkit-scrollbar-track,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-track { background: transparent; }
   .home-bulletin-strip::-webkit-scrollbar-thumb,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb,
+  .home-whereami-panel .whereami-list::-webkit-scrollbar-thumb,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
   .home-bulletin-strip::-webkit-scrollbar-thumb:hover,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb:hover,
-  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover { background: var(--border); }
+  .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover,
+  .home-whereami-panel .whereami-list::-webkit-scrollbar-thumb:hover,
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+
+  /* ── WHERE AM I TILE ── */
+  .whereami-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 4px 0;
+  }
+  .whereami-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: var(--surface2);
+    min-width: 0;
+  }
+  .whereami-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    flex-shrink: 0;
+  }
+  .whereami-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+  .whereami-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+  .whereami-loc  { font-size: 0.75rem; color: var(--accent3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .whereami-meta { font-size: 0.72rem; color: var(--muted); }
+  .whereami-delete {
+    background: none; border: none; color: var(--muted);
+    font-size: 0.85rem; cursor: pointer; padding: 2px 4px;
+    flex-shrink: 0; line-height: 1;
+  }
+  .whereami-delete:hover { color: var(--accent5); }
+  .whereami-empty { font-size: 0.78rem; color: var(--muted); font-style: italic; padding: 4px 0; }
 
  /* ── TODAY TILE ── */
  .today-tile {
@@ -873,14 +862,13 @@
    grid-template-columns: 1fr 1fr 1fr;
    grid-template-rows: 1fr 1.4fr;
    grid-template-areas:
-     "reminders todo      meals"
-     "grocery   calendar  calendar";
+     "todo    todo    meals"
+     "grocery calendar calendar";
    gap: 8px;
    min-height: 0;
    height: 100%;
    overflow: hidden;
  }
- .parentals-reminders { grid-area: reminders; }
  .parentals-todo      { grid-area: todo;      }
  .parentals-meals     { grid-area: meals;     }
  .parentals-grocery   { grid-area: grocery;   }
@@ -1661,25 +1649,21 @@
  .nova-mid-row { grid-template-columns: 1fr; }
  .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
- .home-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    grid-template-areas:
-      "bulletin"
-      "today"
-      "weekend"
-      "month";
-    height: auto;
-    overflow: visible;
-  }
-  .home-bulletin-panel,
-  .home-today-panel,
-  .home-weekend-panel { max-height: none; overflow: visible; }
-  .home-bulletin-panel .home-bulletin-strip,
-  .home-today-panel .today-columns,
-  .home-weekend-panel .weekend-cols { overflow: visible; max-height: none; flex: none; }
+ .home-content { flex-direction: column; height: auto; overflow: visible; }
+  .home-left-col, .home-right-col { flex: none; overflow: visible; }
+  .home-today-panel, .home-weekend-panel, .home-grocery-panel, .home-whereami-panel,
+  .home-bulletin-panel, .home-month-panel { flex: none; min-height: 0; overflow: visible; }
+  .home-today-panel { min-height: 200px; }
+  .home-weekend-panel { min-height: 160px; }
+  .home-grocery-panel { min-height: 200px; }
+  .home-whereami-panel { min-height: 140px; }
+  .home-bulletin-panel { min-height: 260px; }
   .home-month-panel { min-height: 380px; }
+  .home-today-panel .today-columns, .home-weekend-panel .weekend-cols,
+  .home-grocery-panel .grocery-grid, .home-whereami-panel .whereami-list,
+  .home-bulletin-panel .home-bulletin-strip { overflow: visible; max-height: none; flex: none; }
   .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
+  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  /* Parentals mobile: single column stack */
  .parentals-grid {
@@ -1767,7 +1751,6 @@
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
  /* Mobile home order: Reminders | Grocery | Menu | Agenda | Month */
- .home-reminders-panel { order: 1; }
  .home-grocery-panel { order: 2; }
   .home-content { grid-template-columns: 1fr !important; grid-template-rows: auto !important; }
   .home-content > * { grid-column: 1 !important; grid-row: auto !important; }
@@ -1775,7 +1758,6 @@
   .today-tile { order: 2; }
   .weekend-tile { order: 3; }
   .home-grocery-panel { order: 4; }
-  .home-reminders-panel { order: 5; }
   .home-month-panel { order: 6; min-height: 380px; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
@@ -1812,8 +1794,6 @@
  .weather-day .icon { font-size: 1rem; margin-bottom: 1px; }
  .weather-day .day-name { font-size: 0.58rem; }
 
- .pin-keypad { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(4, 80px); }
- .pin-key { font-size: 1.6rem; border-radius: 14px; }
  .nova-notes-mobile { display: flex; }
  .nova-notes-desktop { display: none; }
  .nova-school-mobile { display: flex; }
@@ -2066,139 +2046,15 @@
 </head>
 <body>
 
-<!-- ── HOME PIN ── -->
-<div class="pin-overlay" id="pin-home">
- <div class="pin-title">Family Hub</div>
- <div class="pin-subtitle">Enter PIN to continue</div>
- <div class="pin-dots" id="pin-dots-home">
- <div class="pin-dot" id="home-d0"></div>
- <div class="pin-dot" id="home-d1"></div>
- <div class="pin-dot" id="home-d2"></div>
- <div class="pin-dot" id="home-d3"></div>
- </div>
- <div class="pin-error" id="pin-error-home"></div>
- <div class="pin-keypad" id="pin-keypad-home">
- <div class="pin-key" onclick="pinPress('home','1')">1</div>
- <div class="pin-key" onclick="pinPress('home','2')">2</div>
- <div class="pin-key" onclick="pinPress('home','3')">3</div>
- <div class="pin-key" onclick="pinPress('home','4')">4</div>
- <div class="pin-key" onclick="pinPress('home','5')">5</div>
- <div class="pin-key" onclick="pinPress('home','6')">6</div>
- <div class="pin-key" onclick="pinPress('home','7')">7</div>
- <div class="pin-key" onclick="pinPress('home','8')">8</div>
- <div class="pin-key" onclick="pinPress('home','9')">9</div>
- <div class="pin-key empty"></div>
- <div class="pin-key" onclick="pinPress('home','0')">0</div>
- <div class="pin-key delete" onclick="pinDelete('home')">⌫</div>
- </div>
-</div>
 
-<!-- ── PARENTALS PIN ── -->
-<div class="pin-overlay hidden" id="pin-parentals">
- <div class="pin-title">‍‍‍ Parentals</div>
- <div class="pin-subtitle">Enter PIN to continue</div>
- <div class="pin-dots" id="pin-dots-parentals">
- <div class="pin-dot" id="parentals-d0"></div>
- <div class="pin-dot" id="parentals-d1"></div>
- <div class="pin-dot" id="parentals-d2"></div>
- <div class="pin-dot" id="parentals-d3"></div>
- </div>
- <div class="pin-error" id="pin-error-parentals"></div>
- <div class="pin-keypad">
- <div class="pin-key" onclick="pinPress('parentals','1')">1</div>
- <div class="pin-key" onclick="pinPress('parentals','2')">2</div>
- <div class="pin-key" onclick="pinPress('parentals','3')">3</div>
- <div class="pin-key" onclick="pinPress('parentals','4')">4</div>
- <div class="pin-key" onclick="pinPress('parentals','5')">5</div>
- <div class="pin-key" onclick="pinPress('parentals','6')">6</div>
- <div class="pin-key" onclick="pinPress('parentals','7')">7</div>
- <div class="pin-key" onclick="pinPress('parentals','8')">8</div>
- <div class="pin-key" onclick="pinPress('parentals','9')">9</div>
- <div class="pin-key empty"></div>
- <div class="pin-key" onclick="pinPress('parentals','0')">0</div>
- <div class="pin-key delete" onclick="pinDelete('parentals')">⌫</div>
- </div>
-</div>
 
-<!-- ── FUN PIN ── -->
-<div id="pin-fun" class="pin-overlay hidden">
- <div class="pin-title" style="color:var(--accent5)">Fun</div>
- <div class="pin-subtitle">Enter PIN to continue</div>
- <div class="pin-dots" id="pin-dots-fun">
- <div class="pin-dot" id="fun-d0"></div>
- <div class="pin-dot" id="fun-d1"></div>
- <div class="pin-dot" id="fun-d2"></div>
- <div class="pin-dot" id="fun-d3"></div>
- </div>
- <div class="pin-error hidden" id="pin-error-fun">Incorrect PIN</div>
- <div class="pin-keypad">
- <button class="pin-key" onclick="pinPress('fun','1')">1</button>
- <button class="pin-key" onclick="pinPress('fun','2')">2</button>
- <button class="pin-key" onclick="pinPress('fun','3')">3</button>
- <button class="pin-key" onclick="pinPress('fun','4')">4</button>
- <button class="pin-key" onclick="pinPress('fun','5')">5</button>
- <button class="pin-key" onclick="pinPress('fun','6')">6</button>
- <button class="pin-key" onclick="pinPress('fun','7')">7</button>
- <button class="pin-key" onclick="pinPress('fun','8')">8</button>
- <button class="pin-key" onclick="pinPress('fun','9')">9</button>
- <button class="pin-key pin-key-wide" onclick="pinPress('fun','0')">0</button>
- <button class="pin-key" onclick="pinDelete('fun')">⌫</button>
- </div>
-</div>
 
-<!-- ── TORI PIN ── -->
-<div class="pin-overlay hidden" id="pin-tori">
- <div class="pin-title">‍Tori</div>
- <div class="pin-subtitle">Enter PIN to continue</div>
- <div class="pin-dots" id="pin-dots-tori">
- <div class="pin-dot" id="tori-d0"></div>
- <div class="pin-dot" id="tori-d1"></div>
- <div class="pin-dot" id="tori-d2"></div>
- <div class="pin-dot" id="tori-d3"></div>
- </div>
- <div class="pin-error" id="pin-error-tori"></div>
- <div class="pin-keypad">
- <div class="pin-key" onclick="pinPress('tori','1')">1</div>
- <div class="pin-key" onclick="pinPress('tori','2')">2</div>
- <div class="pin-key" onclick="pinPress('tori','3')">3</div>
- <div class="pin-key" onclick="pinPress('tori','4')">4</div>
- <div class="pin-key" onclick="pinPress('tori','5')">5</div>
- <div class="pin-key" onclick="pinPress('tori','6')">6</div>
- <div class="pin-key" onclick="pinPress('tori','7')">7</div>
- <div class="pin-key" onclick="pinPress('tori','8')">8</div>
- <div class="pin-key" onclick="pinPress('tori','9')">9</div>
- <div class="pin-key empty"></div>
- <div class="pin-key" onclick="pinPress('tori','0')">0</div>
- <div class="pin-key delete" onclick="pinDelete('tori')">⌫</div>
- </div>
-</div>
 
-<!-- ── NOVA PIN ── -->
-<div class="pin-overlay hidden" id="pin-nova">
- <div class="pin-title">Nova</div>
- <div class="pin-subtitle">Enter PIN to continue</div>
- <div class="pin-dots" id="pin-dots-nova">
- <div class="pin-dot" id="nova-d0"></div>
- <div class="pin-dot" id="nova-d1"></div>
- <div class="pin-dot" id="nova-d2"></div>
- <div class="pin-dot" id="nova-d3"></div>
- </div>
- <div class="pin-error" id="pin-error-nova"></div>
- <div class="pin-keypad">
- <div class="pin-key" onclick="pinPress('nova','1')">1</div>
- <div class="pin-key" onclick="pinPress('nova','2')">2</div>
- <div class="pin-key" onclick="pinPress('nova','3')">3</div>
- <div class="pin-key" onclick="pinPress('nova','4')">4</div>
- <div class="pin-key" onclick="pinPress('nova','5')">5</div>
- <div class="pin-key" onclick="pinPress('nova','6')">6</div>
- <div class="pin-key" onclick="pinPress('nova','7')">7</div>
- <div class="pin-key" onclick="pinPress('nova','8')">8</div>
- <div class="pin-key" onclick="pinPress('nova','9')">9</div>
- <div class="pin-key empty"></div>
- <div class="pin-key" onclick="pinPress('nova','0')">0</div>
- <div class="pin-key delete" onclick="pinDelete('nova')">⌫</div>
- </div>
-</div>
+
+
+
+
+
 
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
@@ -2224,87 +2080,123 @@
 <div class="tab-panel active" id="tab-home">
   <div class="home-content">
 
-    <!-- Bulletin Board: col 1-2, rows 1-2 -->
-    <div class="panel home-bulletin-panel" style="overflow:hidden">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title">Bulletin Board</span>
-        </div>
-        <div class="section-header-actions">
-          <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
-        </div>
-      </div>
-      <div class="home-bulletin-strip" id="home-bulletin-list">
-        <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
-      </div>
-    </div>
+    <!-- LEFT COLUMN: Today | Weekend | Grocery | Where Am I -->
+    <div class="home-left-col">
 
-    <!-- Today / Tomorrow: col 3, row 1 -->
-    <div class="panel home-today-panel today-tile" id="today-tile">
-      <div class="today-columns">
-        <div class="today-col">
-          <div class="today-col-header">
-            <span class="today-col-title">Today</span>
-            <span class="today-date" id="today-date-label"></span>
+      <div class="panel home-today-panel today-tile" id="today-tile">
+        <div class="today-columns">
+          <div class="today-col">
+            <div class="today-col-header">
+              <span class="today-col-title">Today</span>
+              <span class="today-date" id="today-date-label"></span>
+            </div>
+            <div class="today-col-body" id="today-body">
+              <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+            </div>
           </div>
-          <div class="today-col-body" id="today-body">
-            <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+          <div class="today-divider"></div>
+          <div class="today-col">
+            <div class="today-col-header">
+              <span class="today-col-title">Tomorrow</span>
+              <span class="today-date" id="tomorrow-date-label"></span>
+            </div>
+            <div class="today-col-body" id="tomorrow-body">
+              <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+            </div>
           </div>
         </div>
-        <div class="today-divider"></div>
-        <div class="today-col">
-          <div class="today-col-header">
-            <span class="today-col-title">Tomorrow</span>
-            <span class="today-date" id="tomorrow-date-label"></span>
+      </div>
+
+      <div class="panel home-weekend-panel weekend-tile">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title" style="color:var(--accent2)">This Weekend</span>
           </div>
-          <div class="today-col-body" id="tomorrow-body">
-            <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+        </div>
+        <div class="weekend-cols">
+          <div class="weekend-col">
+            <div class="weekend-col-header">
+              <span class="weekend-col-title">Saturday</span>
+              <span class="weekend-col-date" id="weekend-sat-date"></span>
+            </div>
+            <div id="weekend-sat-events"><div class="weekend-clear">Loading...</div></div>
+          </div>
+          <div class="weekend-divider"></div>
+          <div class="weekend-col">
+            <div class="weekend-col-header">
+              <span class="weekend-col-title">Sunday</span>
+              <span class="weekend-col-date" id="weekend-sun-date"></span>
+            </div>
+            <div id="weekend-sun-events"><div class="weekend-clear">Loading...</div></div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- This Weekend: col 3, row 2 -->
-    <div class="panel home-weekend-panel weekend-tile">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title" style="color:var(--accent2)">This Weekend</span>
-        </div>
-      </div>
-      <div class="weekend-cols">
-        <div class="weekend-col">
-          <div class="weekend-col-header">
-            <span class="weekend-col-title">Saturday</span>
-            <span class="weekend-col-date" id="weekend-sat-date"></span>
+      <div class="panel home-grocery-panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">Grocery List</span>
           </div>
-          <div id="weekend-sat-events"><div class="weekend-clear">Loading...</div></div>
-        </div>
-        <div class="weekend-divider"></div>
-        <div class="weekend-col">
-          <div class="weekend-col-header">
-            <span class="weekend-col-title">Sunday</span>
-            <span class="weekend-col-date" id="weekend-sun-date"></span>
+          <div class="section-header-actions">
+            <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
+            <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
           </div>
-          <div id="weekend-sun-events"><div class="weekend-clear">Loading...</div></div>
+        </div>
+        <div class="quick-add-wrap">
+          <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
+            onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
+          <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
+        </div>
+        <div class="grocery-grid" id="grocery-list">
+          <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
         </div>
       </div>
-    </div>
 
-    <!-- Grocery List: col 1, row 3 -->
-
-    <!-- Reminders: col 1, row 4 -->
-
-    <!-- Month View: col 2-3, rows 3-4 -->
-    <div class="panel home-month-panel">
-      <div class="section-header">
-        <div class="section-header-left">
-          <span class="section-title">Month View</span>
+      <div class="panel home-whereami-panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">📍 Where Am I?</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openWhereAmIForm()">+ Add</button>
+          </div>
+        </div>
+        <div class="whereami-list" id="whereami-list">
+          <div class="whereami-empty">Loading...</div>
         </div>
       </div>
-      <iframe class="month-embed"
-        src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-        frameborder="0" scrolling="no"></iframe>
-    </div>
+
+    </div><!-- /home-left-col -->
+
+    <!-- RIGHT COLUMN: Bulletin Board + Month Calendar -->
+    <div class="home-right-col">
+
+      <div class="panel home-bulletin-panel" style="overflow:hidden">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">Bulletin Board</span>
+          </div>
+          <div class="section-header-actions">
+            <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+          </div>
+        </div>
+        <div class="home-bulletin-strip" id="home-bulletin-list">
+          <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel home-month-panel">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-title">Month View</span>
+          </div>
+        </div>
+        <iframe class="month-embed"
+          src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
+          frameborder="0" scrolling="no"></iframe>
+      </div>
+
+    </div><!-- /home-right-col -->
 
   </div>
 </div>
@@ -2312,26 +2204,6 @@
 <!-- PARENTALS -->
 <div class="tab-panel" id="tab-parentals">
  <div class="parentals-grid">
-
-  <!-- R1C1: Reminders -->
-  <div class="panel parentals-reminders">
-   <div class="section-header">
-    <div class="section-header-left">
-     <span class="section-title" style="color:var(--accent2)">Reminders</span>
-    </div>
-    <div class="section-header-actions">
-     <button class="add-btn" onclick="openReminderForm()">+ Add</button>
-    </div>
-   </div>
-   <div class="quick-add-wrap">
-    <input class="quick-add-input" id="qa-reminder-parentals" placeholder="Quick add" autocomplete="off"
-     onkeydown="if(event.key==='Enter') quickAddReminder('parentals', this)">
-    <span class="quick-add-spinner" id="qa-reminder-parentals-spin">↻</span>
-   </div>
-   <div class="reminder-list parentals-scroll" id="parent-reminder-list">
-    <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-   </div>
-  </div>
 
   <!-- R1C2: To Do -->
   <div class="panel parentals-todo">
@@ -2759,6 +2631,22 @@
  </div>
 </div>
 
+
+<div id="whereami-overlay" class="overlay hidden">
+  <div class="overlay-box">
+    <div class="overlay-title">Where Am I?</div>
+    <input type="text" id="whereami-name-input" class="overlay-input" placeholder="Who? (e.g. Jessica)" autocomplete="off" />
+    <input type="text" id="whereami-loc-input" class="overlay-input" placeholder="Where? (e.g. Office, Gym)" autocomplete="off" />
+    <input type="date" id="whereami-date-input" class="overlay-input" />
+    <input type="text" id="whereami-time-input" class="overlay-input" placeholder="Time (optional, e.g. Back by 6pm)" autocomplete="off" />
+    <div class="overlay-actions">
+      <button class="overlay-btn cancel" onclick="closeWhereAmIForm()">Cancel</button>
+      <button class="overlay-btn submit" onclick="submitWhereAmI()">Add</button>
+    </div>
+    <div class="overlay-status" id="whereami-status"></div>
+  </div>
+</div>
+
 <div id="grocery-overlay" class="overlay hidden">
  <div class="overlay-box">
  <div class="overlay-title">Add Grocery Item</div>
@@ -3008,7 +2896,6 @@
  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
  // PIN per tab — update these to change PINs
- const TAB_PINS = { home: '1470', fun: '1470', parentals: '1470', tori: '1470', nova: '0258' };
 
  const TAB_TITLES = {
  home: "🏡 What's The Plan Stan",
@@ -3101,61 +2988,8 @@
  el.style.color = isError ? 'var(--accent5)' : 'var(--accent3)';
  }
 
- // ─────────────────────────────────────────────
- // PIN SYSTEM
- // ─────────────────────────────────────────────
- const pinEntries = { home: '', fun: '', parentals: '', tori: '', nova: '' };
 
- function pinPress(tab, digit) {
- if (pinEntries[tab].length >= 4) return;
- pinEntries[tab] += digit;
- updatePinDots(tab);
- if (pinEntries[tab].length === 4) checkPin(tab);
- }
-
- function pinDelete(tab) {
- pinEntries[tab] = pinEntries[tab].slice(0, -1);
- updatePinDots(tab);
- const errEl = document.getElementById(`pin-error-${tab}`);
- if (errEl) errEl.textContent = '';
- }
-
- function updatePinDots(tab) {
- for (let i = 0; i < 4; i++) {
- const dot = document.getElementById(`${tab}-d${i}`);
- if (dot) dot.classList.toggle('filled', i < pinEntries[tab].length);
- }
- }
-
- function checkPin(tab) {
- if (pinEntries[tab] === TAB_PINS[tab]) {
- localStorage.setItem(`hh_auth_${tab}`, 'true');
- document.getElementById(`pin-${tab}`).classList.add('hidden');
- onTabUnlocked(tab);
- } else {
- log(`Wrong PIN for tab: ${tab}`);
- const dots = document.getElementById(`pin-dots-${tab}`);
- if (dots) dots.classList.add('shake');
- const errEl = document.getElementById(`pin-error-${tab}`);
- if (errEl) errEl.textContent = 'Incorrect PIN';
- setTimeout(() => {
- if (dots) dots.classList.remove('shake');
- pinEntries[tab] = '';
- updatePinDots(tab);
- }, 450);
- }
- }
-
- function requirePin(tab) {
- if (localStorage.getItem(`hh_auth_${tab}`) !== 'true') {
- const pinEl = document.getElementById(`pin-${tab}`);
- if (pinEl) pinEl.classList.remove('hidden');
- return false;
- }
- return true;
- }
-
- // ─────────────────────────────────────────────
+     // ─────────────────────────────────────────────
  // TAB SWITCHING
  // ─────────────────────────────────────────────
  let currentTab = 'home';
@@ -3176,7 +3010,6 @@
  }
  history.replaceState(null, '', `#${tab}`);
  currentTab = tab;
- if (!requirePin(tab)) return;
  onTabUnlocked(tab);
  }
 
@@ -3184,11 +3017,11 @@
  log(`Tab unlocked: ${tab}`);
  if (tab === 'home') {
  loadChores();
- loadReminders();
  loadGroceryList();
  loadTodayTile();
     loadHomeBulletin();
     loadWeekendTile();
+    loadWhereAmI();
  } else if (tab === 'parentals') {
  loadParentChores();
  loadParentReminders();
@@ -3992,13 +3825,14 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
       try {
         const fd = new FormData();
         fd.append('action', 'add');
-        fd.append('type', 'reminders');
+        fd.append('type', section === 'home' ? 'family_reminders' : 'reminders');
         fd.append('text', text);
         fd.append('date', '');
         const scriptMap = { home: SCRIPTS.CHORES, parentals: SCRIPTS.CHORES, tori: SCRIPTS.TORI, nova: SCRIPTS.NOVA };
         await apiFetch(scriptMap[section], { method: 'POST', body: fd });
         inputEl.value = '';
-        if (section === 'home' || section === 'parentals') { loadReminders(); loadParentReminders(); }
+        if (section === 'home') { loadReminders(); }
+        else if (section === 'parentals') { loadParentReminders(); }
         else if (section === 'tori') loadToriReminders();
         else if (section === 'nova') loadNovaReminders();
       } catch (e) { err('quickAddReminder failed:', e.message); }
@@ -4046,6 +3880,95 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
  setStatus('reminder-status', 'Failed to save — check connection', true);
  }
  }
+
+
+    // ─────────────────────────────────────────────
+    // WHERE AM I
+    // ─────────────────────────────────────────────
+    async function loadWhereAmI() {
+      const list = document.getElementById('whereami-list');
+      if (!list) return;
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=whereami');
+        const items = await res.json();
+        if (!Array.isArray(items) || !items.length) {
+          list.innerHTML = '<div class="whereami-empty">No one checked in yet</div>';
+          return;
+        }
+        list.innerHTML = items.map(item => {
+          const meta = [item.date, item.time].filter(Boolean).join(' · ');
+          return `<div class="whereami-item">
+            <div class="whereami-dot"></div>
+            <div class="whereami-info">
+              <div class="whereami-name">${esc(item.name)}</div>
+              <div class="whereami-loc">${esc(item.location)}</div>
+              ${meta ? `<div class="whereami-meta">${esc(meta)}</div>` : ''}
+            </div>
+            <button class="whereami-delete" onclick="deleteWhereAmI(${item.id}, this)" title="Remove">×</button>
+          </div>`;
+        }).join('');
+      } catch (e) {
+        list.innerHTML = '<div class="whereami-empty">Unavailable</div>';
+        err('loadWhereAmI failed:', e.message);
+      }
+    }
+
+    function openWhereAmIForm() {
+      const overlay = document.getElementById('whereami-overlay');
+      overlay.classList.remove('hidden');
+      // Default date to today
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('whereami-date-input').value = today;
+      document.getElementById('whereami-name-input').value = '';
+      document.getElementById('whereami-loc-input').value = '';
+      document.getElementById('whereami-time-input').value = '';
+      setStatus('whereami-status', '');
+      document.getElementById('whereami-name-input').focus();
+    }
+
+    function closeWhereAmIForm() {
+      document.getElementById('whereami-overlay').classList.add('hidden');
+    }
+
+    async function submitWhereAmI() {
+      const name = document.getElementById('whereami-name-input').value.trim();
+      const loc  = document.getElementById('whereami-loc-input').value.trim();
+      const date = document.getElementById('whereami-date-input').value;
+      const time = document.getElementById('whereami-time-input').value.trim();
+      if (!name || !loc) { setStatus('whereami-status', 'Name and location are required.', true); return; }
+      const btn = getSubmitBtn('whereami-overlay');
+      setLoading(btn);
+      try {
+        const fd = new FormData();
+        fd.append('action', 'add');
+        fd.append('type', 'whereami');
+        fd.append('name', name);
+        fd.append('location', loc);
+        fd.append('date', date || '');
+        fd.append('time', time || '');
+        await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+        closeWhereAmIForm();
+        loadWhereAmI();
+      } catch (e) {
+        setStatus('whereami-status', 'Failed to save — try again.', true);
+        err('submitWhereAmI failed:', e.message);
+      } finally { clearLoading(btn); }
+    }
+
+    async function deleteWhereAmI(idx, btn) {
+      btn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('action', 'delete');
+        fd.append('type', 'whereami');
+        fd.append('idx', idx);
+        await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+        loadWhereAmI();
+      } catch (e) {
+        btn.disabled = false;
+        err('deleteWhereAmI failed:', e.message);
+      }
+    }
 
  async function deleteReminder(idx, btn) {
  btn.disabled = true;
@@ -5488,13 +5411,6 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
  return;
  }
  }
- ['home', 'parentals', 'tori', 'nova'].forEach(tab => {
- const pinEl = document.getElementById(`pin-${tab}`);
- if (pinEl && !pinEl.classList.contains('hidden')) {
- if (e.key >= '0' && e.key <= '9') pinPress(tab, e.key);
- if (e.key === 'Backspace') pinDelete(tab);
- }
- });
  });
 
  // ─────────────────────────────────────────────
@@ -5503,10 +5419,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, [
  // Wire schedule dropdowns to show/hide date input
 
 
- if (localStorage.getItem('hh_auth_home') === 'true') {
- document.getElementById('pin-home').classList.add('hidden');
- onTabUnlocked('home');
- }
+    onTabUnlocked('home');
 
  // ── HASH ROUTING ──
  const VALID_TABS = ['home', 'fun', 'parentals', 'tori', 'nova'];
