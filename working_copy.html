@@ -922,7 +922,7 @@
  .tori-content {
  display: grid;
  grid-template-columns: 1fr 1fr 1fr;
- grid-template-rows: 1fr 1fr 1fr;
+ grid-template-rows: 0.6fr 1fr 1.4fr;
  grid-template-areas:
    "thisweek thisweek pb"
    "hype     nextup   reminders"
@@ -1327,7 +1327,7 @@
  display: grid;
  grid-template-columns: 1fr 1fr;
  align-content: start;
- overflow-y: hidden;
+ overflow-y: auto;
  }
 
  .countdown-list.three-col {
@@ -2456,7 +2456,7 @@
  <button class="add-btn" style="background:var(--accent4)" onclick="openToriEventsForm()">+ Add</button>
  </div>
  </div>
- <div class="countdown-list three-col" id="tori-events"></div>
+ <div class="countdown-list two-col" id="tori-events"></div>
  </div>
 
  </div>
