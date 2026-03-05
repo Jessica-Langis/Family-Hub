@@ -292,10 +292,11 @@
 
   /* ── WHERE AM I TILE ── */
   .whereami-list {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 4px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 6px 16px 10px;
+    align-content: start;
   }
   .whereami-item {
     display: flex;
