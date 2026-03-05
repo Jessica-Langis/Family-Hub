@@ -3160,16 +3160,14 @@
  if (dateLabel) dateLabel.textContent = dayNames[today.getDay()] + ', ' + MONTHS[today.getMonth()] + ' ' + today.getDate();
  if (tmrLabel) tmrLabel.textContent = dayNames[tomorrow.getDay()] + ', ' + MONTHS[tomorrow.getMonth()] + ' ' + tomorrow.getDate();
 
- const [reminders, chores] = await Promise.allSettled([
-  apiFetch(SCRIPTS.CHORES + '?type=reminders').then(r => r.json()),
+ const chores = await Promise.allSettled([
   apiFetch(SCRIPTS.CHORES + '?type=chores').then(r => r.json()),
 ]);
 
-const reminderItems = reminders.status === 'fulfilled' ? reminders.value : [];
-const choreItems = chores.status === 'fulfilled' ? chores.value : [];
+const choreItems = chores[0].status === 'fulfilled' ? chores[0].value : [];
 
-todayBody.innerHTML = buildTodayColumn(today, reminderItems, choreItems, []);
-tomorrowBody.innerHTML = buildTodayColumn(tomorrow, reminderItems, choreItems, []);
+todayBody.innerHTML = buildTodayColumn(today, [], choreItems, []);
+tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
 }
 
  // SCHOOL CALENDAR (Cashmere ICS)
