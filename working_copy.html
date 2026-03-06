@@ -4720,11 +4720,11 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  return arr[((hash % arr.length) + arr.length) % arr.length];
  }
 
- function pickDailyIndex(arr) {
+ function pickDailyIndex(arr, offset = 0) {
  const day = new Date().toDateString();
  let hash = 0;
  for (let i = 0; i < day.length; i++) hash = (hash * 31 + day.charCodeAt(i)) % arr.length;
- return ((hash % arr.length) + arr.length) % arr.length;
+ return ((hash + offset) % arr.length + arr.length) % arr.length;
  }
 
  let toriHypeIdx = null;
@@ -4749,7 +4749,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  function loadNovaHype() {
  const el = document.getElementById('nova-hype-quote');
  if (!el) return;
- if (novaHypeIdx === null) novaHypeIdx = pickDailyIndex(NOVA_HYPE);
+ if (novaHypeIdx === null) novaHypeIdx = pickDailyIndex(NOVA_HYPE, Math.floor(NOVA_HYPE.length / 2));
  el.classList.remove('visible');
  setTimeout(() => { el.textContent = NOVA_HYPE[novaHypeIdx]; el.classList.add('visible'); }, 100);
  }
