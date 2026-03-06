@@ -1790,7 +1790,7 @@
  .hw-name { white-space: normal; word-break: break-word; min-width: 0; }
  .top-row { grid-template-columns: 1fr; gap: 8px; max-height: none; }
  .home-bottom-row { grid-template-columns: 1fr; }
- .home-month-panel { order: 1; min-height: 380px; }
+ .home-month-panel { min-height: 380px; }
  /* Fun page: bulletin above movies on mobile */
  /* Bulletin board: 2 sticky notes per row on mobile */
  .bulletin-list {
@@ -1802,15 +1802,15 @@
  .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
- /* Mobile home order: Reminders | Grocery | Menu | Agenda | Month */
- .home-grocery-panel { order: 2; }
+ /* Mobile home order */
   .home-content { grid-template-columns: 1fr !important; grid-template-rows: auto !important; }
   .home-content > * { grid-column: 1 !important; grid-row: auto !important; }
-  .home-bulletin-panel { order: 1; }
-  .today-tile { order: 2; }
-  .weekend-tile { order: 3; }
-  .home-grocery-panel { order: 4; }
-  .home-month-panel { order: 6; min-height: 300px; }
+  .today-tile { order: 1; }
+  .weekend-tile { order: 2; }
+  .home-bulletin-panel { order: 3; }
+  .home-whereami-panel { order: 4; }
+  .home-month-panel { order: 5; min-height: 300px; }
+  .home-grocery-panel { order: 6; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
