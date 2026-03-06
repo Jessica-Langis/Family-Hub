@@ -955,7 +955,7 @@
  /* Calendar iframe fills its panel */
  .parentals-calendar .agenda-embed {
    flex: 1;
-   min-height: 280px;
+   min-height: 560px;
    height: 0;
    width: 100%;
  }
@@ -1734,10 +1734,14 @@
    height: auto;
    overflow: visible;
  }
- .parentals-grid .panel { max-height: none; overflow: visible; }
+ .parentals-grid .panel:not(.parentals-todo) { max-height: none; overflow: visible; }
+ .parentals-todo { max-height: 260px; overflow: hidden; display: flex; flex-direction: column; }
+ .parentals-todo .chore-list { overflow-y: auto !important; flex: 1; min-height: 0; }
  .parentals-scroll { overflow: visible; max-height: none; flex: none; }
- .parentals-calendar { min-height: 380px; }
- .parentals-calendar .agenda-embed { height: 340px; }
+ .parentals-calendar { min-height: 680px; }
+ .parentals-calendar .agenda-embed { height: 640px; }
+ .parentals-grid { height: auto !important; overflow: visible !important; }
+ .parentals-grid .panel:not(.parentals-todo) { overflow: visible; height: auto; }
  .today-columns { grid-template-columns: 1fr; }
  .today-divider { display: none; }
  .personal-content { grid-template-rows: auto; height: auto; overflow: visible; }
