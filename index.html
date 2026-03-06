@@ -5748,72 +5748,103 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  }
  }
 
- // ─────────────────────────────────────────────
- // PERSONAL BESTS (Tori) — stored in localStorage
- // ─────────────────────────────────────────────
- const PB_KEY = 'tori_personal_bests';
 
- function loadPBs() {
- const el = document.getElementById('tori-pb-list');
- if (!el) return;
- const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
- if (!pbs.length) {
- el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">No records yet — add your first!</div>';
- return;
- }
- el.innerHTML = pbs.map((pb, i) => `
- <div class="pb-item">
- <div class="pb-info">
- <div class="pb-category">${esc(pb.category || '')}</div>
- <div class="pb-value">${esc(pb.value || '')}</div>
- ${pb.notes ? `<div class="pb-notes">${esc(pb.notes)}</div>` : ''}
- </div>
- <div class="pb-actions">
- <button class="pb-edit-btn" onclick="openPBForm(${i})" title="Edit">✏</button>
- <button class="pb-delete-btn" onclick="deletePB(${i})" title="Delete">×</button>
- </div>
- </div>`).join('');
- }
+    // ─────────────────────────────────────────────
+    // PERSONAL BESTS (Tori) — stored in Google Sheets
+    // ─────────────────────────────────────────────
 
- function openPBForm(editIdx) {
- const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
- const isEdit = editIdx !== undefined;
- const pb = isEdit ? pbs[editIdx] : null;
- document.getElementById('pb-overlay').classList.remove('hidden');
- document.getElementById('pb-overlay-title').textContent = isEdit ? '✏Edit Personal Best' : '🏆 Add Personal Best';
- document.getElementById('pb-submit-btn').textContent = isEdit ? 'Save' : 'Add';
- document.getElementById('pb-category-input').value = pb ? pb.category : '';
- document.getElementById('pb-value-input').value = pb ? pb.value : '';
- document.getElementById('pb-notes-input').value = pb ? pb.notes : '';
- document.getElementById('pb-edit-idx').value = isEdit ? editIdx : '';
- document.getElementById('pb-category-input').focus();
- }
+    async function loadPBs() {
+      const el = document.getElementById('tori-pb-list');
+      if (!el) return;
+      try {
+        const res = await apiFetch(SCRIPTS.TORI + '?type=pbs');
+        const pbs = await res.json();
+        if (!pbs.length) {
+          el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">No records yet — add your first!</div>';
+          return;
+        }
+        el.innerHTML = pbs.map(pb => `
+          <div class="pb-item">
+            <div class="pb-info">
+              <div class="pb-category">${esc(pb.category || '')}</div>
+              <div class="pb-value">${esc(pb.value || '')}</div>
+              ${pb.notes ? `<div class="pb-notes">${esc(pb.notes)}</div>` : ''}
+            </div>
+            <div class="pb-actions">
+              <button class="pb-edit-btn" onclick="openPBForm(${pb.id})" title="Edit">✏</button>
+              <button class="pb-delete-btn" onclick="deletePB(${pb.id})" title="Delete">×</button>
+            </div>
+          </div>`).join('');
+      } catch(e) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>';
+        err('loadPBs failed:', e.message);
+      }
+    }
 
- function closePBForm() {
- document.getElementById('pb-overlay').classList.add('hidden');
- }
+    function openPBForm(editId) {
+      const isEdit = editId !== undefined;
+      document.getElementById('pb-overlay').classList.remove('hidden');
+      document.getElementById('pb-overlay-title').textContent = isEdit ? '✏ Edit Personal Best' : '🏆 Add Personal Best';
+      document.getElementById('pb-submit-btn').textContent = isEdit ? 'Save' : 'Add';
+      document.getElementById('pb-category-input').value = '';
+      document.getElementById('pb-value-input').value = '';
+      document.getElementById('pb-notes-input').value = '';
+      document.getElementById('pb-edit-idx').value = isEdit ? editId : '';
+      if (isEdit) {
+        const items = document.querySelectorAll('.pb-item');
+        items.forEach(item => {
+          const editBtn = item.querySelector('.pb-edit-btn');
+          if (editBtn && editBtn.getAttribute('onclick') === `openPBForm(${editId})`) {
+            document.getElementById('pb-category-input').value = item.querySelector('.pb-category')?.textContent || '';
+            document.getElementById('pb-value-input').value = item.querySelector('.pb-value')?.textContent || '';
+            document.getElementById('pb-notes-input').value = item.querySelector('.pb-notes')?.textContent || '';
+          }
+        });
+      }
+      document.getElementById('pb-category-input').focus();
+    }
 
- function submitPB() {
- const category = document.getElementById('pb-category-input').value.trim();
- const value = document.getElementById('pb-value-input').value.trim();
- const notes = document.getElementById('pb-notes-input').value.trim();
- const editIdx = document.getElementById('pb-edit-idx').value;
- if (!category || !value) return;
- const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
- const entry = { category, value, notes };
- if (editIdx !== '') pbs[parseInt(editIdx)] = entry;
- else pbs.push(entry);
- localStorage.setItem(PB_KEY, JSON.stringify(pbs));
- closePBForm();
- loadPBs();
- }
+    function closePBForm() {
+      document.getElementById('pb-overlay').classList.add('hidden');
+    }
 
- function deletePB(idx) {
- const pbs = JSON.parse(localStorage.getItem(PB_KEY) || '[]');
- pbs.splice(idx, 1);
- localStorage.setItem(PB_KEY, JSON.stringify(pbs));
- loadPBs();
- }
+    async function submitPB() {
+      const btn = document.getElementById('pb-submit-btn');
+      const category = document.getElementById('pb-category-input').value.trim();
+      const value = document.getElementById('pb-value-input').value.trim();
+      const notes = document.getElementById('pb-notes-input').value.trim();
+      const editId = document.getElementById('pb-edit-idx').value;
+      if (!category || !value) return;
+      setLoading(btn);
+      try {
+        const fd = new FormData();
+        fd.append('type', 'pbs');
+        fd.append('category', category);
+        fd.append('value', value);
+        fd.append('notes', notes);
+        if (editId) fd.append('idx', editId);
+        await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
+        closePBForm();
+        await loadPBs();
+      } catch(e) {
+        err('submitPB failed:', e.message);
+      } finally {
+        clearLoading(btn);
+      }
+    }
+
+    async function deletePB(id) {
+      try {
+        const fd = new FormData();
+        fd.append('type', 'pbs');
+        fd.append('action', 'delete');
+        fd.append('idx', id);
+        await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd });
+        await loadPBs();
+      } catch(e) {
+        err('deletePB failed:', e.message);
+      }
+    }
 
 
 </script>
