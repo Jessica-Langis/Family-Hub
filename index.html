@@ -5725,6 +5725,39 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       }
     }
 
+    // ─────────────────────────────────────────────
+    //  UPCOMING TILE — 14-day rolling calendar
+    // ─────────────────────────────────────────────
+    async function loadUpcomingTile() {
+      const el = document.getElementById('upcoming-list');
+      if (!el) return;
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=upcoming');
+        const days = await res.json();
+        if (!Array.isArray(days)) {
+          el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+          return;
+        }
+        const todayStr = new Date().toISOString().slice(0,10);
+        el.innerHTML = days.map(day => {
+          const d = new Date(day.date + 'T00:00:00');
+          const isToday = day.date === todayStr;
+          const dow = d.getDay();
+          const isWeekend = dow === 0 || dow === 6;
+          const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+          const label = isToday ? 'Today' : dayNames[dow] + ' ' + (d.getMonth()+1) + '/' + d.getDate();
+          const labelClass = isToday ? 'is-today' : isWeekend ? 'is-weekend' : '';
+          const chips = day.events.length
+            ? day.events.map(ev => '<span class="upcoming-chip">' + esc(ev) + '</span>').join('')
+            : '<span class="upcoming-empty">—</span>';
+          return '<div class="upcoming-day"><div class="upcoming-day-label ' + labelClass + '">' + label + '</div><div class="upcoming-chips">' + chips + '</div></div>';
+        }).join('');
+      } catch(e) {
+        if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
+        err('loadUpcomingTile failed:', e.message);
+      }
+    }
+
      async function loadBulletin() {
  const el = document.getElementById('bulletin-list');
  if (!el) return;
