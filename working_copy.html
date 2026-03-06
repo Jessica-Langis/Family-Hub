@@ -524,11 +524,22 @@
   }
   .weekend-cols {
     display: grid;
-    grid-template-columns: 1fr 1px 1fr;
+    grid-template-columns: 1fr 1px 1fr 1px 1fr;
     gap: 0 16px;
     padding: 10px 16px;
   }
   .weekend-divider { background: var(--border); align-self: stretch; }
+  .weekend-upcoming-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .weekend-upcoming-item:last-child { border-bottom: none; }
+  .weekend-upcoming-name { font-size: 0.8rem; color: var(--text); font-weight: 500; }
+  .weekend-upcoming-meta { font-size: 0.7rem; color: var(--muted); }
+  .weekend-upcoming-badge { font-size: 0.68rem; font-weight: 600; color: var(--accent4); margin-top: 2px; }
   .weekend-col { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .weekend-col-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -2147,7 +2158,7 @@
       <div class="panel home-weekend-panel weekend-tile">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent2)">This Weekend</span>
+            <span class="section-title" style="color:var(--accent2)">This Weekend &amp; Upcoming</span>
           </div>
         </div>
         <div class="weekend-cols">
@@ -2165,6 +2176,13 @@
               <span class="weekend-col-date" id="weekend-sun-date"></span>
             </div>
             <div id="weekend-sun-events"><div class="weekend-clear">Loading...</div></div>
+          </div>
+          <div class="weekend-divider"></div>
+          <div class="weekend-col">
+            <div class="weekend-col-header">
+              <span class="weekend-col-title" style="color:var(--accent4)">Next Up</span>
+            </div>
+            <div id="home-next-up-events"><div class="weekend-clear">Loading...</div></div>
           </div>
         </div>
       </div>
@@ -2936,7 +2954,24 @@
  const body = await res.text().catch(() => '');
  throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
  }
- return res;
+ // Check for unauthorized response from GAS allowlist
+ const clone = res.clone();
+ const text = await clone.text();
+ try {
+ const parsed = JSON.parse(text);
+ if (parsed.error === 'unauthorized') {
+ if (!document.getElementById('auth-banner')) {
+ const banner = document.createElement('div');
+ banner.id = 'auth-banner';
+ banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;text-align:center;padding:10px 16px;font-size:0.85rem;z-index:9999;';
+ banner.textContent = `Access denied for ${parsed.email || 'your account'} — sign in with an authorized Google account.`;
+ document.body.prepend(banner);
+ }
+ throw new Error('unauthorized');
+ }
+ } catch(parseErr) { if (parseErr.message === 'unauthorized') throw parseErr; }
+ // Return a response-like object with the already-read text
+ return new Response(text, { status: res.status, headers: res.headers });
  } catch (e) {
  err('apiFetch failed:', url, e.message);
  throw e;
@@ -3034,6 +3069,7 @@
  loadTodayTile();
     loadHomeBulletin();
     loadWeekendTile();
+    loadHomeNextUp();
     loadWhereAmI();
  } else if (tab === 'parentals') {
  loadParentChores();
@@ -5592,6 +5628,35 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  loadBulletin();
  }
 
+
+    // ─────────────────────────────────────────────
+    // HOME NEXT UP — 1 upcoming event from Tori events feed
+    // ─────────────────────────────────────────────
+    async function loadHomeNextUp() {
+      const el = document.getElementById('home-next-up-events');
+      if (!el) return;
+      try {
+        const res = await apiFetch(SCRIPTS.TORI + '?type=events');
+        const events = await res.json();
+        const upcoming = [...events]
+          .filter(e => getDayDiff(e.date) >= 0)
+          .sort((a, b) => normalizeDate(a.date) - normalizeDate(b.date));
+        if (!upcoming.length) {
+          el.innerHTML = '<div class="weekend-clear">None scheduled</div>';
+          return;
+        }
+        const ev = upcoming[0];
+        const diff = getDayDiff(ev.date);
+        const badge = countdownBadge(diff);
+        el.innerHTML = `<div class="weekend-upcoming-item">
+          <div class="weekend-upcoming-name">${esc(ev.name)}</div>
+          <div class="weekend-upcoming-meta">${formatDateShort(ev.date)}${ev.location ? ' · ' + esc(ev.location) : ''}</div>
+          <div class="weekend-upcoming-badge ${badge.cls}">${badge.text}</div>
+        </div>`;
+      } catch(e) {
+        el.innerHTML = '<div class="weekend-clear">Unavailable</div>';
+      }
+    }
 
     // ─────────────────────────────────────────────
     // HOME BULLETIN — shows up to 4 most recent posts
