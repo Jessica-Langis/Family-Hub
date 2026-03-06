@@ -1708,13 +1708,14 @@
   .home-right-top { flex-direction: column; flex: none; overflow: visible; }
   .home-today-panel, .home-weekend-panel, .home-grocery-panel, .home-whereami-panel,
   .home-bulletin-panel, .home-month-panel { flex: none; min-height: 0; overflow: visible; }
-  .home-today-panel { min-height: 200px; }
+  .home-today-panel { min-height: 0; height: auto; }
   .home-weekend-panel { min-height: 160px; }
   .home-whereami-panel { min-height: 200px; }
   .home-grocery-panel { min-height: 220px; }
   .home-bulletin-panel { min-height: 280px; }
   .home-month-panel { min-height: 300px; }
-  .home-today-panel .today-columns, .home-weekend-panel .weekend-cols,
+  .home-today-panel .today-columns { overflow: visible; max-height: none; flex: none; height: auto; }
+  .home-weekend-panel .weekend-cols,
   .home-grocery-panel .grocery-grid, .home-whereami-panel .whereami-list,
   .home-bulletin-panel .home-bulletin-strip { overflow: visible; max-height: none; flex: none; }
   .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
