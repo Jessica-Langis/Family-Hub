@@ -208,7 +208,7 @@
     padding-bottom: 0;
   }
 
-  /* Left column: 4 stacked tiles */
+  /* Left column: Today | Weekend | WhereAmI */
   .home-left-col {
     flex: 1;
     display: flex;
@@ -218,9 +218,9 @@
     overflow: hidden;
   }
 
-  /* Right column: bulletin + month stacked */
+  /* Right column: [Bulletin + Grocery] on top, Month below */
   .home-right-col {
-    flex: 1.4;
+    flex: 1.6;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -228,14 +228,26 @@
     overflow: hidden;
   }
 
+  /* Top row inside right col: Bulletin (col2) + Grocery (col3) side by side */
+  .home-right-top {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    flex: 0 0 36%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
   /* Left column panel sizing */
   .home-today-panel    { flex: 0.6; min-height: 0; }
   .home-weekend-panel  { flex: 1; min-height: 0; }
-  .home-grocery-panel  { flex: 1; min-height: 0; }
-  .home-whereami-panel { flex: 1.4; min-height: 0; }
+  .home-whereami-panel { flex: 1.6; min-height: 0; }
 
-  /* Right column panel sizing */
-  .home-bulletin-panel { flex: 0 0 36%; min-height: 0; }
+  /* Right top row panel sizing */
+  .home-bulletin-panel { flex: 1; min-height: 0; }
+  .home-grocery-panel  { flex: 1; min-height: 0; }
+
+  /* Month fills remaining right col height */
   .home-month-panel    { flex: 1; min-height: 0; }
 
   /* All home panels */
@@ -253,6 +265,7 @@
 
   /* Scrollable content areas within each panel */
   .home-bulletin-panel .home-bulletin-strip  { flex: 1; overflow-y: auto; min-height: 0; }
+  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
   .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
   .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
   .home-whereami-panel .whereami-list         { flex: 1; overflow-y: auto; min-height: 0; }
@@ -475,14 +488,14 @@
   .home-bulletin-strip {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px 16px;
-    padding: 12px 14px 16px;
+    gap: 10px 12px;
+    padding: 10px 12px 14px;
     align-items: flex-start;
   }
   .home-bulletin-strip .bulletin-item {
-    flex: 1 1 180px;
-    max-width: 240px;
-    min-width: 150px;
+    flex: 1 1 140px;
+    max-width: 200px;
+    min-width: 120px;
   }
 
   /* ── THIS WEEKEND TILE ── */
@@ -604,10 +617,10 @@
 
  /* ── GROCERY ── */
  .grocery-grid {
- padding: 8px 16px 10px;
+ padding: 8px 12px 10px;
  display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 8px;
+ grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+ gap: 6px 8px;
  overflow: visible;
  flex: 1;
  align-content: start;
@@ -1652,20 +1665,21 @@
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
  .home-content { flex-direction: column; height: auto; overflow: visible; }
   .home-left-col, .home-right-col { flex: none; overflow: visible; }
+  .home-right-top { flex-direction: column; flex: none; overflow: visible; }
   .home-today-panel, .home-weekend-panel, .home-grocery-panel, .home-whereami-panel,
   .home-bulletin-panel, .home-month-panel { flex: none; min-height: 0; overflow: visible; }
   .home-today-panel { min-height: 200px; }
   .home-weekend-panel { min-height: 160px; }
-  .home-grocery-panel { min-height: 200px; }
-  .home-whereami-panel { min-height: 140px; }
-  .home-bulletin-panel { min-height: 260px; }
-  .home-month-panel { min-height: 380px; }
+  .home-whereami-panel { min-height: 200px; }
+  .home-grocery-panel { min-height: 220px; }
+  .home-bulletin-panel { min-height: 280px; }
+  .home-month-panel { min-height: 520px; }
   .home-today-panel .today-columns, .home-weekend-panel .weekend-cols,
   .home-grocery-panel .grocery-grid, .home-whereami-panel .whereami-list,
   .home-bulletin-panel .home-bulletin-strip { overflow: visible; max-height: none; flex: none; }
   .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
-  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
+  .grocery-grid { grid-template-columns: 1fr 1fr; }
  /* Parentals mobile: single column stack */
  .parentals-grid {
    grid-template-columns: 1fr;
@@ -2081,7 +2095,7 @@
 <div class="tab-panel active" id="tab-home">
   <div class="home-content">
 
-    <!-- LEFT COLUMN: Today | Weekend | Grocery | Where Am I -->
+    <!-- LEFT COLUMN: Today | Weekend | Where Am I -->
     <div class="home-left-col">
 
       <div class="panel home-today-panel today-tile" id="today-tile">
@@ -2133,26 +2147,6 @@
         </div>
       </div>
 
-      <div class="panel home-grocery-panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">Grocery List</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
-            <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
-          </div>
-        </div>
-        <div class="quick-add-wrap">
-          <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
-            onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
-          <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
-        </div>
-        <div class="grocery-grid" id="grocery-list">
-          <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
-        </div>
-      </div>
-
       <div class="panel home-whereami-panel">
         <div class="section-header">
           <div class="section-header-left">
@@ -2169,22 +2163,46 @@
 
     </div><!-- /home-left-col -->
 
-    <!-- RIGHT COLUMN: Bulletin Board + Month Calendar -->
+    <!-- RIGHT COLUMN: [Bulletin + Grocery] + Month Calendar -->
     <div class="home-right-col">
 
-      <div class="panel home-bulletin-panel" style="overflow:hidden">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">Bulletin Board</span>
+      <div class="home-right-top">
+
+        <div class="panel home-bulletin-panel" style="overflow:hidden">
+          <div class="section-header">
+            <div class="section-header-left">
+              <span class="section-title">Bulletin Board</span>
+            </div>
+            <div class="section-header-actions">
+              <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+            </div>
           </div>
-          <div class="section-header-actions">
-            <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+          <div class="home-bulletin-strip" id="home-bulletin-list">
+            <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
           </div>
         </div>
-        <div class="home-bulletin-strip" id="home-bulletin-list">
-          <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
+
+        <div class="panel home-grocery-panel">
+          <div class="section-header">
+            <div class="section-header-left">
+              <span class="section-title">Grocery List</span>
+            </div>
+            <div class="section-header-actions">
+              <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
+              <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
+            </div>
+          </div>
+          <div class="quick-add-wrap">
+            <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
+              onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
+            <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
+          </div>
+          <div class="grocery-grid" id="grocery-list">
+            <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+          </div>
         </div>
-      </div>
+
+      </div><!-- /home-right-top -->
 
       <div class="panel home-month-panel">
         <div class="section-header">
@@ -3894,7 +3912,13 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           list.innerHTML = '<div class="whereami-empty">No one checked in yet</div>';
           return;
         }
-        list.innerHTML = items.map(item => {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const active = items.filter(item => !item.date || item.date >= todayStr);
+        if (!active.length) {
+          list.innerHTML = '<div class="whereami-empty">No one checked in yet</div>';
+          return;
+        }
+        list.innerHTML = active.map(item => {
           const meta = [item.date, item.time].filter(Boolean).join(' · ');
           return `<div class="whereami-item">
             <div class="whereami-dot"></div>
@@ -4573,55 +4597,128 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  // HYPE TILES
  // ─────────────────────────────────────────────
  const TORI_HYPE = [
- "The discipline that gets you to 5am practice is the same one that makes everything else easier.",
- "You don't wait for confidence. You build it one hard thing at a time.",
- "Dean's list and a double leg. Not a lot of people can say that.",
- "Hard days are just the price of doing things worth doing.",
- "The version of you that shows up tired is still better than most people's best.",
- "You make things from scratch — recipes, routines, comebacks. That's a skill.",
- "Other people wonder if they could do it. You already know you can.",
- "Rest like it matters. It does.",
- "There's a version of you five years from now who's grateful you didn't quit today.",
- "Baking teaches you what wrestling confirms — precision, patience, and showing up when it's hard.",
- "Being someone people trust is rarer than any trophy.",
- "The mat is just where you practice doing hard things. Life is where you use it.",
- "You already know how to fall and get back up. Most people are still learning that.",
- "Not every day is a great day. Show up anyway. That's the whole thing.",
- "Quiet confidence doesn't need to announce itself.",
- "Good friends are made by being one first. You've figured that out.",
- "Olympians have bad days too. They still showed up.",
- "You're not behind. You're exactly where the work you've put in has taken you.",
- "Every hard thing you've done is evidence for the next hard thing.",
- "The people who last aren't the ones who never struggle. They're the ones who keep going anyway.",
- "You bring the same focus to a recipe as you do to a match. That's not a coincidence.",
- "Tired is not the same as done.",
- "The best thing you can be to the people around you is consistent. You already are.",
- "Excellence is just a lot of ordinary days stacked up. You're stacking them.",
- "You've earned every single thing you have. Don't forget that.",
- ];
+    // Dan Gable
+    "Once you've wrestled, everything else in life is easy. — Dan Gable",
+    "Pain is nothing compared to what it feels like to quit. — Dan Gable",
+    "Give everything you got today, for tomorrow may never come. — Dan Gable",
+    "The 1st period is won by the best technician. The 2nd by the kid in the best shape. The 3rd by the kid with the biggest heart. — Dan Gable",
+    "When I'd get tired and want to stop, I'd wonder what my next opponent was doing. When I could see him in the shower, I'd push myself harder. — Dan Gable",
+    "Gold medals aren't really made of gold. They're made of sweat, determination, and a hard-to-find alloy called guts. — Dan Gable",
+    "If you're afraid to fail, you'll never succeed. — Dan Gable",
+    "I'm a big believer in starting with high standards and raising them. — Dan Gable",
+    "More enduringly than any other sport, wrestling teaches self-control and pride. Some have wrestled without great skill — none have wrestled without pride. — Dan Gable",
+    "There's always ways of motivating yourself to higher levels. Write about it, dream about it. But after that, turn it into action. Don't just dream. — Dan Gable",
+    "The obvious goal was to be a champion. To get there, I had to set an everyday goal: push myself to exhaustion. — Dan Gable",
+    "A clean, hard-fought wrestling match is the most honest of athletic contests. You compete or you quit. No alibis. — Dan Gable",
+    "It's not about how good you are, but how bad you want it. — Dan Gable",
+    "My mind's never gone very far away from what I wanted to accomplish. — Dan Gable",
+    "The easiest thing to do in the world is pull the covers up over your head and go back to sleep. — Dan Gable",
+    "When you lose, don't lose the lesson. — Dan Gable",
+    "My valleys are higher than most people's peaks. I stay at that level. — Dan Gable",
+    "I never won anything by myself. I was always strong because of help that gave me extra strength to win. — Dan Gable",
+    "Resilience is rising every time you get pinned. — Dan Gable",
+    "You can't ever wrestle too much, because you can always do better. — Dan Gable",
+    // Cael Sanderson
+    "I love folkstyle wrestling. You get knocked down, you get back up. You earn your escape. Nobody's going to come rescue you. — Cael Sanderson",
+    "If you're winning, chop wood, carry water. — Cael Sanderson",
+    "Success is about consistently pushing yourself to be better than you were yesterday. — Cael Sanderson",
+    "Wrestling is a journey, and every step counts. — Cael Sanderson",
+    "Anyone can wrestle until they're tired. — Cael Sanderson",
+    "Wrestlers compete as individuals, yet the sport builds camaraderie like no other. — Cael Sanderson",
+    "The mat is a great equalizer. — Cael Sanderson",
+    // Jordan Burroughs
+    "Champions are built in the offseason. — Jordan Burroughs",
+    "The comeback is always stronger than the setback. — Jordan Burroughs",
+    "You win matches in your head before you win them on the mat. — Jordan Burroughs",
+    "Strength grows in moments when you think you can't go on. — Jordan Burroughs",
+    "Trust your training, trust your instincts. — Jordan Burroughs",
+    "The mat rewards patience and precision. — Jordan Burroughs",
+    // Kyle Snyder
+    "Hard work will always beat talent in the long run. — Kyle Snyder",
+    "It's not just a physical sport, it's a mental one. You have to stay focused, stay disciplined, stay hungry. — Kyle Snyder",
+    "I always say I feel like I'm just getting started. I don't even feel like I've accomplished anything. I'm hungry and motivated. — Kyle Snyder",
+    // Kyle Dake
+    "The strongest athlete is the one who stays mentally tough. — Kyle Dake",
+    "Adversity is the path to greatness. — Kyle Dake",
+    // Tom Brands / John Smith
+    "The difference between a good wrestler and a great wrestler is mental toughness. — Tom Brands",
+    "Dedication is what separates the great from the average. — John Smith",
+    // Helen Maroulis
+    "Never lose faith, never give up. — Helen Maroulis",
+    "I know how fleeting this moment is. So when it's done, it's gone forever. I want to really appreciate every moment and maximize as much as I can. — Helen Maroulis",
+    "Wrestling is my first love, and there's just nothing like it. It's just such a form of therapy and expression for me. — Helen Maroulis",
+    "I feel like I'm just getting started. — Helen Maroulis",
+    "Wrestling makes champions off the mat. I believe that includes our women. — Helen Maroulis",
+    // Tamyra Mensah-Stock
+    "100% yes, I knew I could do it. I knew it would be hard. I prayed that I could do it. In my wildest dreams I knew. — Tamyra Mensah-Stock",
+    "You've got to beat the best to know that you're the best. — Tamyra Mensah-Stock",
+    "I want to show people that you can have fun getting to your dreams. — Tamyra Mensah-Stock",
+    "These young women are going to look up and go, 'I can do that. I can see myself.' — Tamyra Mensah-Stock",
+    // Adeline Gray
+    "Mental toughness is checking in with yourself and being in a frame of mind to be successful — not just pushing through and feeling the burn. — Adeline Gray",
+  ];
 
  const NOVA_HYPE = [
- "Built different. Also, go drink some water.",
- "You walk in, the room notices. That's not an accident.",
- "Dogs don't worry about yesterday. Be more dog.",
- "The best ones make it look easy because they put in the work. You put in the work.",
- "The mat, the field, the track — you show up. That's the whole thing.",
- "Eat. Sleep. Be awesome. Repeat.",
- "Quiet confidence hits different. You've got it.",
- "Not every day is a win screen. Show up for the next level anyway.",
- "Puppies believe in you. That's basically science.",
- "You don't ask for respect. You make it impossible to ignore you.",
- "Lions don't lose sleep over the opinions of sheep.",
- "Eagles don't explain themselves to pigeons.",
- "A wolf doesn't have to tell you it's a wolf.",
- "The room adjusts to you. Not the other way around.",
- "Sharks keep moving. So do you.",
- "You're not waiting for your moment. You're building it.",
- "The best players make everyone around them better. That's you.",
- "Bears don't apologize for taking up space. Neither should you.",
- "The work you put in when nobody's watching is why they notice when you walk in.",
- "Rhinos run full speed toward the obstacle. Be a rhino.",
- ];
+    // Dan Gable
+    "Once you've wrestled, everything else in life is easy. — Dan Gable",
+    "Pain is nothing compared to what it feels like to quit. — Dan Gable",
+    "Give everything you got today, for tomorrow may never come. — Dan Gable",
+    "The 1st period is won by the best technician. The 2nd by the kid in the best shape. The 3rd by the kid with the biggest heart. — Dan Gable",
+    "When I'd get tired and want to stop, I'd wonder what my next opponent was doing. When I could see him in the shower, I'd push myself harder. — Dan Gable",
+    "Gold medals aren't really made of gold. They're made of sweat, determination, and a hard-to-find alloy called guts. — Dan Gable",
+    "If you're afraid to fail, you'll never succeed. — Dan Gable",
+    "I'm a big believer in starting with high standards and raising them. — Dan Gable",
+    "More enduringly than any other sport, wrestling teaches self-control and pride. Some have wrestled without great skill — none have wrestled without pride. — Dan Gable",
+    "There's always ways of motivating yourself to higher levels. Write about it, dream about it. But after that, turn it into action. Don't just dream. — Dan Gable",
+    "The obvious goal was to be a champion. To get there, I had to set an everyday goal: push myself to exhaustion. — Dan Gable",
+    "A clean, hard-fought wrestling match is the most honest of athletic contests. You compete or you quit. No alibis. — Dan Gable",
+    "It's not about how good you are, but how bad you want it. — Dan Gable",
+    "My mind's never gone very far away from what I wanted to accomplish. — Dan Gable",
+    "The easiest thing to do in the world is pull the covers up over your head and go back to sleep. — Dan Gable",
+    "When you lose, don't lose the lesson. — Dan Gable",
+    "My valleys are higher than most people's peaks. I stay at that level. — Dan Gable",
+    "I never won anything by myself. I was always strong because of help that gave me extra strength to win. — Dan Gable",
+    "Resilience is rising every time you get pinned. — Dan Gable",
+    "You can't ever wrestle too much, because you can always do better. — Dan Gable",
+    // Cael Sanderson
+    "I love folkstyle wrestling. You get knocked down, you get back up. You earn your escape. Nobody's going to come rescue you. — Cael Sanderson",
+    "If you're winning, chop wood, carry water. — Cael Sanderson",
+    "Success is about consistently pushing yourself to be better than you were yesterday. — Cael Sanderson",
+    "Wrestling is a journey, and every step counts. — Cael Sanderson",
+    "Anyone can wrestle until they're tired. — Cael Sanderson",
+    "Wrestlers compete as individuals, yet the sport builds camaraderie like no other. — Cael Sanderson",
+    "The mat is a great equalizer. — Cael Sanderson",
+    // Jordan Burroughs
+    "Champions are built in the offseason. — Jordan Burroughs",
+    "The comeback is always stronger than the setback. — Jordan Burroughs",
+    "You win matches in your head before you win them on the mat. — Jordan Burroughs",
+    "Strength grows in moments when you think you can't go on. — Jordan Burroughs",
+    "Trust your training, trust your instincts. — Jordan Burroughs",
+    "The mat rewards patience and precision. — Jordan Burroughs",
+    // Kyle Snyder
+    "Hard work will always beat talent in the long run. — Kyle Snyder",
+    "It's not just a physical sport, it's a mental one. You have to stay focused, stay disciplined, stay hungry. — Kyle Snyder",
+    "I always say I feel like I'm just getting started. I don't even feel like I've accomplished anything. I'm hungry and motivated. — Kyle Snyder",
+    // Kyle Dake
+    "The strongest athlete is the one who stays mentally tough. — Kyle Dake",
+    "Adversity is the path to greatness. — Kyle Dake",
+    // Tom Brands / John Smith
+    "The difference between a good wrestler and a great wrestler is mental toughness. — Tom Brands",
+    "Dedication is what separates the great from the average. — John Smith",
+    // Helen Maroulis
+    "Never lose faith, never give up. — Helen Maroulis",
+    "I know how fleeting this moment is. So when it's done, it's gone forever. I want to really appreciate every moment and maximize as much as I can. — Helen Maroulis",
+    "Wrestling is my first love, and there's just nothing like it. It's just such a form of therapy and expression for me. — Helen Maroulis",
+    "I feel like I'm just getting started. — Helen Maroulis",
+    "Wrestling makes champions off the mat. I believe that includes our women. — Helen Maroulis",
+    // Tamyra Mensah-Stock
+    "100% yes, I knew I could do it. I knew it would be hard. I prayed that I could do it. In my wildest dreams I knew. — Tamyra Mensah-Stock",
+    "You've got to beat the best to know that you're the best. — Tamyra Mensah-Stock",
+    "I want to show people that you can have fun getting to your dreams. — Tamyra Mensah-Stock",
+    "These young women are going to look up and go, 'I can do that. I can see myself.' — Tamyra Mensah-Stock",
+    // Adeline Gray
+    "Mental toughness is checking in with yourself and being in a frame of mind to be successful — not just pushing through and feeling the burn. — Adeline Gray",
+  ];
 
  function pickDailyItem(arr) {
  const day = new Date().toDateString();
