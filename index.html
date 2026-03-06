@@ -503,14 +503,18 @@
  /* ── HOME BOTTOM ROW: Month Calendar only ── */
  .home-month-panel { display: flex; flex-direction: column; min-height: 0; }
 /* ── UPCOMING TILE ── */
-.upcoming-day { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); min-height: 28px; }
+.upcoming-cols { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 0 12px; flex: 1; min-height: 0; }
+.upcoming-divider { background: var(--border); align-self: stretch; }
+.upcoming-col { display: flex; flex-direction: column; gap: 0; }
+.upcoming-col-title { font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.upcoming-day { display: flex; align-items: flex-start; gap: 6px; padding: 3px 0; border-bottom: 1px solid var(--border); min-height: 26px; }
 .upcoming-day:last-child { border-bottom: none; }
-.upcoming-day-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); min-width: 72px; padding-top: 3px; flex-shrink: 0; }
+.upcoming-day-label { font-size: 0.7rem; font-weight: 600; color: var(--muted); min-width: 56px; padding-top: 2px; flex-shrink: 0; }
 .upcoming-day-label.is-today { color: var(--accent); }
 .upcoming-day-label.is-weekend { color: var(--accent2); }
-.upcoming-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
-.upcoming-chip { font-size: 0.7rem; background: rgba(126,184,212,0.12); color: var(--text); border: 1px solid rgba(126,184,212,0.2); border-radius: 20px; padding: 2px 8px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.upcoming-empty { font-size: 0.7rem; color: var(--border); font-style: italic; }
+.upcoming-chips { display: flex; flex-wrap: wrap; gap: 3px; flex: 1; }
+.upcoming-chip { font-size: 0.68rem; background: rgba(230,160,80,0.15); color: var(--accent2); border: 1px solid rgba(230,160,80,0.3); border-radius: 20px; padding: 1px 7px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.upcoming-empty { font-size: 0.68rem; color: var(--border); font-style: italic; }
 
  /* ── HOME BULLETIN STRIP ── */
   .home-bulletin-strip {
@@ -2260,7 +2264,7 @@
           </div>
           <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
         </div>
-        <div id="upcoming-list" style="overflow-y:auto;flex:1;padding:6px 12px 10px;display:flex;flex-direction:column;gap:4px;">
+        <div id="upcoming-list" style="overflow-y:auto;flex:1;padding:8px 12px 10px;display:flex;flex-direction:column;">
           <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
         </div>
       </div>
@@ -5739,7 +5743,10 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           return;
         }
         const todayStr = new Date().toISOString().slice(0,10);
-        el.innerHTML = days.map(day => {
+        const week1 = days.slice(0, 7);
+        const week2 = days.slice(7, 14);
+
+        function renderDay(day) {
           const d = new Date(day.date + 'T00:00:00');
           const isToday = day.date === todayStr;
           const dow = d.getDay();
@@ -5751,7 +5758,20 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             ? day.events.map(ev => '<span class="upcoming-chip">' + esc(ev) + '</span>').join('')
             : '<span class="upcoming-empty">—</span>';
           return '<div class="upcoming-day"><div class="upcoming-day-label ' + labelClass + '">' + label + '</div><div class="upcoming-chips">' + chips + '</div></div>';
-        }).join('');
+        }
+
+        el.innerHTML =
+          '<div class="upcoming-cols">' +
+            '<div class="upcoming-col">' +
+              '<div class="upcoming-col-title">This Week</div>' +
+              week1.map(renderDay).join('') +
+            '</div>' +
+            '<div class="upcoming-divider"></div>' +
+            '<div class="upcoming-col">' +
+              '<div class="upcoming-col-title">Next Week</div>' +
+              week2.map(renderDay).join('') +
+            '</div>' +
+          '</div>';
       } catch(e) {
         if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>';
         err('loadUpcomingTile failed:', e.message);
