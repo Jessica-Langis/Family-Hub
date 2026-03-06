@@ -303,6 +303,26 @@
   .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
 
+
+  /* ── BULLETIN COLOR PICKER ── */
+  .note-color-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 0 2px;
+  }
+  .note-color-label { font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+  .note-color-swatch {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .note-color-swatch:hover { transform: scale(1.15); }
+  .note-color-swatch.selected { border-color: #fff; }
+
   /* ── WHERE AM I TILE ── */
   .whereami-list {
     display: grid;
@@ -874,19 +894,16 @@
  .parentals-grid {
    display: grid;
    grid-template-columns: 1fr 1fr 1fr;
-   grid-template-rows: 1fr 1.4fr;
-   grid-template-areas:
-     "todo    todo    meals"
-     "grocery calendar calendar";
+   grid-template-rows: 1fr;
+   grid-template-areas: "todo meals agenda";
    gap: 8px;
    min-height: 0;
    height: 100%;
    overflow: hidden;
  }
- .parentals-todo      { grid-area: todo;      }
- .parentals-meals     { grid-area: meals;     }
- .parentals-grocery   { grid-area: grocery;   }
- .parentals-calendar  { grid-area: calendar;  }
+ .parentals-todo      { grid-area: todo;   }
+ .parentals-meals     { grid-area: meals;  }
+ .parentals-agenda    { grid-area: agenda; }
 
  /* All parentals panels fill their cell */
  .parentals-grid .panel {
@@ -1685,11 +1702,9 @@
    grid-template-columns: 1fr;
    grid-template-rows: auto;
    grid-template-areas:
-     "reminders"
      "todo"
      "meals"
-     "grocery"
-     "calendar";
+     "agenda";
    height: auto;
    overflow: visible;
  }
@@ -1754,7 +1769,6 @@
  .home-bottom-row { grid-template-columns: 1fr; }
  .home-month-panel { order: 1; min-height: 380px; }
  /* Fun page: bulletin above movies on mobile */
- .fun-bulletin-panel { order: -1; }
  /* Bulletin board: 2 sticky notes per row on mobile */
  .bulletin-list {
  display: grid;
@@ -1944,7 +1958,7 @@
  align-items: flex-start;
  }
  .bulletin-item {
- /* Sticky note base: warm amber tinted dark to match theme */
+ /* Sticky note base — color overridden per-note via data-color */
  background: linear-gradient(160deg, #2e2610 0%, #261f0a 100%);
  border: 1px solid rgba(232,184,109,0.22);
  border-top: 3px solid rgba(232,184,109,0.55);
@@ -2027,6 +2041,14 @@
  padding: 0;
  transition: color 0.15s;
  }
+
+ /* Per-note color overrides */
+ .bulletin-item[data-color="amber"] { background: linear-gradient(160deg,#2e2610 0%,#261f0a 100%); border-color: rgba(232,184,109,0.22); border-top-color: rgba(232,184,109,0.55); }
+ .bulletin-item[data-color="rose"]  { background: linear-gradient(160deg,#2e1520 0%,#260a12 100%); border-color: rgba(220,120,140,0.22); border-top-color: rgba(220,120,140,0.6); }
+ .bulletin-item[data-color="teal"]  { background: linear-gradient(160deg,#0d2622 0%,#081e1a 100%); border-color: rgba(100,200,180,0.22); border-top-color: rgba(100,200,180,0.6); }
+ .bulletin-item[data-color="blue"]  { background: linear-gradient(160deg,#0e1e30 0%,#091525 100%); border-color: rgba(100,160,220,0.22); border-top-color: rgba(100,160,220,0.6); }
+ .bulletin-item[data-color="lavender"] { background: linear-gradient(160deg,#1e1530 0%,#150e24 100%); border-color: rgba(170,130,220,0.22); border-top-color: rgba(170,130,220,0.6); }
+
  .bulletin-delete:hover { color: #e07070; }
 
  /* ── PERSONAL BESTS ── */
@@ -2224,7 +2246,7 @@
 <div class="tab-panel" id="tab-parentals">
  <div class="parentals-grid">
 
-  <!-- R1C2: To Do -->
+  <!-- C1: To Do -->
   <div class="panel parentals-todo">
    <div class="section-header">
     <div class="section-header-left">
@@ -2240,7 +2262,7 @@
    </div>
   </div>
 
-  <!-- R1C3: This Week's Menu -->
+  <!-- C2: This Week's Menu -->
   <div class="panel parentals-meals">
    <div class="section-header">
     <div class="section-header-left">
@@ -2256,31 +2278,10 @@
   </div>
 
   <!-- R2C1: Grocery List -->
-  <div class="panel parentals-grocery">
+  <div class="panel parentals-agenda">
    <div class="section-header">
     <div class="section-header-left">
-     <span class="section-title" style="color:var(--accent2)">Grocery List</span>
-    </div>
-    <div class="section-header-actions">
-     <button class="add-btn" style="background:var(--muted);color:#0f1117" onclick="clearBoughtGroceries()">Clear Bought</button>
-     <button class="add-btn" style="background:var(--accent2)" onclick="openGroceryForm()">+ Add</button>
-    </div>
-   </div>
-   <div class="quick-add-wrap">
-    <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
-     onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
-    <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
-   </div>
-   <div class="grocery-grid parentals-scroll" id="grocery-list">
-    <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
-   </div>
-  </div>
-
-  <!-- R2C2-3: Calendar -->
-  <div class="panel parentals-calendar">
-   <div class="section-header">
-    <div class="section-header-left">
-     <span class="section-title" style="color:var(--accent2)">Calendar</span>
+     <span class="section-title" style="color:var(--accent2)">Agenda</span>
     </div>
    </div>
    <iframe class="agenda-embed"
@@ -2294,21 +2295,6 @@
 <!-- FUN -->
 <div class="tab-panel" id="tab-fun">
  <div class="personal-content">
-
- <!-- Bulletin Board — spans full width above tiles -->
- <div class="panel fun-bulletin-panel" style="margin-bottom:10px">
- <div class="section-header">
- <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">Bulletin Board</span>
- </div>
- <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openBulletinForm()">+ Post</button>
- </div>
- </div>
- <div class="bulletin-list" id="bulletin-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
- </div>
- </div>
 
  <div class="personal-grid-3">
 
@@ -2730,6 +2716,14 @@
  <div class="overlay-title">Post to Bulletin Board</div>
  <input type="text" id="bulletin-who-input" class="overlay-input" placeholder="Who is this from? (e.g. Mom)" autocomplete="off" />
  <textarea id="bulletin-text-input" class="overlay-input" placeholder="What do you want to say?" rows="3" style="resize:none;font-family:inherit"></textarea>
+ <div class="note-color-row">
+   <span class="note-color-label">Color:</span>
+   <span class="note-color-swatch selected" data-color="amber" style="background:#b8860b" onclick="selectNoteColor(this)" title="Amber"></span>
+   <span class="note-color-swatch" data-color="rose" style="background:#c04060" onclick="selectNoteColor(this)" title="Rose"></span>
+   <span class="note-color-swatch" data-color="teal" style="background:#2a9d8f" onclick="selectNoteColor(this)" title="Teal"></span>
+   <span class="note-color-swatch" data-color="blue" style="background:#3a7abf" onclick="selectNoteColor(this)" title="Blue"></span>
+   <span class="note-color-swatch" data-color="lavender" style="background:#8860c0" onclick="selectNoteColor(this)" title="Lavender"></span>
+ </div>
  <div class="overlay-actions">
  <button class="overlay-btn cancel" onclick="closeBulletinForm()">Cancel</button>
  <button class="overlay-btn submit" onclick="submitBulletin()">Post</button>
@@ -2905,10 +2899,10 @@
 
  const SCRIPTS = {
  GROCERY: 'https://script.google.com/macros/s/AKfycbxjEdIYe_vM3AEK2qvqZAfGwkfWC_XnAlsJV4kLyyl217xDhoTJjr2hpsizqj6AW4WiZg/exec',
- CHORES: 'https://script.google.com/macros/s/AKfycbxWTpChkrWj-CYqBq4zt-ukj-FpSz2bttXklwHbBwNS0yv7p2hc5eNzQaNbHCF-vCXc/exec',
- MEAL: 'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec',
- TORI: 'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec',
- NOVA: 'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec',
+ CHORES:  'https://script.google.com/macros/s/AKfycbxWTpChkrWj-CYqBq4zt-ukj-FpSz2bttXklwHbBwNS0yv7p2hc5eNzQaNbHCF-vCXc/exec',
+ MEAL:    'https://script.google.com/macros/s/AKfycbzg4BtoC8K9zbNx4zVN5wM7Z68K63t41IZUGbf8Z9kKZrqnij4C3XIcjAWD9LmSTos4ng/exec',
+ TORI:    'https://script.google.com/macros/s/AKfycbyGeDAu5PkLoEOkvWpzeUyNWTpkiYsHPu49WneYlcQMQfq_0n1UO0AoqvLQ39r2p4WFIg/exec',
+ NOVA:    'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec',
  };
 
  const DAYS_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -3046,7 +3040,6 @@
  loadParentReminders();
     loadMealPlan();
  } else if (tab === 'fun') {
- loadBulletin();
  loadFunMovies();
  loadFunBooks();
  loadFunMeals();
@@ -5559,6 +5552,14 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  }
  function closeBulletinForm() {
  document.getElementById('bulletin-overlay').classList.add('hidden');
+ document.querySelectorAll('.note-color-swatch').forEach(s => s.classList.remove('selected'));
+ const amber = document.querySelector('.note-color-swatch[data-color="amber"]');
+ if (amber) amber.classList.add('selected');
+ }
+
+ function selectNoteColor(el) {
+ document.querySelectorAll('.note-color-swatch').forEach(s => s.classList.remove('selected'));
+ el.classList.add('selected');
  }
 
  async function submitBulletin() {
@@ -5570,7 +5571,10 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  try {
  const fd = new FormData();
  fd.append('type', 'bulletin'); fd.append('action', 'add');
+ const selectedColor = document.querySelector('#bulletin-overlay .note-color-swatch.selected');
+ const noteColor = selectedColor ? selectedColor.dataset.color : 'amber';
  fd.append('who', who || 'Someone'); fd.append('text', text);
+ fd.append('color', noteColor);
  fd.append('date', new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }));
  await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
  } catch(e) {}
@@ -5609,7 +5613,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             if (!isNaN(d.getTime())) dateStr = (d.getMonth()+1) + '/' + d.getDate();
             else dateStr = b.date;
           }
-          return `<div class="bulletin-item">
+          return `<div class="bulletin-item" data-color="${esc(b.color||'amber')}">
             <button class="bulletin-delete" onclick="deleteBulletin(${b.row});loadHomeBulletin()">×</button>
             <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
             <div class="bulletin-text">${esc(b.text || '')}</div>
@@ -5684,7 +5688,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  }
  }
  return `
- <div class="bulletin-item">
+ <div class="bulletin-item" data-color="${b.color||'amber'}">
  <button class="bulletin-delete" onclick="deleteBulletin(${b.row})">×</button>
  <div class="bulletin-who">${esc(b.who || 'Someone')}</div>
  <div class="bulletin-text">${esc(b.text || '')}</div>
