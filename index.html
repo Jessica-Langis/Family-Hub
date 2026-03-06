@@ -1803,14 +1803,15 @@
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
  /* Mobile home order */
-  .home-content { grid-template-columns: 1fr !important; grid-template-rows: auto !important; }
-  .home-content > * { grid-column: 1 !important; grid-row: auto !important; }
+  .home-content { display: flex !important; flex-direction: column !important; }
+  .home-right-col, .home-left-col { display: contents; }
+  .home-right-top { display: contents; }
   .today-tile { order: 1; }
   .weekend-tile { order: 2; }
   .home-bulletin-panel { order: 3; }
-  .home-whereami-panel { order: 4; }
-  .home-month-panel { order: 5; min-height: 300px; }
-  .home-grocery-panel { order: 6; }
+  .home-month-panel { order: 4; min-height: 300px; }
+  .home-grocery-panel { order: 5; }
+  .home-whereami-panel { order: 6; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
