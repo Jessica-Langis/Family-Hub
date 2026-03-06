@@ -502,7 +502,15 @@
 
  /* ── HOME BOTTOM ROW: Month Calendar only ── */
  .home-month-panel { display: flex; flex-direction: column; min-height: 0; }
- .home-month-panel .month-embed { flex: 1; min-height: 0; width: 100%; height: 0; }
+/* ── UPCOMING TILE ── */
+.upcoming-day { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); min-height: 28px; }
+.upcoming-day:last-child { border-bottom: none; }
+.upcoming-day-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); min-width: 72px; padding-top: 3px; flex-shrink: 0; }
+.upcoming-day-label.is-today { color: var(--accent); }
+.upcoming-day-label.is-weekend { color: var(--accent2); }
+.upcoming-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+.upcoming-chip { font-size: 0.7rem; background: rgba(126,184,212,0.12); color: var(--text); border: 1px solid rgba(126,184,212,0.2); border-radius: 20px; padding: 2px 8px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.upcoming-empty { font-size: 0.7rem; color: var(--border); font-style: italic; }
 
  /* ── HOME BULLETIN STRIP ── */
   .home-bulletin-strip {
@@ -1701,7 +1709,7 @@
   .home-whereami-panel { min-height: 200px; }
   .home-grocery-panel { min-height: 220px; }
   .home-bulletin-panel { min-height: 280px; }
-  .home-month-panel { min-height: 520px; }
+  .home-month-panel { min-height: 300px; }
   .home-today-panel .today-columns, .home-weekend-panel .weekend-cols,
   .home-grocery-panel .grocery-grid, .home-whereami-panel .whereami-list,
   .home-bulletin-panel .home-bulletin-strip { overflow: visible; max-height: none; flex: none; }
@@ -1798,7 +1806,7 @@
   .today-tile { order: 2; }
   .weekend-tile { order: 3; }
   .home-grocery-panel { order: 4; }
-  .home-month-panel { order: 6; min-height: 380px; }
+  .home-month-panel { order: 6; min-height: 300px; }
   .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
@@ -2244,15 +2252,17 @@
 
       </div><!-- /home-right-top -->
 
-      <div class="panel home-month-panel">
+      <div class="panel home-month-panel" id="upcoming-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">Month View</span>
+            <span class="section-title">Upcoming</span>
+            <span class="section-badge">next 14 days</span>
           </div>
+          <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
         </div>
-        <iframe class="month-embed"
-          src="https://calendar.google.com/calendar/embed?src=family12041959028375865807%40group.calendar.google.com&ctz=America%2FLos_Angeles&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23181c27&color=%23E67C73"
-          frameborder="0" scrolling="no"></iframe>
+        <div id="upcoming-list" style="overflow-y:auto;flex:1;padding:6px 12px 10px;display:flex;flex-direction:column;gap:4px;">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        </div>
       </div>
 
     </div><!-- /home-right-col -->
@@ -3054,6 +3064,7 @@
     loadWeekendTile();
     loadHomeNextUp();
     loadWhereAmI();
+    loadUpcomingTile();
  } else if (tab === 'parentals') {
  loadParentChores();
  loadParentReminders();
