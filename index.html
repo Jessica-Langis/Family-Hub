@@ -2156,8 +2156,7 @@
     <div class="auth-sub">Sign in with your Google account to continue</div>
     <div id="g_id_onload"
       data-client_id="778622908017-p8nd2k1ia1fi9qeekeasl632h77ea6au.apps.googleusercontent.com"
-      data-callback="handleGoogleSignIn"
-      data-auto_prompt="true">
+      data-callback="handleGoogleSignIn">
     </div>
     <div class="g_id_signin"
       data-type="standard"
@@ -5575,13 +5574,30 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
     // ─────────────────────────────────────────────
     // GOOGLE AUTH
     // ─────────────────────────────────────────────
-    const GAS_URL = ''; // Leave blank — same origin (GAS serves this page)
+    const AUTH_GAS_URL = 'PASTE_AUTH_GAS_URL_HERE';
+    const GIS_CLIENT_ID = '778622908017-p8nd2k1ia1fi9qeekeasl632h77ea6au.apps.googleusercontent.com';
+
+    // Attempt silent sign-in first — no popup if already logged in with an authorized account
+    window.addEventListener('load', function() {
+      if (window.google && google.accounts) {
+        google.accounts.id.initialize({
+          client_id: GIS_CLIENT_ID,
+          callback: handleGoogleSignIn,
+          auto_select: true  // silent sign-in if session exists
+        });
+        google.accounts.id.prompt(function(notification) {
+          // If silent auth not possible, the sign-in button handles it
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            console.log('[Auth] Silent sign-in not available, showing button');
+          }
+        });
+      }
+    });
 
     async function handleGoogleSignIn(response) {
       const errEl = document.getElementById('auth-error');
       errEl.textContent = '';
 
-      // Show spinner
       const box = document.querySelector('.auth-box');
       const spinner = document.createElement('div');
       spinner.className = 'auth-spinner';
@@ -5589,19 +5605,14 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       box.appendChild(spinner);
 
       try {
-        // Verify token server-side via GAS
         const fd = new FormData();
-        fd.append('type', 'verify_token');
         fd.append('token', response.credential);
 
-        const res = await fetch(window.location.href.split('?')[0], {
-          method: 'POST', body: fd
-        });
+        const res = await fetch(AUTH_GAS_URL, { method: 'POST', body: fd });
         const data = await res.json();
 
         if (data.authorized) {
           document.getElementById('auth-overlay').classList.add('hidden');
-          // Trigger initial data load if not already done
           if (typeof onTabUnlocked === 'function') onTabUnlocked('home');
         } else {
           spinner.remove();
