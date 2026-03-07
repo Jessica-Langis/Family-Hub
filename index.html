@@ -749,6 +749,15 @@
  overflow: visible;
  flex: 1;
  }
+ .meal-list-2col {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 0 8px;
+   padding: 8px 12px 10px;
+   flex: 1;
+ }
+ .meal-col { display: flex; flex-direction: column; gap: 2px; }
+ .meal-col-divider { width: 1px; background: var(--border); align-self: stretch; }
 
  .meal-item {
  display: flex; gap: 8px;
@@ -1735,11 +1744,12 @@
    overflow: visible;
  }
  .parentals-grid .panel:not(.parentals-todo) { max-height: none; overflow: visible; }
- .parentals-todo { max-height: 260px; overflow: hidden; display: flex; flex-direction: column; }
- .parentals-todo .chore-list { overflow-y: auto !important; flex: 1; min-height: 0; }
+ .parentals-todo { height: 280px; max-height: 280px; overflow: hidden; display: flex; flex-direction: column; }
+ .parentals-todo .chore-list { overflow-y: auto !important; flex: 1; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
  .parentals-scroll { overflow: visible; max-height: none; flex: none; }
- .parentals-calendar { min-height: 900px; }
- .parentals-calendar .agenda-embed { height: 860px; }
+ .parentals-agenda { min-height: 920px; height: 920px; overflow: hidden; }
+ .parentals-calendar { min-height: 920px; height: 920px; overflow: hidden; }
+ .parentals-calendar .agenda-embed { height: 880px; min-height: 880px; }
  .parentals-grid { height: auto !important; overflow: visible !important; }
  .parentals-grid .panel:not(.parentals-todo) { overflow: visible; height: auto; }
  .today-columns { grid-template-columns: 1fr; }
@@ -2710,7 +2720,7 @@
  <select id="meal-day-select" class="overlay-input">
  <option value="">Select a day...</option>
  <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
- <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+ <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option><option>Meal Prep</option>
  </select>
  <input type="text" id="meal-input" class="overlay-input" placeholder="e.g. Tacos" autocomplete="off" />
  <div class="overlay-actions">
@@ -2945,7 +2955,7 @@
  NOVA:    'https://script.google.com/macros/s/AKfycbx2XMPpCWLv6J3WKLjh1ALsH7yYZ9eKLbd1eoMj0hR6dlQLVVxJ2eHdNADLE8of4gmf/exec',
  };
 
- const DAYS_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+ const DAYS_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','Meal Prep'];
  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
  // PIN per tab — update these to change PINs
@@ -4430,6 +4440,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  btn.addEventListener('click', () => clearMeal(btn.dataset.day));
  });
  } catch (e) {
+ list.className = 'meal-list';
  list.innerHTML = '<div style="color:var(--muted);font-size:0.78rem;padding:8px">Unavailable — check connection</div>';
  }
  }
