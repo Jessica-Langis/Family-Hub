@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Family Hub</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
@@ -2120,9 +2122,55 @@
  .pb-delete-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 2px; line-height: 1; }
  .pb-delete-btn:hover { color: #e07070; }
 
+  /* ── AUTH OVERLAY ── */
+  #auth-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0f1117;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+  }
+  #auth-overlay.hidden { display: none; }
+  .auth-box {
+    background: var(--panel, #181c27);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 40px 48px;
+    text-align: center;
+    max-width: 360px;
+    width: 90%;
+  }
+  .auth-title { font-size: 1.4rem; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .auth-sub { font-size: 0.85rem; color: #888; margin-bottom: 28px; }
+  .auth-error { font-size: 0.82rem; color: #e07070; margin-top: 16px; min-height: 20px; }
+  .auth-spinner { font-size: 0.85rem; color: #888; margin-top: 12px; }
+
 </style>
 </head>
 <body>
+
+<!-- AUTH OVERLAY -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div style="font-size:2rem;margin-bottom:12px">🏠</div>
+    <div class="auth-title">Family Hub</div>
+    <div class="auth-sub">Sign in with your Google account to continue</div>
+    <div id="g_id_onload"
+      data-client_id="778622908017-p8nd2k1ia1fi9qeekeasl632h77ea6au.apps.googleusercontent.com"
+      data-callback="handleGoogleSignIn"
+      data-auto_prompt="true">
+    </div>
+    <div class="g_id_signin"
+      data-type="standard"
+      data-size="large"
+      data-theme="filled_blue"
+      data-text="sign_in_with"
+      data-shape="rectangular"
+      data-logo_alignment="left">
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
 
 
 
@@ -5500,8 +5548,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
     // ─────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────
-    onTabUnlocked('home');
-
+    // onTabUnlocked called after auth
     const VALID_TABS = ['home','fun','parentals','tori','nova'];
     const hashTab = window.location.hash.replace('#','');
     if (hashTab && VALID_TABS.includes(hashTab)) switchTab(hashTab);
@@ -5524,6 +5571,49 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       }, { passive: true });
     })();
 
+
+    // ─────────────────────────────────────────────
+    // GOOGLE AUTH
+    // ─────────────────────────────────────────────
+    const GAS_URL = ''; // Leave blank — same origin (GAS serves this page)
+
+    async function handleGoogleSignIn(response) {
+      const errEl = document.getElementById('auth-error');
+      errEl.textContent = '';
+
+      // Show spinner
+      const box = document.querySelector('.auth-box');
+      const spinner = document.createElement('div');
+      spinner.className = 'auth-spinner';
+      spinner.textContent = 'Verifying...';
+      box.appendChild(spinner);
+
+      try {
+        // Verify token server-side via GAS
+        const fd = new FormData();
+        fd.append('type', 'verify_token');
+        fd.append('token', response.credential);
+
+        const res = await fetch(window.location.href.split('?')[0], {
+          method: 'POST', body: fd
+        });
+        const data = await res.json();
+
+        if (data.authorized) {
+          document.getElementById('auth-overlay').classList.add('hidden');
+          // Trigger initial data load if not already done
+          if (typeof onTabUnlocked === 'function') onTabUnlocked('home');
+        } else {
+          spinner.remove();
+          errEl.textContent = data.email
+            ? `${data.email} is not authorized to access Family Hub.`
+            : 'Access denied. Please use an authorized account.';
+        }
+      } catch(e) {
+        spinner.remove();
+        errEl.textContent = 'Verification failed — please try again.';
+      }
+    }
 
 </script>
 </body>
