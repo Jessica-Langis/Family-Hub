@@ -5574,7 +5574,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
     // ─────────────────────────────────────────────
     // GOOGLE AUTH
     // ─────────────────────────────────────────────
-    const AUTH_GAS_URL = 'PASTE_AUTH_GAS_URL_HERE';
+    const AUTH_GAS_URL = 'https://script.google.com/macros/s/AKfycbxWTpChkrWj-CYqBq4zt-ukj-FpSz2bttXklwHbBwNS0yv7p2hc5eNzQaNbHCF-vCXc/exec';
     const GIS_CLIENT_ID = '778622908017-p8nd2k1ia1fi9qeekeasl632h77ea6au.apps.googleusercontent.com';
 
     // Attempt silent sign-in first — no popup if already logged in with an authorized account
@@ -5606,6 +5606,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
 
       try {
         const fd = new FormData();
+        fd.append('type', 'verify_token');
         fd.append('token', response.credential);
 
         const res = await fetch(AUTH_GAS_URL, { method: 'POST', body: fd });
