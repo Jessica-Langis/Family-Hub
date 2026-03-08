@@ -542,39 +542,41 @@
   .weekend-tile {
     overflow: hidden;
   }
-  /* ── NEXT 3 EVENTS ── */
-  .next3-list {
-    display: flex;
-    flex-direction: column;
-    padding: 6px 16px 12px;
-    gap: 0;
+  /* ── NEXT 3 EVENTS — column layout ── */
+  .next3-cols {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr 1px 1fr;
+    gap: 0 14px;
+    padding: 8px 16px 12px;
+    align-items: start;
   }
-  .next3-section { padding: 8px 0 6px; }
-  .next3-section-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 5px; }
-  .next3-section-body { padding-left: 2px; }
-  .next3-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 2px 0; }
+  .next3-vdivider { background: var(--border); align-self: stretch; }
+  .next3-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .next3-col-header {
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding-bottom: 5px;
+    border-bottom: 1px solid var(--border); margin-bottom: 3px;
+  }
+  .next3-col-body { display: flex; flex-direction: column; gap: 3px; }
   .next3-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 3px 0;
+    cursor: pointer;
+    padding: 2px 0;
+    border-radius: 4px;
   }
-  .next3-badge {
-    min-width: 40px;
-    text-align: center;
-    flex-shrink: 0;
+  .next3-item:hover .next3-name { color: var(--accent2); }
+  .next3-item-featured { padding: 3px 0 5px; }
+  .next3-name { font-size: 0.78rem; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .next3-name-featured { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+  .next3-date { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+  .next3-none { font-size: 0.75rem; color: var(--muted); font-style: italic; }
+  .next3-holiday-row {
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 8px; padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
   }
-  .next3-days {
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--accent2);
-  }
-  .next3-days.today { color: var(--accent3); font-size: 0.78rem; font-weight: 600; }
-  .next3-unit { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
-  .next3-info { flex: 1; min-width: 0; }
-  .next3-name { font-size: 0.82rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .next3-date { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+  .next3-holiday-flag { font-size: 0.75rem; flex-shrink: 0; }
+  .next3-holiday-name { font-size: 0.68rem; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .next3-holiday-badge { font-size: 0.6rem; font-weight: 600; color: var(--accent2); flex-shrink: 0; white-space: nowrap; }
   .weekend-cols {
     display: grid;
     grid-template-columns: 1fr 1px 1fr 1px 1fr;
@@ -884,6 +886,7 @@
  z-index: 8888;
  }
  .overlay.hidden { display: none; }
+  .hidden { display: none !important; }
 
  .overlay-box {
  background: var(--surface);
@@ -2296,7 +2299,7 @@
  <div class="topbar-bottom-row">
  <div class="clock-block">
  <div id="clock">--:--</div>
- <div id="date">Loading...</div>
+ <div id="date">Uno Momento...</div>
  </div>
  <div class="weather-block" id="weather">
  <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
@@ -2325,7 +2328,7 @@
               <span class="today-date" id="today-date-label"></span>
             </div>
             <div class="today-col-body" id="today-body">
-              <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+              <div style="color:var(--muted);font-size:0.78rem">Getting the Lay of the Land...</div>
             </div>
           </div>
           <div class="today-divider"></div>
@@ -2335,7 +2338,7 @@
               <span class="today-date" id="tomorrow-date-label"></span>
             </div>
             <div class="today-col-body" id="tomorrow-body">
-              <div style="color:var(--muted);font-size:0.78rem">Loading...</div>
+              <div style="color:var(--muted);font-size:0.78rem">Predicting the Future...</div>
             </div>
           </div>
         </div>
@@ -2344,23 +2347,23 @@
       <div class="panel home-weekend-panel weekend-tile">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent2)">Family Events</span>
+            <span class="section-title" style="color:var(--accent2)">Family Plans</span>
           </div>
         </div>
-        <div id="home-next3-events"><div class="weekend-clear">Loading...</div></div>
+        <div id="home-next3-events"><div class="weekend-clear">Hold up...</div></div>
       </div>
 
       <div class="panel home-whereami-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">📍 Where Am I?</span>
+            <span class="section-title">📍 Where I'll Be:</span>
           </div>
           <div class="section-header-actions">
-            <button class="add-btn" onclick="openWhereAmIForm()">+ Add</button>
+            <button class="add-btn" onclick="openWhereAmIForm()">+</button>
           </div>
         </div>
         <div class="whereami-list" id="whereami-list">
-          <div class="whereami-empty">Loading...</div>
+          <div class="whereami-empty">Thinking...</div>
         </div>
       </div>
 
@@ -2374,14 +2377,14 @@
         <div class="panel home-bulletin-panel" style="overflow:hidden">
           <div class="section-header">
             <div class="section-header-left">
-              <span class="section-title">Bulletin Board</span>
+              <span class="section-title">Quick Glance</span>
             </div>
             <div class="section-header-actions">
               <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
             </div>
           </div>
           <div class="home-bulletin-strip" id="home-bulletin-list">
-            <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Loading...</div>
+            <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Doing my Thing...</div>
           </div>
         </div>
 
@@ -2392,7 +2395,7 @@
             </div>
             <div class="section-header-actions">
               <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
-              <button class="add-btn" onclick="openGroceryForm()">+ Add</button>
+              <button class="add-btn" onclick="openGroceryForm()">+</button>
             </div>
           </div>
           <div class="quick-add-wrap">
@@ -2401,7 +2404,7 @@
             <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
           </div>
           <div class="grocery-grid" id="grocery-list">
-            <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Loading...</div>
+            <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Hacking Into the Fridge...</div>
           </div>
         </div>
 
@@ -2410,13 +2413,13 @@
       <div class="panel home-month-panel" id="upcoming-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">Upcoming</span>
+            <span class="section-title">Coming Up Next</span>
             <span class="section-badge" id="mini-cal-range"></span>
           </div>
           <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
         </div>
         <div id="upcoming-list" style="overflow-y:auto;flex:1;min-height:0;">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Loading...</div>
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">WAT?...</div>
         </div>
       </div>
 
@@ -2437,11 +2440,11 @@
      <span class="section-badge" id="parent-chore-badge"></span>
     </div>
     <div class="section-header-actions">
-     <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+ Add</button>
+     <button class="add-btn" style="background:var(--accent2)" onclick="openPersonalChoreForm('home')">+</button>
     </div>
    </div>
    <div class="chore-list parentals-scroll" id="parent-chore-list">
-    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Idfk...</div>
    </div>
   </div>
 
@@ -2449,22 +2452,22 @@
   <div class="panel parentals-meals">
    <div class="section-header">
     <div class="section-header-left">
-     <span class="section-title" style="color:var(--accent2)">This Week's Menu</span>
+     <span class="section-title" style="color:var(--accent2)">What's For Dinner?</span>
     </div>
     <div class="section-header-actions">
      <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+ Edit</button>
     </div>
    </div>
    <div class="meal-list parentals-scroll" id="meal-list">
-    <div style="color:var(--muted);font-size:0.78rem;padding:8px">Loading...</div>
+    <div style="color:var(--muted);font-size:0.78rem;padding:8px">Uhh...</div>
    </div>
   </div>
 
-  <!-- R2C1: Grocery List -->
+  <!-- R2C1: Agenda List -->
   <div class="panel parentals-agenda">
    <div class="section-header">
     <div class="section-header-left">
-     <span class="section-title" style="color:var(--accent2)">Agenda</span>
+     <span class="section-title" style="color:var(--accent2)">Upcoming Calendar Events and Reminders</span>
     </div>
    </div>
    <iframe class="agenda-embed"
@@ -2488,7 +2491,7 @@
  <span class="section-title" style="color:var(--accent5)">Movies &amp; Shows</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('movies')">+ Add</button>
+ <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('movies')">+</button>
  </div>
  </div>
  <div class="fun-list" id="fun-movies-list">
@@ -5453,7 +5456,8 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         };
 
-        function renderSection(label, labelColor, events, isSingle) {
+        /* renderSection removed — now using column layout */
+        function renderSection_UNUSED(label, labelColor, events, isSingle) {
           const noEvt = '<span style="color:var(--muted);font-size:0.75rem;font-style:italic">None</span>';
           let body;
           if (isSingle) {
@@ -5472,13 +5476,50 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           </div>`;
         }
 
-        el.innerHTML = '<div class="next3-list">' +
-          renderSection('TODAY', 'var(--accent3)', todayEvts, false) +
-          '<div class="next3-divider"></div>' +
-          renderSection('TOMORROW', 'var(--accent2)', tomorrowEvts, false) +
-          '<div class="next3-divider"></div>' +
-          renderSection('UP NEXT', 'var(--accent4)', upNextEvt, true) +
-        '</div>';
+        // Next holiday
+        const holiday = getNextUSHoliday();
+        let holidayHtml = '';
+        if (holiday) {
+          const hDiff = getDayDiff(holiday.date.toISOString().slice(0,10));
+          const hDiffStr = hDiff === 0 ? 'Today' : hDiff === 1 ? 'Tomorrow' : hDiff + 'd away';
+          holidayHtml = `<div class="next3-holiday-row">
+            <span class="next3-holiday-flag">🇺🇸</span>
+            <span class="next3-holiday-name">${esc(holiday.name)}</span>
+            <span class="next3-holiday-badge">${hDiffStr}</span>
+          </div>`;
+        }
+
+        el.innerHTML = `<div class="next3-cols">
+          <div class="next3-col">
+            <div class="next3-col-header" style="color:var(--accent3)">TODAY</div>
+            <div class="next3-col-body">${
+              todayEvts.length
+                ? todayEvts.map(e => `<div class="next3-item" onclick="showEventDetail(${JSON.stringify(e.name)},${JSON.stringify(e.date)})"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
+                : '<span class="next3-none">None</span>'
+            }</div>
+          </div>
+          <div class="next3-vdivider"></div>
+          <div class="next3-col">
+            <div class="next3-col-header" style="color:var(--accent2)">TOMORROW</div>
+            <div class="next3-col-body">${
+              tomorrowEvts.length
+                ? tomorrowEvts.map(e => `<div class="next3-item" onclick="showEventDetail(${JSON.stringify(e.name)},${JSON.stringify(e.date)})"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
+                : '<span class="next3-none">None</span>'
+            }</div>
+          </div>
+          <div class="next3-vdivider"></div>
+          <div class="next3-col">
+            <div class="next3-col-header" style="color:var(--accent4)">NEXT UP</div>
+            <div class="next3-col-body">${
+              upNextEvt
+                ? `<div class="next3-item next3-item-featured" onclick="showEventDetail(${JSON.stringify(upNextEvt.name)},${JSON.stringify(upNextEvt.date)})">
+                    <div class="next3-name next3-name-featured">${esc(upNextEvt.name)}</div>
+                    <div class="next3-date">${fmtDate(upNextEvt.date)} · ${getDayDiff(upNextEvt.date)}d</div>
+                  </div>`
+                : '<span class="next3-none">None</span>'
+            }${holidayHtml}</div>
+          </div>
+        </div>`;
       } catch(e) {
         el.innerHTML = '<div class="weekend-clear" style="padding:12px 16px">Unavailable</div>';
       }
@@ -5614,14 +5655,27 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           // Day-of-week headers
           DOW_LABELS.forEach(d => { html += `<div class="mini-cal-dow">${d}</div>`; });
 
-          // Leading empty cells
-          for (let i = 0; i < firstDow; i++) {
+          // Determine which 2 rows (weeks) are visible based on 14-day window
+          const todayDayNum = (today.getMonth() === month && today.getFullYear() === year) ? today.getDate() : null;
+          const endDayNum   = (end.getMonth()   === month && end.getFullYear()   === year) ? end.getDate()   : null;
+          // cell index = firstDow + dayNum - 1  (0-based in 7-col grid)
+          const firstInWinCell = todayDayNum !== null ? (firstDow + todayDayNum - 1) : firstDow;
+          const lastInWinCell  = endDayNum   !== null ? (firstDow + endDayNum   - 1) : (firstDow + daysInMonth - 1);
+          const firstRow = Math.floor(firstInWinCell / 7);
+          const lastRow  = Math.min(firstRow + 1, Math.floor(lastInWinCell / 7));
+          const cellStart = firstRow * 7;
+          const cellEnd   = (lastRow + 1) * 7 - 1;
+
+          // Leading cells
+          for (let i = cellStart; i < Math.min(firstDow, cellEnd + 1); i++) {
             const prevDay = prevDays - firstDow + 1 + i;
             html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${prevDay}</span></div>`;
           }
 
-          // Days of month
+          // Day cells
           for (let d = 1; d <= daysInMonth; d++) {
+            const cellIndex = firstDow + d - 1;
+            if (cellIndex < cellStart || cellIndex > cellEnd) continue;
             const dateObj = new Date(year, month, d);
             const dateStr = dateObj.toISOString().slice(0,10);
             const isToday = dateStr === todayStr;
@@ -5629,7 +5683,6 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             const isWeekend = dow === 0 || dow === 6;
             const events = eventMap[dateStr] || [];
             const hasEvents = events.length > 0;
-            // Check if in our 14-day window
             const inWindow = dateObj >= today && dateObj <= end;
 
             let cls = 'mini-cal-day';
@@ -5638,19 +5691,17 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             if (!inWindow) cls += ' other-month';
             if (hasEvents && inWindow) cls += ' has-events';
 
-            const dots = hasEvents && inWindow ? `<div class="mini-cal-dots">${events.slice(0,3).map((_, i) => `<div class="mini-cal-dot${events.length > 1 ? ' multi' : ''}"></div>`).join('')}</div>` : '';
+            const dots = hasEvents && inWindow ? `<div class="mini-cal-dots">${events.slice(0,3).map(() => `<div class="mini-cal-dot${events.length > 1 ? ' multi' : ''}"></div>`).join('')}</div>` : '';
             const clickHandler = hasEvents && inWindow
               ? `onclick="showDayEvents(${JSON.stringify(dateStr)}, ${JSON.stringify(events)})"`
               : '';
-
             html += `<div class="${cls}" ${clickHandler}><span class="mini-cal-num">${d}</span>${dots}</div>`;
           }
 
-          // Trailing empty cells
-          const totalCells = firstDow + daysInMonth;
-          const trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-          for (let i = 1; i <= trailing; i++) {
-            html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${i}</span></div>`;
+          // Trailing cells
+          const lastActualCell = firstDow + daysInMonth - 1;
+          for (let i = lastActualCell + 1; i <= cellEnd; i++) {
+            html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${i - lastActualCell}</span></div>`;
           }
 
           html += `</div>`; // end grid
@@ -5800,9 +5851,9 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       } catch(e) { list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>'; }
     }
     const FUN_FORM_CONFIG = {
-      movies:    { title: '🎬 Add Movie / Show', fields: [{ id:'fun-movie-title', placeholder:'e.g. Inception' },{ id:'fun-movie-type', placeholder:'Movie or Show' }] },
-      books:     { title: '📚 Add Book',         fields: [{ id:'fun-book-title',  placeholder:'e.g. Atomic Habits' },{ id:'fun-book-author', placeholder:'e.g. James Clear' }] },
-      mealideas: { title: '🍽 Add Meal Idea',    fields: [{ id:'fun-meal-name',   placeholder:'e.g. Chicken Tikka Masala' },{ id:'fun-meal-category', placeholder:'e.g. Dinner, Quick' },{ id:'fun-meal-ingredient', placeholder:'e.g. Chicken' },{ id:'fun-meal-link', placeholder:'https://...' }] },
+      movies:    { title: '🎬 We Need to Watch:', fields: [{ id:'fun-movie-title', placeholder:'e.g. Inception' },{ id:'fun-movie-type', placeholder:'Movie or Show' }] },
+      books:     { title: '📚 Books to Check Out:',         fields: [{ id:'fun-book-title',  placeholder:'e.g. Atomic Habits' },{ id:'fun-book-author', placeholder:'e.g. James Clear' }] },
+      mealideas: { title: '🍽 I Want to Cook Something Fun:',    fields: [{ id:'fun-meal-name',   placeholder:'e.g. Chicken Tikka Masala' },{ id:'fun-meal-category', placeholder:'e.g. Dinner, Quick' },{ id:'fun-meal-ingredient', placeholder:'e.g. Chicken' },{ id:'fun-meal-link', placeholder:'https://...' }] },
     };
     function openFunForm(type) {
       const cfg = FUN_FORM_CONFIG[type]; if (!cfg) return;
@@ -5894,7 +5945,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       const box = document.querySelector('.auth-box');
       const spinner = document.createElement('div');
       spinner.className = 'auth-spinner';
-      spinner.textContent = 'Verifying...';
+      spinner.textContent = 'Hold up...';
       box.appendChild(spinner);
 
       try {
@@ -5911,12 +5962,12 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         } else {
           spinner.remove();
           errEl.textContent = data.email
-            ? `${data.email} is not authorized to access Family Hub.`
-            : 'Access denied. Please use an authorized account.';
+            ? `${data.email} is not invited.`
+            : 'You dont even go here.';
         }
       } catch(e) {
         spinner.remove();
-        errEl.textContent = 'Verification failed — please try again.';
+        errEl.textContent = 'Something went wrong, Idk. Try again.';
       }
     }
 
