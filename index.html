@@ -5602,7 +5602,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       if (old) old.remove();
       const overlay = document.createElement('div');
       overlay.id = 'event-detail-overlay';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px';
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
       document.body.appendChild(overlay);
       overlay.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:28px 28px 24px;max-width:340px;width:100%;position:relative">
@@ -5708,29 +5708,19 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           if (i < 7) week1.push(cell); else week2.push(cell);
         }
 
-        function renderWeekCol(days) {
-          // Days-of-week header
-          let s = '<div class="two-week-grid">';
-          DOW_LABELS.forEach(d => { s += `<div class="two-week-dow">${d}</div>`; });
-          // Pad start
-          const startDow = days[0].dow;
-          for (let p = 0; p < startDow; p++) s += `<div class="two-week-cell other"></div>`;
-          days.forEach(cell => {
-            let cls = 'two-week-cell';
-            if (cell.isToday) cls += ' today';
-            if (cell.isWeekend) cls += ' weekend';
-            if (cell.hasEvents) cls += ' has-events';
-            const dots = cell.hasEvents
-              ? `<div class="two-week-dots">${cell.events.slice(0,3).map(() => '<div class="two-week-dot"></div>').join('')}</div>`
-              : '';
-            const safeEvents = esc(JSON.stringify(cell.events));
-            const clickAttr = cell.hasEvents
-              ? `onclick="showDayEvents(this)" data-date="${cell.dateStr}" data-events="${safeEvents}"`
-              : '';
-            s += `<div class="${cls}" ${clickAttr}><span class="two-week-num">${cell.dateObj.getDate()}</span>${dots}</div>`;
-          });
-          s += '</div>';
-          return s;
+        function renderCell(cell) {
+          let cls = 'two-week-cell';
+          if (cell.isToday) cls += ' today';
+          if (cell.isWeekend) cls += ' weekend';
+          if (cell.hasEvents) cls += ' has-events';
+          const dots = cell.hasEvents
+            ? `<div class="two-week-dots">${cell.events.slice(0,3).map(() => '<div class="two-week-dot"></div>').join('')}</div>`
+            : '';
+          const safeEvents = esc(JSON.stringify(cell.events));
+          const clickAttr = cell.hasEvents
+            ? `onclick="showDayEvents(this)" data-date="${cell.dateStr}" data-events="${safeEvents}"`
+            : '';
+          return `<div class="${cls}" ${clickAttr}><span class="two-week-num">${cell.dateObj.getDate()}</span>${dots}</div>`;
         }
 
         // Month label(s)
@@ -5738,12 +5728,24 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         const m2 = MONTH_NAMES[week2[week2.length-1].dateObj.getMonth()];
         const monthLabel = m1 === m2 ? m1 : `${m1} / ${m2}`;
 
+        // Single grid: DOW header + week1 row + week2 row
+        // week1[0].dow tells us which column today starts on — pad so row 1 aligns to correct DOW
+        const padCells = week1[0].dow; // today's day-of-week = number of empty leading cells
+        let gridCells = '';
+        for (let p = 0; p < padCells; p++) gridCells += `<div class="two-week-cell other"></div>`;
+        week1.forEach(cell => { gridCells += renderCell(cell); });
+        // Fill remainder of week1 row if < 7 cells (e.g. today is mid-week and we only have 7 days total)
+        const week1Filled = padCells + week1.length;
+        for (let p = week1Filled; p < 7; p++) gridCells += `<div class="two-week-cell other"></div>`;
+        week2.forEach(cell => { gridCells += renderCell(cell); });
+        const week2Filled = week2.length;
+        for (let p = week2Filled; p < 7; p++) gridCells += `<div class="two-week-cell other"></div>`;
+
         let html = `<div class="two-week-wrap">
           <div class="two-week-month-label">${monthLabel} ${today.getFullYear()}</div>
-          <div class="two-week-cols">
-            <div class="two-week-col">${renderWeekCol(week1)}</div>
-            <div class="two-week-vdivider"></div>
-            <div class="two-week-col">${renderWeekCol(week2)}</div>
+          <div class="two-week-grid">
+            ${DOW_LABELS.map(d => `<div class="two-week-dow">${d}</div>`).join('')}
+            ${gridCells}
           </div>`;
 
         // Holiday footer
@@ -5780,7 +5782,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
 
       const overlay = document.createElement('div');
       overlay.id = 'event-detail-overlay';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px';
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 
       const evHtml = events.map(ev => `
