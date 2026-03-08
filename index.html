@@ -504,6 +504,11 @@
 
  /* ── HOME BOTTOM ROW: Month Calendar only ── */
  .home-month-panel { display: flex; flex-direction: column; min-height: 0; }
+ #upcoming-list::-webkit-scrollbar { width: 3px; }
+ #upcoming-list::-webkit-scrollbar-track { background: transparent; }
+ #upcoming-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+ #upcoming-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+ #upcoming-list { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
 /* ── UPCOMING TILE ── */
 .upcoming-cols { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 0 12px; flex: 1; min-height: 0; }
 .upcoming-divider { background: var(--border); align-self: stretch; }
@@ -5690,7 +5695,6 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         const fmtShort = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         if (rangeEl) rangeEl.textContent = fmtShort(today) + ' – ' + fmtShort(end);
 
-        const holiday = getNextUSHoliday();
         const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
         const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -5747,18 +5751,6 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             ${DOW_LABELS.map(d => `<div class="two-week-dow">${d}</div>`).join('')}
             ${gridCells}
           </div>`;
-
-        // Holiday footer
-        if (holiday) {
-          const hDateStr = holiday.date.toISOString().slice(0,10);
-          const hDiff = Math.round((holiday.date - today) / 86400000);
-          const hDiffStr = hDiff === 0 ? 'Today' : hDiff === 1 ? 'Tomorrow' : hDiff + 'd away';
-          html += `<div class="two-week-holiday">
-            <span class="two-week-holiday-flag">🇺🇸</span>
-            <span class="two-week-holiday-name">${esc(holiday.name)} · ${fmtShort(holiday.date)}</span>
-            <span class="two-week-holiday-badge">${hDiffStr}</span>
-          </div>`;
-        }
 
         html += '</div>';
         el.innerHTML = html;
