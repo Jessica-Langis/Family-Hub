@@ -2192,6 +2192,63 @@
   .auth-spinner { font-size: 0.85rem; color: #888; margin-top: 12px; }
 
   /* ── 2-WEEK AGENDA ── */
+  /* ── TWO-WEEK CALENDAR ── */
+  .two-week-wrap { padding: 4px 12px 10px; }
+  .two-week-month-label {
+    font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--muted); padding: 4px 2px 8px;
+  }
+  .two-week-cols {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0 14px;
+    align-items: start;
+  }
+  .two-week-vdivider { background: var(--border); align-self: stretch; }
+  .two-week-col { min-width: 0; }
+  .two-week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .two-week-dow {
+    font-size: 0.55rem; font-weight: 600; color: var(--muted);
+    text-align: center; padding: 2px 0; text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .two-week-cell {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding-top: 3px;
+    border-radius: 5px;
+    cursor: default;
+    transition: background 0.12s;
+    min-height: 26px;
+  }
+  .two-week-cell.other { opacity: 0; pointer-events: none; }
+  .two-week-cell.has-events { cursor: pointer; }
+  .two-week-cell.has-events:hover { background: rgba(255,255,255,0.07); }
+  .two-week-cell.today .two-week-num {
+    background: var(--accent2); color: #0f1117;
+    border-radius: 50%; width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  .two-week-cell.weekend .two-week-num { color: var(--accent2); }
+  .two-week-cell.today.weekend .two-week-num { color: #0f1117; }
+  .two-week-num { font-size: 0.68rem; line-height: 1; color: var(--text); }
+  .two-week-dots { display: flex; gap: 2px; justify-content: center; margin-top: 2px; }
+  .two-week-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+  .two-week-holiday {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 2px 2px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 8px;
+  }
+  .two-week-holiday-flag { font-size: 0.78rem; flex-shrink: 0; }
+  .two-week-holiday-name { font-size: 0.7rem; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .two-week-holiday-badge { font-size: 0.6rem; font-weight: 600; background: rgba(126,184,212,0.12); color: var(--accent2); border-radius: 20px; padding: 1px 6px; flex-shrink: 0; }
+
   .agenda-wrap { padding: 2px 0 8px; }
   .agenda-month-title {
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
@@ -5503,7 +5560,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             <div class="next3-col-header" style="color:var(--accent3)">TODAY</div>
             <div class="next3-col-body">${
               todayEvts.length
-                ? todayEvts.map(e => `<div class="next3-item" onclick="showEventDetail(${JSON.stringify(e.name)},${JSON.stringify(e.date)})"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
+                ? todayEvts.map(e => `<div class="next3-item" onclick="showEventDetail(this)" data-name="${esc(e.name)}" data-date="${e.date}"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
                 : '<span class="next3-none">None</span>'
             }</div>
           </div>
@@ -5512,7 +5569,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             <div class="next3-col-header" style="color:var(--accent2)">TOMORROW</div>
             <div class="next3-col-body">${
               tomorrowEvts.length
-                ? tomorrowEvts.map(e => `<div class="next3-item" onclick="showEventDetail(${JSON.stringify(e.name)},${JSON.stringify(e.date)})"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
+                ? tomorrowEvts.map(e => `<div class="next3-item" onclick="showEventDetail(this)" data-name="${esc(e.name)}" data-date="${e.date}"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
                 : '<span class="next3-none">None</span>'
             }</div>
           </div>
@@ -5521,7 +5578,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             <div class="next3-col-header" style="color:var(--accent4)">NEXT UP</div>
             <div class="next3-col-body">${
               upNextEvt
-                ? `<div class="next3-item next3-item-featured" onclick="showEventDetail(${JSON.stringify(upNextEvt.name)},${JSON.stringify(upNextEvt.date)})">
+                ? `<div class="next3-item next3-item-featured" onclick="showEventDetail(this)" data-name="${esc(upNextEvt.name)}" data-date="${upNextEvt.date}">
                     <div class="next3-name next3-name-featured">${esc(upNextEvt.name)}</div>
                     <div class="next3-date">${fmtDate(upNextEvt.date)} · ${getDayDiff(upNextEvt.date)}d</div>
                   </div>`
@@ -5534,27 +5591,27 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       }
     }
 
-    function showEventDetail(name, date) {
+    function showEventDetail(el) {
+      const name = el.dataset.name;
+      const date = el.dataset.date;
       const d = new Date(date + 'T00:00:00');
       const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const diff = getDayDiff(date);
       const diffStr = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`;
-      let overlay = document.getElementById('event-detail-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'event-detail-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px';
-        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
-        document.body.appendChild(overlay);
-      }
+      const old = document.getElementById('event-detail-overlay');
+      if (old) old.remove();
+      const overlay = document.createElement('div');
+      overlay.id = 'event-detail-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
       overlay.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:28px 28px 24px;max-width:340px;width:100%;position:relative">
-        <button onclick="document.getElementById('event-detail-overlay').classList.add('hidden')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
+        <button onclick="document.getElementById('event-detail-overlay').remove()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
         <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent2);margin-bottom:10px">📅 Family Event</div>
         <div style="font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:8px">${esc(name)}</div>
         <div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px">${fmtFull}</div>
         <div style="font-size:0.8rem;color:var(--accent3);font-weight:500">${diffStr}</div>
       </div>`;
-      overlay.classList.remove('hidden');
     }
 
     async function loadWeekendTile() { await loadNext3Events(); }
@@ -5634,66 +5691,70 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         if (rangeEl) rangeEl.textContent = fmtShort(today) + ' – ' + fmtShort(end);
 
         const holiday = getNextUSHoliday();
-        const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
         const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-        let html = '<div class="agenda-wrap">';
-        let lastMonth = -1;
-
+        // Build 14 days as two 7-day arrays
+        const week1 = [], week2 = [];
         for (let i = 0; i <= 13; i++) {
-          const dateObj = new Date(today);
-          dateObj.setDate(today.getDate() + i);
+          const dateObj = new Date(today); dateObj.setDate(today.getDate() + i);
           const dateStr = dateObj.toISOString().slice(0,10);
           const dow = dateObj.getDay();
-          const isWeekend = dow === 0 || dow === 6;
           const isToday = i === 0;
+          const isWeekend = dow === 0 || dow === 6;
           const events = eventMap[dateStr] || [];
           const hasEvents = events.length > 0;
-
-          // Month header when month changes
-          if (dateObj.getMonth() !== lastMonth) {
-            if (lastMonth !== -1) html += '<div class="agenda-divider" style="margin:6px 16px 4px"></div>';
-            html += `<div class="agenda-month-title">${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}</div>`;
-            lastMonth = dateObj.getMonth();
-          }
-
-          let rowCls = 'agenda-day-row';
-          if (isToday) rowCls += ' is-today';
-          if (isWeekend) rowCls += ' is-weekend';
-          if (hasEvents) rowCls += ' has-events';
-
-          const clickAttr = hasEvents
-            ? `onclick="showDayEvents(${JSON.stringify(dateStr)}, ${JSON.stringify(events)})"`
-            : '';
-
-          const eventsHtml = hasEvents
-            ? events.map((ev, idx) => `<div class="agenda-event-pill">
-                <div class="agenda-event-dot${events.length > 1 ? ' multi' : ''}"></div>
-                <span class="agenda-event-name">${esc(ev)}</span>
-              </div>`).join('')
-            : `<span class="agenda-empty-day">—</span>`;
-
-          html += `<div class="${rowCls}" ${clickAttr}>
-            <div class="agenda-day-date">
-              <div class="agenda-day-dow">${DOW[dow]}</div>
-              <div class="agenda-day-num">${dateObj.getDate()}</div>
-            </div>
-            <div class="agenda-events">${eventsHtml}</div>
-          </div>`;
-
-          // Subtle divider between days (not after last)
-          if (i < 13) html += '<div class="agenda-divider"></div>';
+          const cell = { dateObj, dateStr, dow, isToday, isWeekend, events, hasEvents };
+          if (i < 7) week1.push(cell); else week2.push(cell);
         }
+
+        function renderWeekCol(days) {
+          // Days-of-week header
+          let s = '<div class="two-week-grid">';
+          DOW_LABELS.forEach(d => { s += `<div class="two-week-dow">${d}</div>`; });
+          // Pad start
+          const startDow = days[0].dow;
+          for (let p = 0; p < startDow; p++) s += `<div class="two-week-cell other"></div>`;
+          days.forEach(cell => {
+            let cls = 'two-week-cell';
+            if (cell.isToday) cls += ' today';
+            if (cell.isWeekend) cls += ' weekend';
+            if (cell.hasEvents) cls += ' has-events';
+            const dots = cell.hasEvents
+              ? `<div class="two-week-dots">${cell.events.slice(0,3).map(() => '<div class="two-week-dot"></div>').join('')}</div>`
+              : '';
+            const safeEvents = esc(JSON.stringify(cell.events));
+            const clickAttr = cell.hasEvents
+              ? `onclick="showDayEvents(this)" data-date="${cell.dateStr}" data-events="${safeEvents}"`
+              : '';
+            s += `<div class="${cls}" ${clickAttr}><span class="two-week-num">${cell.dateObj.getDate()}</span>${dots}</div>`;
+          });
+          s += '</div>';
+          return s;
+        }
+
+        // Month label(s)
+        const m1 = MONTH_NAMES[week1[0].dateObj.getMonth()];
+        const m2 = MONTH_NAMES[week2[week2.length-1].dateObj.getMonth()];
+        const monthLabel = m1 === m2 ? m1 : `${m1} / ${m2}`;
+
+        let html = `<div class="two-week-wrap">
+          <div class="two-week-month-label">${monthLabel} ${today.getFullYear()}</div>
+          <div class="two-week-cols">
+            <div class="two-week-col">${renderWeekCol(week1)}</div>
+            <div class="two-week-vdivider"></div>
+            <div class="two-week-col">${renderWeekCol(week2)}</div>
+          </div>`;
 
         // Holiday footer
         if (holiday) {
           const hDateStr = holiday.date.toISOString().slice(0,10);
           const hDiff = Math.round((holiday.date - today) / 86400000);
           const hDiffStr = hDiff === 0 ? 'Today' : hDiff === 1 ? 'Tomorrow' : hDiff + 'd away';
-          html += `<div class="agenda-holiday-row">
-            <span class="agenda-holiday-flag">🇺🇸</span>
-            <span class="agenda-holiday-name">${esc(holiday.name)} · ${fmtShort(holiday.date)}</span>
-            <span class="agenda-holiday-badge">${hDiffStr}</span>
+          html += `<div class="two-week-holiday">
+            <span class="two-week-holiday-flag">🇺🇸</span>
+            <span class="two-week-holiday-name">${esc(holiday.name)} · ${fmtShort(holiday.date)}</span>
+            <span class="two-week-holiday-badge">${hDiffStr}</span>
           </div>`;
         }
 
@@ -5703,7 +5764,10 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; }
     }
 
-    function showDayEvents(dateStr, events) {
+    function showDayEvents(el) {
+      const dateStr = el.dataset.date;
+      let events;
+      try { events = JSON.parse(el.dataset.events); } catch(e) { return; }
       const d = new Date(dateStr + 'T00:00:00');
       const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
       const diff = getDayDiff(dateStr);
