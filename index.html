@@ -279,8 +279,7 @@
   .home-today-panel .today-columns,
   .home-weekend-panel .weekend-cols,
   .home-whereami-panel .whereami-list,
-  .home-grocery-panel .grocery-grid,
-  #upcoming-list {
+  .home-grocery-panel .grocery-grid {
     scrollbar-width: thin;
     scrollbar-color: rgba(42,48,69,0.7) transparent;
   }
@@ -288,26 +287,22 @@
   .home-today-panel .today-columns::-webkit-scrollbar,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar,
   .home-whereami-panel .whereami-list::-webkit-scrollbar,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar,
-  #upcoming-list::-webkit-scrollbar { width: 3px; }
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar { width: 3px; }
   .home-bulletin-strip::-webkit-scrollbar-track,
   .home-today-panel .today-columns::-webkit-scrollbar-track,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar-track,
   .home-whereami-panel .whereami-list::-webkit-scrollbar-track,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar-track,
-  #upcoming-list::-webkit-scrollbar-track { background: transparent; }
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-track { background: transparent; }
   .home-bulletin-strip::-webkit-scrollbar-thumb,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb,
   .home-whereami-panel .whereami-list::-webkit-scrollbar-thumb,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb,
-  #upcoming-list::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
   .home-bulletin-strip::-webkit-scrollbar-thumb:hover,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb:hover,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover,
   .home-whereami-panel .whereami-list::-webkit-scrollbar-thumb:hover,
-  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover,
-  #upcoming-list::-webkit-scrollbar-thumb:hover { background: var(--border); }
+  .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
 
 
@@ -2196,66 +2191,75 @@
   .auth-error { font-size: 0.82rem; color: #e07070; margin-top: 16px; min-height: 20px; }
   .auth-spinner { font-size: 0.85rem; color: #888; margin-top: 12px; }
 
-  /* ── MINI CALENDAR ── */
-  .mini-cal-wrap { padding: 4px 10px 8px; }
-  .mini-cal-month { margin-bottom: 10px; }
-  .mini-cal-month-title {
-    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--muted);
-    padding: 6px 2px 4px; border-bottom: 1px solid var(--border);
-    margin-bottom: 4px;
+  /* ── 2-WEEK AGENDA ── */
+  .agenda-wrap { padding: 2px 0 8px; }
+  .agenda-month-title {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--muted);
+    padding: 8px 16px 5px;
   }
-  .mini-cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-  }
-  .mini-cal-dow {
-    font-size: 0.58rem; font-weight: 600; color: var(--muted);
-    text-align: center; padding: 2px 0; text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .mini-cal-day {
-    position: relative;
-    aspect-ratio: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    padding-top: 3px;
-    border-radius: 6px;
+  .agenda-day-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 6px 16px;
+    border-radius: 8px;
     cursor: default;
     transition: background 0.12s;
-    min-height: 28px;
+    margin: 0 4px;
   }
-  .mini-cal-day.has-events { cursor: pointer; }
-  .mini-cal-day.has-events:hover { background: rgba(255,255,255,0.06); }
-  .mini-cal-day.today .mini-cal-num {
+  .agenda-day-row.has-events { cursor: pointer; }
+  .agenda-day-row.has-events:hover { background: rgba(255,255,255,0.05); }
+  .agenda-day-date {
+    flex-shrink: 0; width: 42px;
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 1px;
+  }
+  .agenda-day-dow {
+    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); line-height: 1; margin-bottom: 2px;
+  }
+  .agenda-day-num {
+    font-size: 1rem; font-weight: 700; line-height: 1; color: var(--text);
+  }
+  .agenda-day-row.is-today .agenda-day-dow { color: var(--accent3); }
+  .agenda-day-row.is-today .agenda-day-num {
     background: var(--accent2); color: #0f1117;
-    border-radius: 50%; width: 20px; height: 20px;
+    border-radius: 50%; width: 28px; height: 28px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700;
   }
-  .mini-cal-day.other-month .mini-cal-num { color: rgba(255,255,255,0.18); }
-  .mini-cal-day.weekend .mini-cal-num { color: var(--accent2); }
-  .mini-cal-day.today.weekend .mini-cal-num { color: #0f1117; }
-  .mini-cal-num { font-size: 0.72rem; line-height: 1; color: var(--text); }
-  .mini-cal-dots {
-    display: flex; gap: 2px; flex-wrap: wrap;
-    justify-content: center; margin-top: 2px;
+  .agenda-day-row.is-weekend .agenda-day-num { color: var(--accent2); }
+  .agenda-day-row.is-today.is-weekend .agenda-day-num { color: #0f1117; }
+  .agenda-events { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+  .agenda-event-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px; padding: 4px 8px;
   }
-  .mini-cal-dot {
-    width: 4px; height: 4px; border-radius: 50%;
+  .agenda-event-dot {
+    width: 5px; height: 5px; border-radius: 50%;
     background: var(--accent); flex-shrink: 0;
   }
-  .mini-cal-dot.multi { background: var(--accent2); }
-  .mini-cal-holiday-row {
-    display: flex; align-items: center; gap: 6px;
-    padding: 5px 2px 4px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: 4px;
+  .agenda-event-dot.multi { background: var(--accent2); }
+  .agenda-event-name {
+    font-size: 0.78rem; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .mini-cal-holiday-flag { font-size: 0.8rem; flex-shrink: 0; }
-  .mini-cal-holiday-name { font-size: 0.72rem; color: var(--text); flex: 1; min-width: 0; }
-  .mini-cal-holiday-badge {
+  .agenda-empty-day {
+    font-size: 0.72rem; color: rgba(255,255,255,0.15);
+    font-style: italic; padding-top: 3px;
+  }
+  .agenda-divider {
+    height: 1px; background: rgba(255,255,255,0.04);
+    margin: 2px 16px;
+  }
+  .agenda-holiday-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 16px 4px; margin-top: 2px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .agenda-holiday-flag { font-size: 0.8rem; flex-shrink: 0; }
+  .agenda-holiday-name { font-size: 0.72rem; color: var(--muted); flex: 1; min-width: 0; }
+  .agenda-holiday-badge {
     font-size: 0.62rem; font-weight: 600;
     background: rgba(126,184,212,0.12); color: var(--accent2);
     border-radius: 20px; padding: 1px 6px; flex-shrink: 0;
@@ -5619,7 +5623,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
 
         // Build event map: date string -> [event names]
         const eventMap = {};
-        days.forEach(day => { if (day.events.length) eventMap[day.date] = day.events; });
+        days.forEach(day => { if (day.events && day.events.length) eventMap[day.date] = day.events; });
 
         const today = new Date(); today.setHours(0,0,0,0);
         const todayStr = today.toISOString().slice(0,10);
@@ -5629,103 +5633,71 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         const fmtShort = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         if (rangeEl) rangeEl.textContent = fmtShort(today) + ' – ' + fmtShort(end);
 
-        // Get holiday
         const holiday = getNextUSHoliday();
-
-        // Build calendar: find the two calendar months to display
-        const months = [];
-        let cur = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
-        while (cur <= endMonth) {
-          months.push(new Date(cur));
-          cur.setMonth(cur.getMonth() + 1);
-        }
-
-        const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-        let html = '<div class="mini-cal-wrap">';
+        let html = '<div class="agenda-wrap">';
+        let lastMonth = -1;
 
-        months.forEach(monthStart => {
-          const year = monthStart.getFullYear();
-          const month = monthStart.getMonth();
-          const daysInMonth = new Date(year, month + 1, 0).getDate();
-          const firstDow = monthStart.getDay(); // 0=Sun
-          const prevDays = new Date(year, month, 0).getDate();
+        for (let i = 0; i <= 13; i++) {
+          const dateObj = new Date(today);
+          dateObj.setDate(today.getDate() + i);
+          const dateStr = dateObj.toISOString().slice(0,10);
+          const dow = dateObj.getDay();
+          const isWeekend = dow === 0 || dow === 6;
+          const isToday = i === 0;
+          const events = eventMap[dateStr] || [];
+          const hasEvents = events.length > 0;
 
-          html += `<div class="mini-cal-month">`;
-          html += `<div class="mini-cal-month-title">${MONTH_NAMES[month]} ${year}</div>`;
-          html += `<div class="mini-cal-grid">`;
-
-          // Day-of-week headers
-          DOW_LABELS.forEach(d => { html += `<div class="mini-cal-dow">${d}</div>`; });
-
-          // Determine which 2 rows (weeks) are visible based on 14-day window
-          const todayDayNum = (today.getMonth() === month && today.getFullYear() === year) ? today.getDate() : null;
-          const endDayNum   = (end.getMonth()   === month && end.getFullYear()   === year) ? end.getDate()   : null;
-          // cell index = firstDow + dayNum - 1  (0-based in 7-col grid)
-          const firstInWinCell = todayDayNum !== null ? (firstDow + todayDayNum - 1) : firstDow;
-          const lastInWinCell  = endDayNum   !== null ? (firstDow + endDayNum   - 1) : (firstDow + daysInMonth - 1);
-          const firstRow = Math.floor(firstInWinCell / 7);
-          const lastRow  = Math.min(firstRow + 1, Math.floor(lastInWinCell / 7));
-          const cellStart = firstRow * 7;
-          const cellEnd   = (lastRow + 1) * 7 - 1;
-
-          // Leading cells
-          for (let i = cellStart; i < Math.min(firstDow, cellEnd + 1); i++) {
-            const prevDay = prevDays - firstDow + 1 + i;
-            html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${prevDay}</span></div>`;
+          // Month header when month changes
+          if (dateObj.getMonth() !== lastMonth) {
+            if (lastMonth !== -1) html += '<div class="agenda-divider" style="margin:6px 16px 4px"></div>';
+            html += `<div class="agenda-month-title">${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}</div>`;
+            lastMonth = dateObj.getMonth();
           }
 
-          // Day cells
-          for (let d = 1; d <= daysInMonth; d++) {
-            const cellIndex = firstDow + d - 1;
-            if (cellIndex < cellStart || cellIndex > cellEnd) continue;
-            const dateObj = new Date(year, month, d);
-            const dateStr = dateObj.toISOString().slice(0,10);
-            const isToday = dateStr === todayStr;
-            const dow = dateObj.getDay();
-            const isWeekend = dow === 0 || dow === 6;
-            const events = eventMap[dateStr] || [];
-            const hasEvents = events.length > 0;
-            const inWindow = dateObj >= today && dateObj <= end;
+          let rowCls = 'agenda-day-row';
+          if (isToday) rowCls += ' is-today';
+          if (isWeekend) rowCls += ' is-weekend';
+          if (hasEvents) rowCls += ' has-events';
 
-            let cls = 'mini-cal-day';
-            if (isToday) cls += ' today';
-            if (isWeekend && inWindow) cls += ' weekend';
-            if (!inWindow) cls += ' other-month';
-            if (hasEvents && inWindow) cls += ' has-events';
+          const clickAttr = hasEvents
+            ? `onclick="showDayEvents(${JSON.stringify(dateStr)}, ${JSON.stringify(events)})"`
+            : '';
 
-            const dots = hasEvents && inWindow ? `<div class="mini-cal-dots">${events.slice(0,3).map(() => `<div class="mini-cal-dot${events.length > 1 ? ' multi' : ''}"></div>`).join('')}</div>` : '';
-            const clickHandler = hasEvents && inWindow
-              ? `onclick="showDayEvents(${JSON.stringify(dateStr)}, ${JSON.stringify(events)})"`
-              : '';
-            html += `<div class="${cls}" ${clickHandler}><span class="mini-cal-num">${d}</span>${dots}</div>`;
-          }
+          const eventsHtml = hasEvents
+            ? events.map((ev, idx) => `<div class="agenda-event-pill">
+                <div class="agenda-event-dot${events.length > 1 ? ' multi' : ''}"></div>
+                <span class="agenda-event-name">${esc(ev)}</span>
+              </div>`).join('')
+            : `<span class="agenda-empty-day">—</span>`;
 
-          // Trailing cells
-          const lastActualCell = firstDow + daysInMonth - 1;
-          for (let i = lastActualCell + 1; i <= cellEnd; i++) {
-            html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${i - lastActualCell}</span></div>`;
-          }
+          html += `<div class="${rowCls}" ${clickAttr}>
+            <div class="agenda-day-date">
+              <div class="agenda-day-dow">${DOW[dow]}</div>
+              <div class="agenda-day-num">${dateObj.getDate()}</div>
+            </div>
+            <div class="agenda-events">${eventsHtml}</div>
+          </div>`;
 
-          html += `</div>`; // end grid
+          // Subtle divider between days (not after last)
+          if (i < 13) html += '<div class="agenda-divider"></div>';
+        }
 
-          // Holiday row if it falls in this month
-          if (holiday && holiday.date.getFullYear() === year && holiday.date.getMonth() === month) {
-            const diff = Math.round((holiday.date - today) / 86400000);
-            const diffStr = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff + 'd';
-            html += `<div class="mini-cal-holiday-row">
-              <span class="mini-cal-holiday-flag">🇺🇸</span>
-              <span class="mini-cal-holiday-name">${esc(holiday.name)} · ${fmtShort(holiday.date)}</span>
-              <span class="mini-cal-holiday-badge">${diffStr}</span>
-            </div>`;
-          }
+        // Holiday footer
+        if (holiday) {
+          const hDateStr = holiday.date.toISOString().slice(0,10);
+          const hDiff = Math.round((holiday.date - today) / 86400000);
+          const hDiffStr = hDiff === 0 ? 'Today' : hDiff === 1 ? 'Tomorrow' : hDiff + 'd away';
+          html += `<div class="agenda-holiday-row">
+            <span class="agenda-holiday-flag">🇺🇸</span>
+            <span class="agenda-holiday-name">${esc(holiday.name)} · ${fmtShort(holiday.date)}</span>
+            <span class="agenda-holiday-badge">${hDiffStr}</span>
+          </div>`;
+        }
 
-          html += `</div>`; // end month
-        });
-
-        html += '</div>'; // end wrap
+        html += '</div>';
         el.innerHTML = html;
 
       } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; }
@@ -5736,26 +5708,37 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
       const diff = getDayDiff(dateStr);
       const diffStr = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`;
-      let overlay = document.getElementById('event-detail-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'event-detail-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px';
-        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
-        document.body.appendChild(overlay);
-      }
-      const evHtml = events.map(ev => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0"></div>
-        <span style="font-size:0.85rem;color:var(--text)">${esc(ev)}</span>
-      </div>`).join('');
-      overlay.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px 24px 20px;max-width:360px;width:100%;position:relative">
-        <button onclick="document.getElementById('event-detail-overlay').classList.add('hidden')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
-        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent2);margin-bottom:8px">📅 Family Events</div>
-        <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:4px">${fmtFull}</div>
-        <div style="font-size:0.78rem;color:var(--accent3);font-weight:500;margin-bottom:14px">${diffStr}</div>
-        ${evHtml}
-      </div>`;
-      overlay.classList.remove('hidden');
+      const diffColor = diff === 0 ? 'var(--accent3)' : diff === 1 ? 'var(--accent2)' : 'var(--accent4)';
+
+      // Always remove and recreate to avoid stale .hidden state blocking clicks
+      const old = document.getElementById('event-detail-overlay');
+      if (old) old.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'event-detail-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)';
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+      const evHtml = events.map(ev => `
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0;margin-top:4px"></div>
+          <div>
+            <div style="font-size:0.88rem;font-weight:500;color:var(--text);line-height:1.4">${esc(ev)}</div>
+          </div>
+        </div>`).join('');
+
+      overlay.innerHTML = `
+        <div style="background:var(--panel);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px 24px 20px;max-width:380px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+          <button onclick="document.getElementById('event-detail-overlay').remove()"
+            style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px"
+            onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent2);margin-bottom:6px;font-weight:700">📅 Family Events</div>
+          <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px">${fmtFull}</div>
+          <div style="font-size:0.78rem;color:${diffColor};font-weight:600;margin-bottom:16px">${diffStr}</div>
+          <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">${evHtml}</div>
+        </div>`;
+
+      document.body.appendChild(overlay);
     }
 
     // ─────────────────────────────────────────────
