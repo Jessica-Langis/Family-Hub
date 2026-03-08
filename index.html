@@ -515,8 +515,14 @@
 .upcoming-day-label.is-today { color: var(--accent); }
 .upcoming-day-label.is-weekend { color: var(--accent2); }
 .upcoming-chips { display: flex; flex-wrap: wrap; gap: 3px; flex: 1; }
-.upcoming-chip { font-size: 0.68rem; background: rgba(230,160,80,0.15); color: var(--accent2); border: 1px solid rgba(230,160,80,0.3); border-radius: 20px; padding: 1px 7px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.upcoming-chip { font-size: 0.68rem; background: rgba(230,160,80,0.15); color: var(--accent2); border: 1px solid rgba(230,160,80,0.3); border-radius: 20px; padding: 1px 7px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: background 0.15s; }
+.upcoming-chip:hover { background: rgba(230,160,80,0.28); }
 .upcoming-empty { font-size: 0.68rem; color: var(--border); font-style: italic; }
+.upcoming-holiday { display: flex; align-items: center; gap: 7px; padding: 8px 12px 6px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 4px; flex-wrap: wrap; }
+.upcoming-holiday-flag { font-size: 0.9rem; flex-shrink: 0; }
+.upcoming-holiday-name { font-size: 0.75rem; font-weight: 500; color: var(--text); flex: 1; min-width: 0; }
+.upcoming-holiday-date { font-size: 0.68rem; color: var(--muted); flex-shrink: 0; }
+.upcoming-holiday-badge { font-size: 0.65rem; font-weight: 600; background: rgba(126,184,212,0.12); color: var(--accent2); border-radius: 20px; padding: 1px 7px; flex-shrink: 0; }
 
  /* ── HOME BULLETIN STRIP ── */
   .home-bulletin-strip {
@@ -536,6 +542,39 @@
   .weekend-tile {
     overflow: hidden;
   }
+  /* ── NEXT 3 EVENTS ── */
+  .next3-list {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 16px 12px;
+    gap: 0;
+  }
+  .next3-section { padding: 8px 0 6px; }
+  .next3-section-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 5px; }
+  .next3-section-body { padding-left: 2px; }
+  .next3-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 2px 0; }
+  .next3-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 0;
+  }
+  .next3-badge {
+    min-width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .next3-days {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent2);
+  }
+  .next3-days.today { color: var(--accent3); font-size: 0.78rem; font-weight: 600; }
+  .next3-unit { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
+  .next3-info { flex: 1; min-width: 0; }
+  .next3-name { font-size: 0.82rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .next3-date { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
   .weekend-cols {
     display: grid;
     grid-template-columns: 1fr 1px 1fr 1px 1fr;
@@ -1708,17 +1747,20 @@
  /* ── MOBILE ── */
  @media (max-width: 768px) {
  body { padding: 8px 8px 0; gap: 8px; padding-bottom: calc(var(--nav-h) + 8px); }
-
+ *, *::before, *::after { box-sizing: border-box; }
+ html, body { overflow-x: hidden; max-width: 100vw; width: 100%; }
  body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
- .tab-panel.active { overflow: visible; }
- .tab-panel.active > div { overflow: visible; }
+ .tab-panel, .tab-panel.active { width: 100%; max-width: 100%; overflow-x: hidden; }
+ .panel { max-width: 100%; width: 100%; }
+ .tab-panel.active { overflow: visible; max-width: 100%; }
+ .tab-panel.active > div { overflow: visible; max-width: 100%; }
  .nova-top-row { grid-template-columns: 1fr; }
  .nova-mid-row { grid-template-columns: 1fr; }
  .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
- .home-content { flex-direction: column; height: auto; overflow: visible; }
-  .home-left-col, .home-right-col { flex: none; overflow: visible; }
-  .home-right-top { flex-direction: column; flex: none; overflow: visible; }
+ .home-content { flex-direction: column; height: auto; overflow: visible; max-width: 100%; width: 100%; box-sizing: border-box; }
+  .home-left-col, .home-right-col { flex: none; overflow: visible; max-width: 100%; min-width: 0; width: 100%; box-sizing: border-box; }
+  .home-right-top { flex-direction: column; flex: none; overflow: visible; max-width: 100%; width: 100%; box-sizing: border-box; }
   .home-today-panel, .home-weekend-panel, .home-grocery-panel, .home-whereami-panel,
   .home-bulletin-panel, .home-month-panel { flex: none; min-height: 0; overflow: visible; }
   .home-today-panel { min-height: 0; height: auto; }
@@ -1822,9 +1864,11 @@
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
  /* Mobile home order */
-  .home-content { display: flex !important; flex-direction: column !important; }
-  .home-right-col, .home-left-col { display: contents; }
-  .home-right-top { display: contents; }
+  .home-content { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow-x: hidden !important; }
+  .home-left-col { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow: visible !important; }
+  .home-right-col { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow: visible !important; }
+  .home-right-top { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow: visible !important; flex: none !important; }
+  .home-left-col > *, .home-right-col > *, .home-right-top > * { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; flex: none !important; }
   .today-tile { order: 1; }
   .weekend-tile { order: 2; }
   .home-bulletin-panel { order: 3; }
@@ -2144,6 +2188,71 @@
   .auth-error { font-size: 0.82rem; color: #e07070; margin-top: 16px; min-height: 20px; }
   .auth-spinner { font-size: 0.85rem; color: #888; margin-top: 12px; }
 
+  /* ── MINI CALENDAR ── */
+  .mini-cal-wrap { padding: 4px 10px 8px; }
+  .mini-cal-month { margin-bottom: 10px; }
+  .mini-cal-month-title {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted);
+    padding: 6px 2px 4px; border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+  .mini-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .mini-cal-dow {
+    font-size: 0.58rem; font-weight: 600; color: var(--muted);
+    text-align: center; padding: 2px 0; text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .mini-cal-day {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding-top: 3px;
+    border-radius: 6px;
+    cursor: default;
+    transition: background 0.12s;
+    min-height: 28px;
+  }
+  .mini-cal-day.has-events { cursor: pointer; }
+  .mini-cal-day.has-events:hover { background: rgba(255,255,255,0.06); }
+  .mini-cal-day.today .mini-cal-num {
+    background: var(--accent2); color: #0f1117;
+    border-radius: 50%; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  .mini-cal-day.other-month .mini-cal-num { color: rgba(255,255,255,0.18); }
+  .mini-cal-day.weekend .mini-cal-num { color: var(--accent2); }
+  .mini-cal-day.today.weekend .mini-cal-num { color: #0f1117; }
+  .mini-cal-num { font-size: 0.72rem; line-height: 1; color: var(--text); }
+  .mini-cal-dots {
+    display: flex; gap: 2px; flex-wrap: wrap;
+    justify-content: center; margin-top: 2px;
+  }
+  .mini-cal-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+  }
+  .mini-cal-dot.multi { background: var(--accent2); }
+  .mini-cal-holiday-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 2px 4px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 4px;
+  }
+  .mini-cal-holiday-flag { font-size: 0.8rem; flex-shrink: 0; }
+  .mini-cal-holiday-name { font-size: 0.72rem; color: var(--text); flex: 1; min-width: 0; }
+  .mini-cal-holiday-badge {
+    font-size: 0.62rem; font-weight: 600;
+    background: rgba(126,184,212,0.12); color: var(--accent2);
+    border-radius: 20px; padding: 1px 6px; flex-shrink: 0;
+  }
+
 </style>
 </head>
 <body>
@@ -2235,33 +2344,10 @@
       <div class="panel home-weekend-panel weekend-tile">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent2)">This Weekend &amp; Upcoming</span>
+            <span class="section-title" style="color:var(--accent2)">Family Events</span>
           </div>
         </div>
-        <div class="weekend-cols">
-          <div class="weekend-col">
-            <div class="weekend-col-header">
-              <span class="weekend-col-title">Saturday</span>
-              <span class="weekend-col-date" id="weekend-sat-date"></span>
-            </div>
-            <div id="weekend-sat-events"><div class="weekend-clear">Loading...</div></div>
-          </div>
-          <div class="weekend-divider"></div>
-          <div class="weekend-col">
-            <div class="weekend-col-header">
-              <span class="weekend-col-title">Sunday</span>
-              <span class="weekend-col-date" id="weekend-sun-date"></span>
-            </div>
-            <div id="weekend-sun-events"><div class="weekend-clear">Loading...</div></div>
-          </div>
-          <div class="weekend-divider"></div>
-          <div class="weekend-col">
-            <div class="weekend-col-header">
-              <span class="weekend-col-title" style="color:var(--accent4)">Next Up</span>
-            </div>
-            <div id="home-next-up-events"><div class="weekend-clear">Loading...</div></div>
-          </div>
-        </div>
+        <div id="home-next3-events"><div class="weekend-clear">Loading...</div></div>
       </div>
 
       <div class="panel home-whereami-panel">
@@ -2325,12 +2411,12 @@
         <div class="section-header">
           <div class="section-header-left">
             <span class="section-title">Upcoming</span>
-            <span class="section-badge">next 14 days</span>
+            <span class="section-badge" id="mini-cal-range"></span>
           </div>
           <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
         </div>
-        <div id="upcoming-list" style="overflow-y:auto;flex:1;padding:8px 12px 10px;display:flex;flex-direction:column;">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+        <div id="upcoming-list" style="overflow-y:auto;flex:1;min-height:0;">
+          <div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Loading...</div>
         </div>
       </div>
 
@@ -3131,7 +3217,6 @@
  loadTodayTile();
     loadHomeBulletin();
     loadWeekendTile();
-    loadHomeNextUp();
     loadWhereAmI();
     loadUpcomingTile();
  } else if (tab === 'parentals') {
@@ -5342,71 +5427,279 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       loadBulletin();
     }
 
-    async function loadHomeNextUp() {
-      const el = document.getElementById('home-next-up-events');
-      if (!el) return;
-      try {
-        const res = await apiFetch(SCRIPTS.TORI + '?type=events');
-        const events = await res.json();
-        const upcoming = [...events].filter(e => getDayDiff(e.date) >= 0).sort((a,b) => normalizeDate(a.date) - normalizeDate(b.date));
-        if (!upcoming.length) { el.innerHTML = '<div class="weekend-clear">None scheduled</div>'; return; }
-        const ev = upcoming[0];
-        const diff = getDayDiff(ev.date);
-        const badge = countdownBadge(diff);
-        el.innerHTML = `<div class="weekend-upcoming-item">
-          <div class="weekend-upcoming-name">${esc(ev.name)}</div>
-          <div class="weekend-upcoming-meta">${formatDateShort(ev.date)}${ev.location ? ' · '+esc(ev.location) : ''}</div>
-          <div class="weekend-upcoming-badge ${badge.cls}">${badge.text}</div>
-        </div>`;
-      } catch(e) { el.innerHTML = '<div class="weekend-clear">Unavailable</div>'; }
-    }
-
-    async function loadWeekendTile() {
-      const satEl = document.getElementById('weekend-sat-events');
-      const sunEl = document.getElementById('weekend-sun-events');
-      const satDateEl = document.getElementById('weekend-sat-date');
-      const sunDateEl = document.getElementById('weekend-sun-date');
-      if (!satEl || !sunEl) return;
-      try {
-        const res = await apiFetch(SCRIPTS.CHORES + '?type=weekend');
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        const fmt = s => { const d = new Date(s+'T12:00:00'); return (d.getMonth()+1)+'/'+d.getDate(); };
-        if (satDateEl) satDateEl.textContent = fmt(data.saturday.date);
-        if (sunDateEl) sunDateEl.textContent = fmt(data.sunday.date);
-        const renderEvents = (el, events) => {
-          if (!events.length) { el.innerHTML = '<div class="weekend-clear">Nothing scheduled</div>'; return; }
-          el.innerHTML = events.map(e => `<div class="weekend-event"><div class="weekend-event-dot"></div><span class="weekend-event-text">${esc(e.summary)}</span></div>`).join('');
-        };
-        renderEvents(satEl, data.saturday.events);
-        renderEvents(sunEl, data.sunday.events);
-      } catch(e) {
-        satEl.innerHTML = '<div class="weekend-clear">Unavailable</div>';
-        sunEl.innerHTML = '<div class="weekend-clear">Unavailable</div>';
-      }
-    }
-
-    async function loadUpcomingTile() {
-      const el = document.getElementById('upcoming-list');
+    async function loadNext3Events() {
+      const el = document.getElementById('home-next3-events');
       if (!el) return;
       try {
         const res = await apiFetch(SCRIPTS.CHORES + '?type=upcoming');
         const days = await res.json();
-        if (!Array.isArray(days)) { el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>'; return; }
+        if (!Array.isArray(days)) throw new Error('Bad response');
+
         const todayStr = new Date().toISOString().slice(0,10);
-        const week1 = days.slice(0,7), week2 = days.slice(7,14);
-        function renderDay(day) {
-          const d = new Date(day.date + 'T00:00:00');
-          const isToday = day.date === todayStr;
-          const dow = d.getDay(), isWeekend = dow === 0 || dow === 6;
-          const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-          const label = isToday ? 'Today' : dayNames[dow]+' '+(d.getMonth()+1)+'/'+d.getDate();
-          const labelClass = isToday ? 'is-today' : isWeekend ? 'is-weekend' : '';
-          const chips = day.events.length ? day.events.map(ev => '<span class="upcoming-chip">'+esc(ev)+'</span>').join('') : '<span class="upcoming-empty">—</span>';
-          return '<div class="upcoming-day"><div class="upcoming-day-label '+labelClass+'">'+label+'</div><div class="upcoming-chips">'+chips+'</div></div>';
+        const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })();
+
+        // Flatten events by date
+        const allEvents = [];
+        days.forEach(day => {
+          day.events.forEach(name => allEvents.push({ date: day.date, name }));
+        });
+
+        const todayEvts    = allEvents.filter(e => e.date === todayStr);
+        const tomorrowEvts = allEvents.filter(e => e.date === tomorrowStr);
+        const upNextEvt    = allEvents.find(e => e.date > tomorrowStr) || null;
+
+        const fmtDate = str => {
+          const d = new Date(str + 'T00:00:00');
+          return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        };
+
+        function renderSection(label, labelColor, events, isSingle) {
+          const noEvt = '<span style="color:var(--muted);font-size:0.75rem;font-style:italic">None</span>';
+          let body;
+          if (isSingle) {
+            body = events ? `<div class="next3-item" style="cursor:pointer;border:none;padding:4px 0" onclick="showEventDetail(${JSON.stringify(events.name)}, ${JSON.stringify(events.date)})">
+              <div class="next3-info"><div class="next3-name">${esc(events.name)}</div><div class="next3-date">${fmtDate(events.date)}</div></div>
+              <div class="next3-days" style="font-size:0.75rem;color:var(--muted);flex-shrink:0">${getDayDiff(events.date)}d</div>
+            </div>` : noEvt;
+          } else {
+            body = events.length ? events.map(e => `<div class="next3-item" style="cursor:pointer;border:none;padding:3px 0" onclick="showEventDetail(${JSON.stringify(e.name)}, ${JSON.stringify(e.date)})">
+              <div class="next3-info"><div class="next3-name">${esc(e.name)}</div></div>
+            </div>`).join('') : noEvt;
+          }
+          return `<div class="next3-section">
+            <div class="next3-section-label" style="color:${labelColor}">${label}</div>
+            <div class="next3-section-body">${body}</div>
+          </div>`;
         }
-        el.innerHTML = '<div class="upcoming-cols"><div class="upcoming-col"><div class="upcoming-col-title">This Week</div>'+week1.map(renderDay).join('')+'</div><div class="upcoming-divider"></div><div class="upcoming-col"><div class="upcoming-col-title">Next Week</div>'+week2.map(renderDay).join('')+'</div></div>';
-      } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px">Unavailable</div>'; }
+
+        el.innerHTML = '<div class="next3-list">' +
+          renderSection('TODAY', 'var(--accent3)', todayEvts, false) +
+          '<div class="next3-divider"></div>' +
+          renderSection('TOMORROW', 'var(--accent2)', tomorrowEvts, false) +
+          '<div class="next3-divider"></div>' +
+          renderSection('UP NEXT', 'var(--accent4)', upNextEvt, true) +
+        '</div>';
+      } catch(e) {
+        el.innerHTML = '<div class="weekend-clear" style="padding:12px 16px">Unavailable</div>';
+      }
+    }
+
+    function showEventDetail(name, date) {
+      const d = new Date(date + 'T00:00:00');
+      const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const diff = getDayDiff(date);
+      const diffStr = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`;
+      let overlay = document.getElementById('event-detail-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'event-detail-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px';
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+        document.body.appendChild(overlay);
+      }
+      overlay.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:28px 28px 24px;max-width:340px;width:100%;position:relative">
+        <button onclick="document.getElementById('event-detail-overlay').classList.add('hidden')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent2);margin-bottom:10px">📅 Family Event</div>
+        <div style="font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:8px">${esc(name)}</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px">${fmtFull}</div>
+        <div style="font-size:0.8rem;color:var(--accent3);font-weight:500">${diffStr}</div>
+      </div>`;
+      overlay.classList.remove('hidden');
+    }
+
+    async function loadWeekendTile() { await loadNext3Events(); }
+
+
+    // ── US HOLIDAYS ──
+    const US_HOLIDAYS = [
+      { name: "New Year's Day",       month: 1,  day: 1  },
+      { name: "Martin Luther King Jr. Day", month: 1, nth: 3, weekday: 1 },
+      { name: "Presidents' Day",      month: 2,  nth: 3, weekday: 1 },
+      { name: "Memorial Day",         month: 5,  last: true, weekday: 1 },
+      { name: "Juneteenth",           month: 6,  day: 19 },
+      { name: "Independence Day",     month: 7,  day: 4  },
+      { name: "Labor Day",            month: 9,  nth: 1, weekday: 1 },
+      { name: "Columbus Day",         month: 10, nth: 2, weekday: 1 },
+      { name: "Veterans Day",         month: 11, day: 11 },
+      { name: "Thanksgiving",         month: 11, nth: 4, weekday: 4 },
+      { name: "Christmas Day",        month: 12, day: 25 },
+    ];
+
+    function getNthWeekday(year, month, nth, weekday) {
+      // weekday: 0=Sun,1=Mon,...,6=Sat
+      const d = new Date(year, month - 1, 1);
+      let count = 0;
+      while (true) {
+        if (d.getDay() === weekday) { count++; if (count === nth) return new Date(d); }
+        d.setDate(d.getDate() + 1);
+      }
+    }
+
+    function getLastWeekday(year, month, weekday) {
+      const d = new Date(year, month, 0); // last day of month
+      while (d.getDay() !== weekday) d.setDate(d.getDate() - 1);
+      return new Date(d);
+    }
+
+    function getNextUSHoliday() {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const year = today.getFullYear();
+      const candidates = [];
+      [year, year + 1].forEach(y => {
+        US_HOLIDAYS.forEach(h => {
+          let d;
+          if (h.day) {
+            d = new Date(y, h.month - 1, h.day);
+          } else if (h.last) {
+            d = getLastWeekday(y, h.month, h.weekday);
+          } else {
+            d = getNthWeekday(y, h.month, h.nth, h.weekday);
+          }
+          if (d >= today) candidates.push({ name: h.name, date: d });
+        });
+      });
+      candidates.sort((a, b) => a.date - b.date);
+      return candidates[0] || null;
+    }
+
+    async function loadUpcomingTile() {
+      const el = document.getElementById('upcoming-list');
+      const rangeEl = document.getElementById('mini-cal-range');
+      if (!el) return;
+      try {
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=upcoming');
+        const days = await res.json();
+        if (!Array.isArray(days)) { el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; return; }
+
+        // Build event map: date string -> [event names]
+        const eventMap = {};
+        days.forEach(day => { if (day.events.length) eventMap[day.date] = day.events; });
+
+        const today = new Date(); today.setHours(0,0,0,0);
+        const todayStr = today.toISOString().slice(0,10);
+        const end = new Date(today); end.setDate(end.getDate() + 13);
+
+        // Update range badge
+        const fmtShort = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (rangeEl) rangeEl.textContent = fmtShort(today) + ' – ' + fmtShort(end);
+
+        // Get holiday
+        const holiday = getNextUSHoliday();
+
+        // Build calendar: find the two calendar months to display
+        const months = [];
+        let cur = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+        while (cur <= endMonth) {
+          months.push(new Date(cur));
+          cur.setMonth(cur.getMonth() + 1);
+        }
+
+        const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+        let html = '<div class="mini-cal-wrap">';
+
+        months.forEach(monthStart => {
+          const year = monthStart.getFullYear();
+          const month = monthStart.getMonth();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const firstDow = monthStart.getDay(); // 0=Sun
+          const prevDays = new Date(year, month, 0).getDate();
+
+          html += `<div class="mini-cal-month">`;
+          html += `<div class="mini-cal-month-title">${MONTH_NAMES[month]} ${year}</div>`;
+          html += `<div class="mini-cal-grid">`;
+
+          // Day-of-week headers
+          DOW_LABELS.forEach(d => { html += `<div class="mini-cal-dow">${d}</div>`; });
+
+          // Leading empty cells
+          for (let i = 0; i < firstDow; i++) {
+            const prevDay = prevDays - firstDow + 1 + i;
+            html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${prevDay}</span></div>`;
+          }
+
+          // Days of month
+          for (let d = 1; d <= daysInMonth; d++) {
+            const dateObj = new Date(year, month, d);
+            const dateStr = dateObj.toISOString().slice(0,10);
+            const isToday = dateStr === todayStr;
+            const dow = dateObj.getDay();
+            const isWeekend = dow === 0 || dow === 6;
+            const events = eventMap[dateStr] || [];
+            const hasEvents = events.length > 0;
+            // Check if in our 14-day window
+            const inWindow = dateObj >= today && dateObj <= end;
+
+            let cls = 'mini-cal-day';
+            if (isToday) cls += ' today';
+            if (isWeekend && inWindow) cls += ' weekend';
+            if (!inWindow) cls += ' other-month';
+            if (hasEvents && inWindow) cls += ' has-events';
+
+            const dots = hasEvents && inWindow ? `<div class="mini-cal-dots">${events.slice(0,3).map((_, i) => `<div class="mini-cal-dot${events.length > 1 ? ' multi' : ''}"></div>`).join('')}</div>` : '';
+            const clickHandler = hasEvents && inWindow
+              ? `onclick="showDayEvents(${JSON.stringify(dateStr)}, ${JSON.stringify(events)})"`
+              : '';
+
+            html += `<div class="${cls}" ${clickHandler}><span class="mini-cal-num">${d}</span>${dots}</div>`;
+          }
+
+          // Trailing empty cells
+          const totalCells = firstDow + daysInMonth;
+          const trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+          for (let i = 1; i <= trailing; i++) {
+            html += `<div class="mini-cal-day other-month"><span class="mini-cal-num">${i}</span></div>`;
+          }
+
+          html += `</div>`; // end grid
+
+          // Holiday row if it falls in this month
+          if (holiday && holiday.date.getFullYear() === year && holiday.date.getMonth() === month) {
+            const diff = Math.round((holiday.date - today) / 86400000);
+            const diffStr = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff + 'd';
+            html += `<div class="mini-cal-holiday-row">
+              <span class="mini-cal-holiday-flag">🇺🇸</span>
+              <span class="mini-cal-holiday-name">${esc(holiday.name)} · ${fmtShort(holiday.date)}</span>
+              <span class="mini-cal-holiday-badge">${diffStr}</span>
+            </div>`;
+          }
+
+          html += `</div>`; // end month
+        });
+
+        html += '</div>'; // end wrap
+        el.innerHTML = html;
+
+      } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; }
+    }
+
+    function showDayEvents(dateStr, events) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      const diff = getDayDiff(dateStr);
+      const diffStr = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`;
+      let overlay = document.getElementById('event-detail-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'event-detail-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px';
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+        document.body.appendChild(overlay);
+      }
+      const evHtml = events.map(ev => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0"></div>
+        <span style="font-size:0.85rem;color:var(--text)">${esc(ev)}</span>
+      </div>`).join('');
+      overlay.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px 24px 20px;max-width:360px;width:100%;position:relative">
+        <button onclick="document.getElementById('event-detail-overlay').classList.add('hidden')" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent2);margin-bottom:8px">📅 Family Events</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:4px">${fmtFull}</div>
+        <div style="font-size:0.78rem;color:var(--accent3);font-weight:500;margin-bottom:14px">${diffStr}</div>
+        ${evHtml}
+      </div>`;
+      overlay.classList.remove('hidden');
     }
 
     // ─────────────────────────────────────────────
