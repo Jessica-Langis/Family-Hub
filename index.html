@@ -2451,7 +2451,7 @@
               <span class="section-title">Quick Glance</span>
             </div>
             <div class="section-header-actions">
-              <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+              <button class="add-btn" onclick="openBulletinForm()">+</button>
             </div>
           </div>
           <div class="home-bulletin-strip" id="home-bulletin-list">
@@ -2484,7 +2484,7 @@
       <div class="panel home-month-panel" id="upcoming-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">Coming Up Next</span>
+            <span class="section-title">Next Two Weeks</span>
             <span class="section-badge" id="mini-cal-range"></span>
           </div>
           <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
@@ -2515,7 +2515,7 @@
     </div>
    </div>
    <div class="chore-list parentals-scroll" id="parent-chore-list">
-    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Idfk...</div>
+    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Figuring Out Where to Start, Please Hold...</div>
    </div>
   </div>
 
@@ -2526,7 +2526,7 @@
      <span class="section-title" style="color:var(--accent2)">What's For Dinner?</span>
     </div>
     <div class="section-header-actions">
-     <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+ Edit</button>
+     <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+</button>
     </div>
    </div>
    <div class="meal-list parentals-scroll" id="meal-list">
@@ -2559,14 +2559,14 @@
  <div class="panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">Movies &amp; Shows</span>
+ <span class="section-title" style="color:var(--accent5)">We Should Watch:</span>
  </div>
  <div class="section-header-actions">
  <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('movies')">+</button>
  </div>
  </div>
  <div class="fun-list" id="fun-movies-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Compiling Some Cool Sh!t...</div>
  </div>
  </div>
 
@@ -2574,14 +2574,14 @@
  <div class="panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">Books to Read</span>
+ <span class="section-title" style="color:var(--accent5)">Check These Books Out:</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('books')">+ Add</button>
+ <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('books')">+</button>
  </div>
  </div>
  <div class="fun-list" id="fun-books-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Hold Up...</div>
  </div>
  </div>
 
@@ -2589,14 +2589,14 @@
  <div class="panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">Meal Ideas</span>
+ <span class="section-title" style="color:var(--accent5)">Lets Cook Something Fun:</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('mealideas')">+ Add</button>
+ <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('mealideas')">+</button>
  </div>
  </div>
  <div class="fun-list" id="fun-meals-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Building Menu...</div>
  </div>
  </div>
 
@@ -2614,11 +2614,11 @@
  <div class="this-week-panel tori-this-week-panel" id="this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;align-items:center;gap:10px">
  <span class="this-week-label">This week I want to</span>
- <span class="this-week-text empty" id="this-week-display" style="white-space:normal">Tap edit to set your intention...</span>
- <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Edit</button>
+ <span class="this-week-text empty" id="this-week-display" style="white-space:normal">Enter anything that you want to focus on or accomplish to keep yourself motivated</span>
+ <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Add</button>
  </div>
  <div id="this-week-history-toggle" style="display:none">
- <button class="this-week-history-btn" onclick="toggleGoalHistory('this-week-history', 'this-week-history-toggle')">Past goals ▾</button>
+ <button class="this-week-history-btn" onclick="toggleGoalHistory('this-week-history', 'this-week-history-toggle')">Previously ▾</button>
  <div id="this-week-history" class="this-week-history" style="display:none"></div>
  </div>
  </div>
@@ -2630,11 +2630,11 @@
  <span class="section-title" style="color:var(--accent4)">Personal Bests</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent4)" onclick="openPBForm()">+ Add</button>
+ <button class="add-btn" style="background:var(--accent4)" onclick="openPBForm()">+</button>
  </div>
  </div>
  <div class="pb-list" id="tori-pb-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Which one?</div>
  </div>
  </div>
 
@@ -2652,7 +2652,7 @@
  </div>
  </div>
  <div class="next-up-hero" id="tori-next-up">
- <div class="next-up-label">Loading...</div>
+ <div class="next-up-label">Thinking...</div>
  </div>
  </div>
 
@@ -2660,10 +2660,10 @@
  <div class="panel tori-reminders-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent4)">Reminders</span>
+ <span class="section-title" style="color:var(--accent4)">Don't Forget</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
+ <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+</button>
  </div>
  </div>
  <div class="quick-add-wrap">
@@ -2672,7 +2672,7 @@
           <span class="quick-add-spinner" id="qa-reminder-tori-spin">↻</span>
         </div>
         <div class="reminder-list" id="tori-reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Orienting...</div>
  </div>
  </div>
 
@@ -2680,14 +2680,14 @@
  <div class="panel tori-schedule-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent4)">Schedule</span>
+ <span class="section-title" style="color:var(--accent4)">My Schedule</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent4)" onclick="openToriScheduleForm()">+ Add</button>
+ <button class="add-btn" style="background:var(--accent4)" onclick="openToriScheduleForm()">+</button>
  </div>
  </div>
  <div class="schedule-list" id="tori-schedule">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Setting Things Up</div>
  </div>
  </div>
 
@@ -2703,7 +2703,7 @@
  </div>
  </div>
  <div class="chore-list" id="tori-chore-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.82rem;padding:8px">Bruh...</div>
  </div>
  </div>
 
@@ -2733,11 +2733,11 @@
  <div class="this-week-panel nova-this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;align-items:center;gap:10px">
  <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
- <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Tap edit to set your goal...</span>
- <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Edit</button>
+ <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Write down any goals or ideas you want to keep track of that you want to accomplish.</span>
+ <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Add</button>
  </div>
  <div id="nova-this-week-history-toggle" style="display:none">
- <button class="this-week-history-btn" onclick="toggleGoalHistory('nova-this-week-history', 'nova-this-week-history-toggle')">Past goals ▾</button>
+ <button class="this-week-history-btn" onclick="toggleGoalHistory('nova-this-week-history', 'nova-this-week-history-toggle')">Previously ▾</button>
  <div id="nova-this-week-history" class="this-week-history" style="display:none"></div>
  </div>
  </div>
@@ -2778,7 +2778,7 @@
 
  <div class="nova-today-panel">
  <span class="nova-today-label" style="color:var(--accent3)">Tonight's Dinner</span>
- <div class="nova-today-meal empty" id="nova-meal-display">Loading...</div>
+ <div class="nova-today-meal empty" id="nova-meal-display">I always forget to fill this out...</div>
  <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="nova-today-date"></div>
  </div>
 
@@ -2793,7 +2793,7 @@
  <span class="section-title" style="color:var(--accent3)">Events</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+ Add</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+</button>
  </div>
  </div>
  <div class="countdown-list" id="nova-events"></div>
@@ -2802,10 +2802,10 @@
  <div class="panel nova-reminders-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent3)">Reminders</span>
+ <span class="section-title" style="color:var(--accent3)">Don't Forget</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+ Add</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+</button>
  </div>
  </div>
  <div class="quick-add-wrap">
@@ -2814,7 +2814,7 @@
           <span class="quick-add-spinner" id="qa-reminder-nova-spin">↻</span>
         </div>
         <div class="reminder-list" id="nova-reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Where Am I?</div>
  </div>
  </div>
 
@@ -2825,28 +2825,28 @@
  <span class="section-badge" id="nova-chore-badge"></span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openPersonalChoreForm('nova')">+ Add</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openPersonalChoreForm('nova')">+</button>
  </div>
  </div>
  <div class="chore-list" id="nova-chore-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
+ <div style="color:var(--muted);font-size:0.82rem;padding:8px">Thinking...</div>
  </div>
  </div>
 
  <div class="panel nova-homework-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent3)">Homework</span>
+ <span class="section-title" style="color:var(--accent3)">Homework This Week</span>
  <span class="section-badge" id="hw-badge"></span>
  </div>
  <div class="section-header-actions">
  <button class="clear-btn" onclick="clearDoneHomework()">Clear Done</button>
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+ Add</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+</button>
  </div>
  </div>
  <div class="hw-progress-bar-wrap"><div class="hw-progress-bar" id="hw-progress-bar" style="width:0%"></div></div>
  <div class="homework-list" id="hw-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! </div>
+ <div style="color:var(--muted);font-size:0.82rem;padding:8px">Not a Damn Thing 😎 </div>
  </div>
  </div>
 
@@ -2862,7 +2862,7 @@
  <span class="nav-label">Home</span>
  </button>
  <button class="nav-tab" data-tab="fun" onclick="switchTab('fun')">
- <span class="nav-icon">⛺</span>
+ <span class="nav-icon">🏞</span>
  <span class="nav-label">Fun</span>
  </button>
  <button class="nav-tab" data-tab="parentals" onclick="switchTab('parentals')">
@@ -2870,7 +2870,7 @@
  <span class="nav-label">Parentals</span>
  </button>
  <button class="nav-tab" data-tab="tori" onclick="switchTab('tori')">
- <span class="nav-icon">🤼‍♀️</span>
+ <span class="nav-icon">🌻</span>
  <span class="nav-label">Tori</span>
  </button>
  <button class="nav-tab" data-tab="nova" onclick="switchTab('nova')">
@@ -6013,7 +6013,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         }
       } catch(e) {
         spinner.remove();
-        errEl.textContent = 'Something went wrong, Idk. Try again.';
+        errEl.textContent = 'Something went wrong, Idk. Try again I Guess.';
       }
     }
 
