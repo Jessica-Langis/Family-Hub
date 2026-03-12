@@ -242,8 +242,8 @@
 
   /* Left column panel sizing */
   .home-today-panel    { flex: 0.6; min-height: 0; }
-  .home-weekend-panel  { flex: 1; min-height: 0; }
-  .home-whereami-panel { flex: 1.6; min-height: 0; }
+  .home-weekend-panel  { flex: 2.2; min-height: 0; }
+  .home-whereami-panel { flex: 0.9; min-height: 0; }
 
   /* Right top row panel sizing */
   .home-bulletin-panel { flex: 1; min-height: 0; }
@@ -582,6 +582,45 @@
   .next3-holiday-flag { font-size: 0.75rem; flex-shrink: 0; }
   .next3-holiday-name { font-size: 0.68rem; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .next3-holiday-badge { font-size: 0.6rem; font-weight: 600; color: var(--accent2); flex-shrink: 0; white-space: nowrap; }
+
+  /* ── FAMILY PLANS STACK ── */
+  .fp-stack { display: flex; flex-direction: column; padding: 4px 16px 10px; }
+  .fp-row { display: flex; flex-direction: column; gap: 3px; padding: 10px 0 8px; }
+  .fp-row-holiday { padding: 8px 0 4px; }
+  .fp-divider { height: 1px; background: rgba(255,255,255,0.06); }
+  .fp-row-label {
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .fp-hero-item { cursor: pointer; padding: 1px 0; }
+  .fp-hero-item:hover .fp-hero-name { color: var(--accent2); }
+  .fp-hero-type {
+    font-size: 0.62rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 1px;
+  }
+  .fp-hero-name {
+    font-size: 1.05rem; font-weight: 700; color: var(--text);
+    line-height: 1.2; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .fp-hero-meta {
+    font-size: 0.72rem; color: var(--muted); margin-top: 4px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .fp-none { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+  .fp-holiday-inner {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .fp-holiday-left { display: flex; flex-direction: column; gap: 2px; }
+  .fp-holiday-label {
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 1px;
+  }
+  .fp-holiday-name {
+    font-size: 0.88rem; font-weight: 600; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .fp-holiday-date { font-size: 0.68rem; color: var(--muted); }
+
   .weekend-cols {
     display: grid;
     grid-template-columns: 1fr 1px 1fr 1px 1fr;
@@ -2451,7 +2490,7 @@
               <span class="section-title">Quick Glance</span>
             </div>
             <div class="section-header-actions">
-              <button class="add-btn" onclick="openBulletinForm()">+</button>
+              <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
             </div>
           </div>
           <div class="home-bulletin-strip" id="home-bulletin-list">
@@ -2484,7 +2523,7 @@
       <div class="panel home-month-panel" id="upcoming-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">Next Two Weeks</span>
+            <span class="section-title">Coming Up Next</span>
             <span class="section-badge" id="mini-cal-range"></span>
           </div>
           <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
@@ -2515,7 +2554,7 @@
     </div>
    </div>
    <div class="chore-list parentals-scroll" id="parent-chore-list">
-    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Figuring Out Where to Start, Please Hold...</div>
+    <div style="color:var(--muted);font-size:0.82rem;padding:8px">Idfk...</div>
    </div>
   </div>
 
@@ -2526,7 +2565,7 @@
      <span class="section-title" style="color:var(--accent2)">What's For Dinner?</span>
     </div>
     <div class="section-header-actions">
-     <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+</button>
+     <button class="add-btn" style="background:var(--accent2)" onclick="openMealForm()">+ Edit</button>
     </div>
    </div>
    <div class="meal-list parentals-scroll" id="meal-list">
@@ -2559,14 +2598,14 @@
  <div class="panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">We Should Watch:</span>
+ <span class="section-title" style="color:var(--accent5)">Movies &amp; Shows</span>
  </div>
  <div class="section-header-actions">
  <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('movies')">+</button>
  </div>
  </div>
  <div class="fun-list" id="fun-movies-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Compiling Some Cool Sh!t...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2574,14 +2613,14 @@
  <div class="panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">Check These Books Out:</span>
+ <span class="section-title" style="color:var(--accent5)">Books to Read</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('books')">+</button>
+ <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('books')">+ Add</button>
  </div>
  </div>
  <div class="fun-list" id="fun-books-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Hold Up...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2589,14 +2628,14 @@
  <div class="panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent5)">Lets Cook Something Fun:</span>
+ <span class="section-title" style="color:var(--accent5)">Meal Ideas</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('mealideas')">+</button>
+ <button class="add-btn" style="background:var(--accent5);color:#0f1117" onclick="openFunForm('mealideas')">+ Add</button>
  </div>
  </div>
  <div class="fun-list" id="fun-meals-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Building Menu...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2614,11 +2653,11 @@
  <div class="this-week-panel tori-this-week-panel" id="this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;align-items:center;gap:10px">
  <span class="this-week-label">This week I want to</span>
- <span class="this-week-text empty" id="this-week-display" style="white-space:normal">Enter anything that you want to focus on or accomplish to keep yourself motivated</span>
- <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Add</button>
+ <span class="this-week-text empty" id="this-week-display" style="white-space:normal">Tap edit to set your intention...</span>
+ <button class="this-week-edit-btn" onclick="startThisWeekEdit()">Edit</button>
  </div>
  <div id="this-week-history-toggle" style="display:none">
- <button class="this-week-history-btn" onclick="toggleGoalHistory('this-week-history', 'this-week-history-toggle')">Previously ▾</button>
+ <button class="this-week-history-btn" onclick="toggleGoalHistory('this-week-history', 'this-week-history-toggle')">Past goals ▾</button>
  <div id="this-week-history" class="this-week-history" style="display:none"></div>
  </div>
  </div>
@@ -2630,11 +2669,11 @@
  <span class="section-title" style="color:var(--accent4)">Personal Bests</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent4)" onclick="openPBForm()">+</button>
+ <button class="add-btn" style="background:var(--accent4)" onclick="openPBForm()">+ Add</button>
  </div>
  </div>
  <div class="pb-list" id="tori-pb-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Which one?</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2652,7 +2691,7 @@
  </div>
  </div>
  <div class="next-up-hero" id="tori-next-up">
- <div class="next-up-label">Thinking...</div>
+ <div class="next-up-label">Loading...</div>
  </div>
  </div>
 
@@ -2660,10 +2699,10 @@
  <div class="panel tori-reminders-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent4)">Don't Forget</span>
+ <span class="section-title" style="color:var(--accent4)">Reminders</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+</button>
+ <button class="add-btn" style="background:var(--accent4)" onclick="openToriReminderForm()">+ Add</button>
  </div>
  </div>
  <div class="quick-add-wrap">
@@ -2672,7 +2711,7 @@
           <span class="quick-add-spinner" id="qa-reminder-tori-spin">↻</span>
         </div>
         <div class="reminder-list" id="tori-reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Orienting...</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2680,14 +2719,14 @@
  <div class="panel tori-schedule-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent4)">My Schedule</span>
+ <span class="section-title" style="color:var(--accent4)">Schedule</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent4)" onclick="openToriScheduleForm()">+</button>
+ <button class="add-btn" style="background:var(--accent4)" onclick="openToriScheduleForm()">+ Add</button>
  </div>
  </div>
  <div class="schedule-list" id="tori-schedule">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Setting Things Up</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2703,7 +2742,7 @@
  </div>
  </div>
  <div class="chore-list" id="tori-chore-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Bruh...</div>
+ <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2733,11 +2772,11 @@
  <div class="this-week-panel nova-this-week-panel" id="nova-this-week-panel" style="flex-direction:column;align-items:stretch;gap:8px">
  <div style="display:flex;align-items:center;gap:10px">
  <span class="this-week-label" style="color:var(--accent3)">This week I want to</span>
- <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Write down any goals or ideas you want to keep track of that you want to accomplish.</span>
- <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Add</button>
+ <span class="this-week-text empty" id="nova-this-week-display" style="white-space:normal">Tap edit to set your goal...</span>
+ <button class="this-week-edit-btn" onclick="startNovaThisWeekEdit()">Edit</button>
  </div>
  <div id="nova-this-week-history-toggle" style="display:none">
- <button class="this-week-history-btn" onclick="toggleGoalHistory('nova-this-week-history', 'nova-this-week-history-toggle')">Previously ▾</button>
+ <button class="this-week-history-btn" onclick="toggleGoalHistory('nova-this-week-history', 'nova-this-week-history-toggle')">Past goals ▾</button>
  <div id="nova-this-week-history" class="this-week-history" style="display:none"></div>
  </div>
  </div>
@@ -2778,7 +2817,7 @@
 
  <div class="nova-today-panel">
  <span class="nova-today-label" style="color:var(--accent3)">Tonight's Dinner</span>
- <div class="nova-today-meal empty" id="nova-meal-display">I always forget to fill this out...</div>
+ <div class="nova-today-meal empty" id="nova-meal-display">Loading...</div>
  <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="nova-today-date"></div>
  </div>
 
@@ -2793,7 +2832,7 @@
  <span class="section-title" style="color:var(--accent3)">Events</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaEventsForm()">+ Add</button>
  </div>
  </div>
  <div class="countdown-list" id="nova-events"></div>
@@ -2802,10 +2841,10 @@
  <div class="panel nova-reminders-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent3)">Don't Forget</span>
+ <span class="section-title" style="color:var(--accent3)">Reminders</span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openNovaReminderForm()">+ Add</button>
  </div>
  </div>
  <div class="quick-add-wrap">
@@ -2814,7 +2853,7 @@
           <span class="quick-add-spinner" id="qa-reminder-nova-spin">↻</span>
         </div>
         <div class="reminder-list" id="nova-reminder-list">
- <div style="color:var(--muted);font-size:0.8rem;padding:8px">Where Am I?</div>
+ <div style="color:var(--muted);font-size:0.8rem;padding:8px">Loading...</div>
  </div>
  </div>
 
@@ -2825,28 +2864,28 @@
  <span class="section-badge" id="nova-chore-badge"></span>
  </div>
  <div class="section-header-actions">
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openPersonalChoreForm('nova')">+</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openPersonalChoreForm('nova')">+ Add</button>
  </div>
  </div>
  <div class="chore-list" id="nova-chore-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Thinking...</div>
+ <div style="color:var(--muted);font-size:0.82rem;padding:8px">Loading...</div>
  </div>
  </div>
 
  <div class="panel nova-homework-panel">
  <div class="section-header">
  <div class="section-header-left">
- <span class="section-title" style="color:var(--accent3)">Homework This Week</span>
+ <span class="section-title" style="color:var(--accent3)">Homework</span>
  <span class="section-badge" id="hw-badge"></span>
  </div>
  <div class="section-header-actions">
  <button class="clear-btn" onclick="clearDoneHomework()">Clear Done</button>
- <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+</button>
+ <button class="add-btn" style="background:var(--accent3);color:#0f1117" onclick="openHomeworkForm()">+ Add</button>
  </div>
  </div>
  <div class="hw-progress-bar-wrap"><div class="hw-progress-bar" id="hw-progress-bar" style="width:0%"></div></div>
  <div class="homework-list" id="hw-list">
- <div style="color:var(--muted);font-size:0.82rem;padding:8px">Not a Damn Thing 😎 </div>
+ <div style="color:var(--muted);font-size:0.82rem;padding:8px">No homework! </div>
  </div>
  </div>
 
@@ -2862,7 +2901,7 @@
  <span class="nav-label">Home</span>
  </button>
  <button class="nav-tab" data-tab="fun" onclick="switchTab('fun')">
- <span class="nav-icon">🏞</span>
+ <span class="nav-icon">⛺</span>
  <span class="nav-label">Fun</span>
  </button>
  <button class="nav-tab" data-tab="parentals" onclick="switchTab('parentals')">
@@ -2870,7 +2909,7 @@
  <span class="nav-label">Parentals</span>
  </button>
  <button class="nav-tab" data-tab="tori" onclick="switchTab('tori')">
- <span class="nav-icon">🌻</span>
+ <span class="nav-icon">🤼‍♀️</span>
  <span class="nav-label">Tori</span>
  </button>
  <button class="nav-tab" data-tab="nova" onclick="switchTab('nova')">
@@ -5505,96 +5544,87 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       const el = document.getElementById('home-next3-events');
       if (!el) return;
       try {
-        const res = await apiFetch(SCRIPTS.CHORES + '?type=upcoming');
-        const days = await res.json();
-        if (!Array.isArray(days)) throw new Error('Bad response');
-
+        const [calRes, wrestleRes] = await Promise.all([
+          apiFetch(SCRIPTS.CHORES + '?type=upcoming'),
+          apiFetch(SCRIPTS.TORI + '?type=events')
+        ]);
+        const days = await calRes.json();
+        const wrestleEvents = await wrestleRes.json();
         const todayStr = new Date().toISOString().slice(0,10);
-        const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })();
 
-        // Flatten events by date
+        // ── Next Up: next calendar event(s) soonest upcoming ──
         const allEvents = [];
-        days.forEach(day => {
-          day.events.forEach(name => allEvents.push({ date: day.date, name }));
-        });
+        if (Array.isArray(days)) {
+          days.forEach(day => { (day.events || []).forEach(name => allEvents.push({ date: day.date, name })); });
+        }
+        const futureEvts = allEvents.filter(e => e.date >= todayStr).sort((a,b) => a.date.localeCompare(b.date));
+        let nextUpEvts = [];
+        if (futureEvts.length) {
+          const soonestDate = futureEvts[0].date;
+          nextUpEvts = futureEvts.filter(e => e.date === soonestDate);
+        }
 
-        const todayEvts    = allEvents.filter(e => e.date === todayStr);
-        const tomorrowEvts = allEvents.filter(e => e.date === tomorrowStr);
-        const upNextEvt    = allEvents.find(e => e.date > tomorrowStr) || null;
+        // ── Next Event: next upcoming wrestling event ──
+        let nextWrestle = null;
+        if (Array.isArray(wrestleEvents)) {
+          const future = wrestleEvents
+            .filter(e => getDayDiff(e.date) >= 0)
+            .sort((a,b) => normalizeDate(a.date) - normalizeDate(b.date));
+          if (future.length) nextWrestle = future[0];
+        }
+
+        // ── Next Holiday ──
+        const holiday = getNextUSHoliday();
 
         const fmtDate = str => {
           const d = new Date(str + 'T00:00:00');
           return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         };
 
-        /* renderSection removed — now using column layout */
-        function renderSection_UNUSED(label, labelColor, events, isSingle) {
-          const noEvt = '<span style="color:var(--muted);font-size:0.75rem;font-style:italic">None</span>';
-          let body;
-          if (isSingle) {
-            body = events ? `<div class="next3-item" style="cursor:pointer;border:none;padding:4px 0" onclick="showEventDetail(${JSON.stringify(events.name)}, ${JSON.stringify(events.date)})">
-              <div class="next3-info"><div class="next3-name">${esc(events.name)}</div><div class="next3-date">${fmtDate(events.date)}</div></div>
-              <div class="next3-days" style="font-size:0.75rem;color:var(--muted);flex-shrink:0">${getDayDiff(events.date)}d</div>
-            </div>` : noEvt;
-          } else {
-            body = events.length ? events.map(e => `<div class="next3-item" style="cursor:pointer;border:none;padding:3px 0" onclick="showEventDetail(${JSON.stringify(e.name)}, ${JSON.stringify(e.date)})">
-              <div class="next3-info"><div class="next3-name">${esc(e.name)}</div></div>
-            </div>`).join('') : noEvt;
-          }
-          return `<div class="next3-section">
-            <div class="next3-section-label" style="color:${labelColor}">${label}</div>
-            <div class="next3-section-body">${body}</div>
-          </div>`;
-        }
+        let html = '<div class="fp-stack">';
 
-        // Next holiday
-        const holiday = getNextUSHoliday();
-        let holidayHtml = '';
+        // NEXT UP
+        html += '<div class="fp-row">';
+        html += '<div class="fp-row-label" style="color:var(--accent3)">NEXT UP</div>';
+        if (nextUpEvts.length) {
+          const diff = getDayDiff(nextUpEvts[0].date);
+          const badge = countdownBadge(diff);
+          nextUpEvts.forEach(e => {
+            html += `<div class="fp-hero-item" onclick="showEventDetail(this)" data-name="${esc(e.name)}" data-date="${e.date}"><div class="fp-hero-name">${esc(e.name)}</div></div>`;
+          });
+          html += `<div class="fp-hero-meta">${fmtDate(nextUpEvts[0].date)} &nbsp;<span class="countdown-badge ${badge.cls}" style="font-size:0.62rem;padding:1px 7px">${badge.text}</span></div>`;
+        } else {
+          html += '<div class="fp-none">None</div>';
+        }
+        html += '</div><div class="fp-divider"></div>';
+
+        // NEXT EVENT
+        html += '<div class="fp-row">';
+        html += '<div class="fp-row-label" style="color:var(--accent4)">NEXT EVENT</div>';
+        if (nextWrestle) {
+          const diff = getDayDiff(nextWrestle.date);
+          const badge = countdownBadge(diff);
+          html += `<div class="fp-hero-item"><div class="fp-hero-type">${esc(nextWrestle.type || 'Event')}</div><div class="fp-hero-name">${esc(nextWrestle.name)}</div></div>`;
+          html += `<div class="fp-hero-meta">${fmtDate(nextWrestle.date)}${nextWrestle.location ? ' &middot; ' + esc(nextWrestle.location) : ''} &nbsp;<span class="countdown-badge ${badge.cls}" style="font-size:0.62rem;padding:1px 7px">${badge.text}</span></div>`;
+        } else {
+          html += '<div class="fp-none">None</div>';
+        }
+        html += '</div><div class="fp-divider"></div>';
+
+        // NEXT HOLIDAY
+        html += '<div class="fp-row fp-row-holiday">';
         if (holiday) {
           const hDiff = getDayDiff(holiday.date.toISOString().slice(0,10));
-          const hDiffStr = hDiff === 0 ? 'Today' : hDiff === 1 ? 'Tomorrow' : hDiff + 'd away';
-          holidayHtml = `<div class="next3-holiday-row">
-            <span class="next3-holiday-flag">🇺🇸</span>
-            <span class="next3-holiday-name">${esc(holiday.name)}</span>
-            <span class="next3-holiday-badge">${hDiffStr}</span>
-          </div>`;
+          const hBadge = countdownBadge(hDiff);
+          html += `<div class="fp-holiday-inner"><div class="fp-holiday-left"><div class="fp-holiday-label">NEXT HOLIDAY</div><div class="fp-holiday-name">${esc(holiday.name)}</div><div class="fp-holiday-date">${fmtDate(holiday.date.toISOString().slice(0,10))}</div></div><div class="countdown-badge ${hBadge.cls}" style="font-size:0.62rem;padding:1px 7px;align-self:center">${hBadge.text}</div></div>`;
         }
-
-        el.innerHTML = `<div class="next3-cols">
-          <div class="next3-col">
-            <div class="next3-col-header" style="color:var(--accent3)">TODAY</div>
-            <div class="next3-col-body">${
-              todayEvts.length
-                ? todayEvts.map(e => `<div class="next3-item" onclick="showEventDetail(this)" data-name="${esc(e.name)}" data-date="${e.date}"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
-                : '<span class="next3-none">None</span>'
-            }</div>
-          </div>
-          <div class="next3-vdivider"></div>
-          <div class="next3-col">
-            <div class="next3-col-header" style="color:var(--accent2)">TOMORROW</div>
-            <div class="next3-col-body">${
-              tomorrowEvts.length
-                ? tomorrowEvts.map(e => `<div class="next3-item" onclick="showEventDetail(this)" data-name="${esc(e.name)}" data-date="${e.date}"><div class="next3-name">${esc(e.name)}</div></div>`).join('')
-                : '<span class="next3-none">None</span>'
-            }</div>
-          </div>
-          <div class="next3-vdivider"></div>
-          <div class="next3-col">
-            <div class="next3-col-header" style="color:var(--accent4)">NEXT UP</div>
-            <div class="next3-col-body">${
-              upNextEvt
-                ? `<div class="next3-item next3-item-featured" onclick="showEventDetail(this)" data-name="${esc(upNextEvt.name)}" data-date="${upNextEvt.date}">
-                    <div class="next3-name next3-name-featured">${esc(upNextEvt.name)}</div>
-                    <div class="next3-date">${fmtDate(upNextEvt.date)} · ${getDayDiff(upNextEvt.date)}d</div>
-                  </div>`
-                : '<span class="next3-none">None</span>'
-            }${holidayHtml}</div>
-          </div>
-        </div>`;
+        html += '</div></div>';
+        el.innerHTML = html;
       } catch(e) {
         el.innerHTML = '<div class="weekend-clear" style="padding:12px 16px">Unavailable</div>';
       }
     }
+
 
     function showEventDetail(el) {
       const name = el.dataset.name;
@@ -6013,7 +6043,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         }
       } catch(e) {
         spinner.remove();
-        errEl.textContent = 'Something went wrong, Idk. Try again I Guess.';
+        errEl.textContent = 'Something went wrong, Idk. Try again.';
       }
     }
 
