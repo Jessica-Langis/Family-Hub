@@ -354,8 +354,10 @@
   .whereami-meta { font-size: 0.72rem; color: var(--muted); }
   .whereami-delete {
     background: none; border: none; color: var(--muted);
-    font-size: 0.85rem; cursor: pointer; padding: 2px 4px;
+    font-size: 1.1rem; cursor: pointer; padding: 4px 6px;
     flex-shrink: 0; line-height: 1;
+    min-width: 28px; min-height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
   }
   .whereami-delete:hover { color: var(--accent5); }
   .whereami-empty { font-size: 0.78rem; color: var(--muted); font-style: italic; padding: 4px 0; }
@@ -779,10 +781,12 @@
  .grocery-text { flex: 1; cursor: pointer; }
  .grocery-delete {
  background: none; border: none;
- color: var(--muted); font-size: 1rem;
- cursor: pointer; padding: 0 2px;
+ color: var(--muted); font-size: 1.1rem;
+ cursor: pointer; padding: 4px 6px;
  line-height: 1; flex-shrink: 0;
  transition: color 0.15s;
+ min-width: 28px; min-height: 28px;
+ display: inline-flex; align-items: center; justify-content: center;
  }
  .grocery-delete:hover { color: #e07070; }
 
@@ -1600,9 +1604,10 @@
 
  .hw-delete {
  background: none; border: none;
- color: var(--muted); font-size: 0.9rem;
- cursor: pointer; padding: 0 2px;
- transition: color 0.15s;
+ color: var(--muted); font-size: 1.1rem;
+ cursor: pointer; padding: 4px 6px;
+ transition: color 0.15s; min-width: 28px; min-height: 28px;
+ display: inline-flex; align-items: center; justify-content: center;
  }
  .hw-delete:hover { color: #e07070; }
 
@@ -1675,16 +1680,17 @@
  line-height: 1.2;
  }
  .next-up-sub { font-size: 0.78rem; color: var(--muted); }
+ .next-up-countdown-row { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; flex-wrap: nowrap; }
  .next-up-countdown {
  font-family: 'Plus Jakarta Sans', sans-serif;
  font-size: 2.2rem;
  font-weight: 700;
  color: var(--accent4);
- margin-top: 4px;
  line-height: 1;
+ display: inline;
  }
  .next-up-countdown.today-color { color: var(--accent3); }
- .next-up-unit { font-size: 0.75rem; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+ .next-up-unit { font-size: 0.75rem; color: var(--muted); font-family: 'DM Sans', sans-serif; display: inline; margin-left: 4px; }
 
  .next-up-divider {
  height: 1px;
@@ -2091,6 +2097,27 @@
  gap: 18px 16px;
  align-items: flex-start;
  }
+
+ /* ── CORKBOARD BACKGROUND ── */
+ .corkboard {
+  background-color: #6b4c2a !important;
+  background-image:
+   repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px),
+   repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.025) 3px, rgba(255,255,255,0.025) 5px),
+   repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.04) 5px, rgba(0,0,0,0.04) 6px),
+   repeating-linear-gradient(-45deg, transparent, transparent 7px, rgba(255,255,255,0.02) 7px, rgba(255,255,255,0.02) 8px) !important;
+  border: 1px solid #4a3018 !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), inset 0 0 30px rgba(0,0,0,0.25) !important;
+ }
+ .corkboard .section-header {
+  background: rgba(0,0,0,0.28);
+  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid rgba(0,0,0,0.35);
+  padding: 10px 14px 8px;
+ }
+ .corkboard .section-title { color: #f5d9a8 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+ .corkboard .add-btn { background: rgba(0,0,0,0.35) !important; border: 1px solid rgba(255,255,255,0.12) !important; }
+
  .bulletin-item {
  /* Sticky note base — color overridden per-note via data-color */
  background: linear-gradient(160deg, #2e2610 0%, #261f0a 100%);
@@ -2128,18 +2155,32 @@
  z-index: 2;
  }
 
- /* Pin dot at top center */
+ /* 3D pushpin head */
  .bulletin-item::before {
  content: '';
  position: absolute;
- top: -5px;
+ top: -9px;
  left: 50%;
  transform: translateX(-50%);
- width: 10px;
- height: 10px;
+ width: 14px;
+ height: 14px;
  border-radius: 50%;
- background: radial-gradient(circle at 35% 35%, #f5d485, #c4960a);
- box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 6px rgba(232,184,109,0.4);
+ background: radial-gradient(circle at 35% 30%, #ff9a9a 0%, #cc2222 45%, #7a0000 100%);
+ box-shadow: 0 2px 5px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.4);
+ z-index: 3;
+ }
+ /* 3D pushpin shaft */
+ .bulletin-item::after {
+ content: '';
+ position: absolute;
+ top: 3px;
+ left: 50%;
+ transform: translateX(-50%);
+ width: 2px;
+ height: 9px;
+ background: linear-gradient(to bottom, rgba(200,200,200,0.85), rgba(90,90,90,0.4));
+ border-radius: 0 0 1px 1px;
+ z-index: 2;
  }
 
  .bulletin-who {
@@ -2164,16 +2205,18 @@
  }
  .bulletin-delete {
  position: absolute;
- top: 8px;
- right: 10px;
+ top: 4px;
+ right: 6px;
  background: none;
  border: none;
  color: rgba(136,145,168,0.4);
- font-size: 1rem;
+ font-size: 1.15rem;
  cursor: pointer;
  line-height: 1;
- padding: 0;
+ padding: 4px 5px;
  transition: color 0.15s;
+ min-width: 28px; min-height: 28px;
+ display: inline-flex; align-items: center; justify-content: center;
  }
 
  /* Per-note color overrides */
@@ -2254,6 +2297,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
+    table-layout: fixed;
   }
   .two-week-dow {
     font-size: 0.55rem; font-weight: 600; color: var(--muted);
@@ -2269,7 +2313,8 @@
     cursor: default;
     transition: background 0.12s;
     min-height: 30px;
-    vertical-align: top;
+    min-width: 0;
+    overflow: hidden;
   }
   .two-week-cell.other { opacity: 0; pointer-events: none; }
   .two-week-cell.has-events { cursor: pointer; }
@@ -2283,13 +2328,14 @@
   .two-week-cell.weekend .two-week-num { color: var(--accent2); }
   .two-week-cell.today.weekend .two-week-num { color: #0f1117; }
   .two-week-num { font-size: 0.68rem; line-height: 1; color: var(--text); flex-shrink: 0; }
-  .two-week-pills { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; width: 100%; }
+  .two-week-pills { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; width: 100%; min-width: 0; }
   .two-week-pill {
     font-size: 0.55rem; font-weight: 600; line-height: 1.2;
     background: rgba(126,184,212,0.18); color: var(--accent2);
     border-radius: 3px; padding: 2px 4px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    text-align: center; width: 100%; box-sizing: border-box;
+    width: 100%; box-sizing: border-box; display: block;
+    text-align: left;
   }
   .two-week-pill.multi { background: rgba(232,184,109,0.15); color: var(--accent); }
   .two-week-holiday {
@@ -2464,7 +2510,7 @@
       <div class="panel home-weekend-panel weekend-tile">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent)">Family Plans</span>
+            <span class="section-title" style="color:var(--accent)">Coming Up Next</span>
           </div>
         </div>
         <div id="home-next3-events"><div class="weekend-clear">Hold up...</div></div>
@@ -2491,10 +2537,10 @@
 
       <div class="home-right-top">
 
-        <div class="panel home-bulletin-panel" style="overflow:hidden">
+        <div class="panel home-bulletin-panel corkboard" style="overflow:hidden">
           <div class="section-header">
             <div class="section-header-left">
-              <span class="section-title">Quick Glance</span>
+              <span class="section-title">Bulletin Board</span>
             </div>
             <div class="section-header-actions">
               <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
@@ -2530,7 +2576,7 @@
       <div class="panel home-month-panel" id="upcoming-panel">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title">Coming Up Next</span>
+            <span class="section-title">Family Calendar</span>
             <span class="section-badge" id="mini-cal-range"></span>
           </div>
           <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
@@ -3747,8 +3793,10 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  <div class="next-up-label">${esc(next.type)}</div>
  <div class="next-up-name">${esc(next.name)}</div>
  <div class="next-up-sub">${formatDateShort(next.date)}${next.location ? ' · ' + esc(next.location) : ''}</div>
+ <div class="next-up-countdown-row">
  <div class="next-up-countdown ${isToday ? 'today-color' : ''}">${isToday ? 'TODAY' : diff}</div>
  <div class="next-up-unit">${isToday ? '' : 'days away'}</div>
+ </div>
  </div>
  `;
 
