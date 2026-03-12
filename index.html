@@ -199,83 +199,54 @@
  overflow: visible;
  }
 
- /* ── HOME TAB LAYOUT ── */
+ /* ── HOME TAB LAYOUT — 3-column CSS grid ── */
  .home-content {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-    padding-bottom: 0;
-  }
+   display: grid;
+   grid-template-columns: 0.85fr 1fr 1fr;
+   grid-template-rows: auto 1fr auto;
+   grid-template-areas:
+     "today  comingup  grocery"
+     "bulletin  calendar  calendar"
+     "whereami  calendar  calendar";
+   gap: 8px;
+   height: 100%;
+   min-height: 0;
+   overflow: hidden;
+   padding-bottom: 0;
+ }
 
-  /* Left column: Today | Weekend | WhereAmI */
-  .home-left-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 0;
-    overflow: hidden;
-  }
+ /* Grid area assignments */
+ .hg-today    { grid-area: today; }
+ .hg-comingup { grid-area: comingup; }
+ .hg-grocery  { grid-area: grocery; }
+ .hg-bulletin { grid-area: bulletin; }
+ .hg-calendar { grid-area: calendar; }
+ .hg-whereami { grid-area: whereami; }
 
-  /* Right column: [Bulletin + Grocery] on top, Month below */
-  .home-right-col {
-    flex: 1.6;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 0;
-    overflow: hidden;
-  }
+ /* All home panels base */
+ .home-today-panel, .home-weekend-panel, .home-whereami-panel,
+ .home-bulletin-panel, .home-grocery-panel, .home-month-panel {
+   min-width: 0; min-height: 0; overflow: hidden;
+   display: flex; flex-direction: column;
+ }
 
-  /* Top row inside right col: Bulletin (col2) + Grocery (col3) side by side */
-  .home-right-top {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    flex: 0 0 36%;
-    min-height: 0;
-    overflow: hidden;
-  }
+ /* Panel flex sizing within their cells */
+ .home-today-panel    { }
+ .home-weekend-panel  { }
+ .home-whereami-panel { }
+ .home-bulletin-panel { }
+ .home-grocery-panel  { }
+ .home-month-panel    { }
 
-  /* Left column panel sizing */
-  .home-today-panel    { flex: 0.6; min-height: 0; }
-  .home-weekend-panel  { flex: 2.2; min-height: 0; }
-  .home-whereami-panel { flex: 0.9; min-height: 0; }
-
-  /* Right top row panel sizing */
-  .home-bulletin-panel { flex: 1; min-height: 0; }
-  .home-grocery-panel  { flex: 1; min-height: 0; }
-
-  /* Month fills remaining right col height */
-  .home-month-panel    { flex: 1; min-height: 0; }
-
-  /* All home panels */
-  .home-bulletin-panel,
-  .home-today-panel,
-  .home-weekend-panel,
-  .home-whereami-panel,
-  .home-grocery-panel,
-  .home-month-panel {
-    min-width: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Scrollable content areas within each panel */
-  .home-bulletin-panel .home-bulletin-strip  { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-whereami-panel .whereami-list         { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
-  .home-month-panel .month-embed             { flex: 1; min-height: 0; height: 0; }
+ /* Scrollable inner areas */
+ .home-grocery-panel .grocery-grid          { flex: 1; overflow-y: auto; min-height: 0; }
+ .home-today-panel .today-columns           { flex: 1; overflow-y: auto; min-height: 0; }
+ .home-weekend-panel .weekend-cols          { flex: 1; overflow-y: auto; min-height: 0; }
+ .home-whereami-panel .whereami-list        { flex: 1; overflow-y: auto; min-height: 0; }
+ .home-month-panel #upcoming-list           { flex: 1; overflow-y: auto; min-height: 0; }
 
   /* ── SUBTLE SCROLLBARS (home panels) ── */
-  .home-bulletin-strip,
+  .corkboard-body,
   .home-today-panel .today-columns,
   .home-weekend-panel .weekend-cols,
   .home-whereami-panel .whereami-list,
@@ -283,22 +254,22 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(42,48,69,0.7) transparent;
   }
-  .home-bulletin-strip::-webkit-scrollbar,
+  .corkboard-body::-webkit-scrollbar,
   .home-today-panel .today-columns::-webkit-scrollbar,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar,
   .home-whereami-panel .whereami-list::-webkit-scrollbar,
   .home-grocery-panel .grocery-grid::-webkit-scrollbar { width: 3px; }
-  .home-bulletin-strip::-webkit-scrollbar-track,
+  .corkboard-body::-webkit-scrollbar-track,
   .home-today-panel .today-columns::-webkit-scrollbar-track,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar-track,
   .home-whereami-panel .whereami-list::-webkit-scrollbar-track,
   .home-grocery-panel .grocery-grid::-webkit-scrollbar-track { background: transparent; }
-  .home-bulletin-strip::-webkit-scrollbar-thumb,
+  .corkboard-body::-webkit-scrollbar-thumb,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb,
   .home-whereami-panel .whereami-list::-webkit-scrollbar-thumb,
   .home-grocery-panel .grocery-grid::-webkit-scrollbar-thumb { background: rgba(42,48,69,0.8); border-radius: 2px; }
-  .home-bulletin-strip::-webkit-scrollbar-thumb:hover,
+  .corkboard-body::-webkit-scrollbar-thumb:hover,
   .home-today-panel .today-columns::-webkit-scrollbar-thumb:hover,
   .home-weekend-panel .weekend-cols::-webkit-scrollbar-thumb:hover,
   .home-whereami-panel .whereami-list::-webkit-scrollbar-thumb:hover,
@@ -532,14 +503,14 @@
 .upcoming-holiday-badge { font-size: 0.65rem; font-weight: 600; background: rgba(126,184,212,0.12); color: var(--accent2); border-radius: 20px; padding: 1px 7px; flex-shrink: 0; }
 
  /* ── HOME BULLETIN STRIP ── */
-  .home-bulletin-strip {
+  .home-bulletin-strip, .corkboard-body {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 12px;
-    padding: 10px 12px 14px;
+    gap: 14px 12px;
+    padding: 16px 14px 18px;
     align-items: flex-start;
   }
-  .home-bulletin-strip .bulletin-item {
+  .home-bulletin-strip .bulletin-item, .corkboard-body .bulletin-item {
     flex: 1 1 140px;
     max-width: 200px;
     min-width: 120px;
@@ -1811,9 +1782,7 @@
  .nova-mid-row { grid-template-columns: 1fr; }
  .nova-bot-row { grid-template-columns: 1fr; max-height: none; }
  .nova-content { grid-template-rows: auto; height: auto; overflow: visible; }
- .home-content { flex-direction: column; height: auto; overflow: visible; max-width: 100%; width: 100%; box-sizing: border-box; }
-  .home-left-col, .home-right-col { flex: none; overflow: visible; max-width: 100%; min-width: 0; width: 100%; box-sizing: border-box; }
-  .home-right-top { flex-direction: column; flex: none; overflow: visible; max-width: 100%; width: 100%; box-sizing: border-box; }
+ .home-content { display: flex !important; flex-direction: column; height: auto; overflow: visible; max-width: 100%; width: 100%; box-sizing: border-box; }
   .home-today-panel, .home-weekend-panel, .home-grocery-panel, .home-whereami-panel,
   .home-bulletin-panel, .home-month-panel { flex: none; min-height: 0; overflow: visible; }
   .home-today-panel { min-height: 0; height: auto; }
@@ -1825,9 +1794,9 @@
   .home-today-panel .today-columns { overflow: visible; max-height: none; flex: none; height: auto; }
   .home-weekend-panel .weekend-cols,
   .home-grocery-panel .grocery-grid, .home-whereami-panel .whereami-list,
-  .home-bulletin-panel .home-bulletin-strip { overflow: visible; max-height: none; flex: none; }
-  .home-bulletin-strip { flex-direction: column; overflow-x: visible; }
-  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
+  .home-bulletin-panel .corkboard-body { overflow: visible; max-height: none; flex: none; }
+  .corkboard-body { flex-direction: column; overflow-x: visible; }
+  .corkboard-body .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
   .grocery-grid { grid-template-columns: 1fr 1fr; }
  /* Parentals mobile: single column stack */
  .parentals-grid {
@@ -1916,19 +1885,16 @@
  .main-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 8px; }
  .agenda-section { grid-column: 1; grid-row: auto; height: 420px; }
  .month-section { height: 320px; }
- /* Mobile home order */
+  /* Mobile home: single column stack */
   .home-content { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow-x: hidden !important; }
-  .home-left-col { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow: visible !important; }
-  .home-right-col { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow: visible !important; }
-  .home-right-top { display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; overflow: visible !important; flex: none !important; }
-  .home-left-col > *, .home-right-col > *, .home-right-top > * { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; flex: none !important; }
-  .today-tile { order: 1; }
-  .weekend-tile { order: 2; }
-  .home-bulletin-panel { order: 3; }
-  .home-month-panel { order: 4; min-height: 300px; }
-  .home-grocery-panel { order: 5; }
-  .home-whereami-panel { order: 6; }
-  .home-bulletin-strip .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
+  .home-content > * { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; flex: none !important; }
+  .hg-today    { order: 1; }
+  .hg-comingup { order: 2; }
+  .hg-bulletin { order: 3; }
+  .hg-calendar { order: 4; min-height: 300px; }
+  .hg-grocery  { order: 5; }
+  .hg-whereami { order: 6; }
+  .corkboard-body .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
  .panel { height: auto; min-height: 100px; }
@@ -2099,24 +2065,18 @@
  }
 
  /* ── CORKBOARD BACKGROUND ── */
- .corkboard {
+ .corkboard-body {
   background-color: #6b4c2a !important;
   background-image:
    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px),
    repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.025) 3px, rgba(255,255,255,0.025) 5px),
    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.04) 5px, rgba(0,0,0,0.04) 6px),
    repeating-linear-gradient(-45deg, transparent, transparent 7px, rgba(255,255,255,0.02) 7px, rgba(255,255,255,0.02) 8px) !important;
-  border: 1px solid #4a3018 !important;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), inset 0 0 30px rgba(0,0,0,0.25) !important;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.3) !important;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
  }
- .corkboard .section-header {
-  background: rgba(0,0,0,0.28);
-  border-radius: 10px 10px 0 0;
-  border-bottom: 1px solid rgba(0,0,0,0.35);
-  padding: 10px 14px 8px;
- }
- .corkboard .section-title { color: #f5d9a8 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
- .corkboard .add-btn { background: rgba(0,0,0,0.35) !important; border: 1px solid rgba(255,255,255,0.12) !important; }
 
  .bulletin-item {
  /* Sticky note base — color overridden per-note via data-color */
@@ -2280,71 +2240,67 @@
 
   /* ── 2-WEEK AGENDA ── */
   /* ── TWO-WEEK CALENDAR ── */
-  .two-week-wrap { padding: 4px 12px 10px; }
-  .two-week-month-label {
-    font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.09em; color: var(--muted); padding: 4px 2px 8px;
+  /* ── FAMILY CALENDAR — 4-week uniform grid ── */
+  .cal-wrap {
+    display: flex; flex-direction: column;
+    height: 100%; padding: 4px 10px 8px;
+    box-sizing: border-box;
   }
-  .two-week-cols {
-    display: grid;
-    grid-template-columns: 1fr 1px 1fr;
-    gap: 0 14px;
-    align-items: start;
+  .cal-month-label {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--muted); padding: 2px 0 8px;
   }
-  .two-week-vdivider { background: var(--border); align-self: stretch; }
-  .two-week-col { min-width: 0; }
-  .two-week-grid {
+  .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-    table-layout: fixed;
+    grid-template-rows: auto repeat(4, 1fr);
+    gap: 4px;
+    flex: 1;
+    min-height: 0;
   }
-  .two-week-dow {
-    font-size: 0.55rem; font-weight: 600; color: var(--muted);
-    text-align: center; padding: 2px 0; text-transform: uppercase;
-    letter-spacing: 0.04em;
+  .cal-dow {
+    font-size: 0.6rem; font-weight: 700; color: var(--muted);
+    text-align: center; padding: 3px 0 4px; text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
-  .two-week-cell {
+  .cal-day {
     position: relative;
     display: flex; flex-direction: column;
-    align-items: center;
-    padding: 4px 2px 5px;
-    border-radius: 5px;
+    padding: 5px 5px 4px;
+    border-radius: 6px;
+    border: 1px solid transparent;
     cursor: default;
-    transition: background 0.12s;
-    min-height: 30px;
-    min-width: 0;
-    overflow: hidden;
+    transition: background 0.12s, border-color 0.12s;
+    min-height: 0; overflow: hidden;
+    background: rgba(255,255,255,0.02);
   }
-  .two-week-cell.other { opacity: 0; pointer-events: none; }
-  .two-week-cell.has-events { cursor: pointer; }
-  .two-week-cell.has-events:hover { background: rgba(255,255,255,0.04); }
-  .two-week-cell.today .two-week-num {
+  .cal-day.cal-past { opacity: 0.45; }
+  .cal-day.cal-weekend .cal-day-num { color: var(--accent2); }
+  .cal-day.cal-today { background: rgba(126,184,212,0.08); border-color: rgba(126,184,212,0.25); }
+  .cal-day.cal-today .cal-day-num {
     background: var(--accent2); color: #0f1117;
-    border-radius: 50%; width: 18px; height: 18px;
+    border-radius: 50%; width: 20px; height: 20px;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700;
   }
-  .two-week-cell.weekend .two-week-num { color: var(--accent2); }
-  .two-week-cell.today.weekend .two-week-num { color: #0f1117; }
-  .two-week-num { font-size: 0.68rem; line-height: 1; color: var(--text); flex-shrink: 0; }
-  .two-week-pills { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; width: 100%; min-width: 0; }
-  .two-week-pill {
-    font-size: 0.55rem; font-weight: 600; line-height: 1.2;
-    background: rgba(126,184,212,0.18); color: var(--accent2);
+  .cal-day.cal-has-events { cursor: pointer; border-color: rgba(255,255,255,0.06); }
+  .cal-day.cal-has-events:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+  .cal-day-num {
+    font-size: 0.72rem; font-weight: 600; color: var(--text);
+    line-height: 1; flex-shrink: 0; margin-bottom: 3px;
+  }
+  .cal-pills { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .cal-pill {
+    font-size: 0.58rem; font-weight: 600; line-height: 1.25;
+    background: rgba(126,184,212,0.2); color: var(--accent2);
     border-radius: 3px; padding: 2px 4px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    width: 100%; box-sizing: border-box; display: block;
-    text-align: left;
+    display: block; width: 100%; box-sizing: border-box;
   }
-  .two-week-pill.multi { background: rgba(232,184,109,0.15); color: var(--accent); }
-  .two-week-holiday {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 2px 2px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 8px;
+  .cal-day:nth-child(7n+1) .cal-pill, .cal-day:nth-child(7n) .cal-pill {
+    background: rgba(232,184,109,0.18); color: var(--accent);
   }
-  .two-week-holiday-flag { font-size: 0.78rem; flex-shrink: 0; }
-  .two-week-holiday-name { font-size: 0.7rem; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .two-week-holiday-badge { font-size: 0.6rem; font-weight: 600; background: rgba(126,184,212,0.12); color: var(--accent2); border-radius: 20px; padding: 1px 6px; flex-shrink: 0; }
+
 
   .agenda-wrap { padding: 2px 0 8px; }
   .agenda-month-title {
@@ -2480,113 +2436,105 @@
 <div class="tab-panel active" id="tab-home">
   <div class="home-content">
 
-    <!-- LEFT COLUMN: Today | Weekend | Where Am I -->
-    <div class="home-left-col">
-
-      <div class="panel home-today-panel today-tile" id="today-tile">
-        <div class="today-columns">
-          <div class="today-col">
-            <div class="today-col-header">
-              <span class="today-col-title">Today</span>
-              <span class="today-date" id="today-date-label"></span>
-            </div>
-            <div class="today-col-body" id="today-body">
-              <div style="color:var(--muted);font-size:0.78rem">Getting the Lay of the Land...</div>
-            </div>
+    <!-- ROW 1, COL 1: Today/Tomorrow -->
+    <div class="panel home-today-panel today-tile hg-today" id="today-tile">
+      <div class="today-columns">
+        <div class="today-col">
+          <div class="today-col-header">
+            <span class="today-col-title">Today</span>
+            <span class="today-date" id="today-date-label"></span>
           </div>
-          <div class="today-divider"></div>
-          <div class="today-col">
-            <div class="today-col-header">
-              <span class="today-col-title">Tomorrow</span>
-              <span class="today-date" id="tomorrow-date-label"></span>
-            </div>
-            <div class="today-col-body" id="tomorrow-body">
-              <div style="color:var(--muted);font-size:0.78rem">Predicting the Future...</div>
-            </div>
+          <div class="today-col-body" id="today-body">
+            <div style="color:var(--muted);font-size:0.78rem">Getting the Lay of the Land...</div>
+          </div>
+        </div>
+        <div class="today-divider"></div>
+        <div class="today-col">
+          <div class="today-col-header">
+            <span class="today-col-title">Tomorrow</span>
+            <span class="today-date" id="tomorrow-date-label"></span>
+          </div>
+          <div class="today-col-body" id="tomorrow-body">
+            <div style="color:var(--muted);font-size:0.78rem">Predicting the Future...</div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="panel home-weekend-panel weekend-tile">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent)">Coming Up Next</span>
-          </div>
-        </div>
-        <div id="home-next3-events"><div class="weekend-clear">Hold up...</div></div>
-      </div>
-
-      <div class="panel home-whereami-panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">📍 Where I'll Be:</span>
-          </div>
-          <div class="section-header-actions">
-            <button class="add-btn" onclick="openWhereAmIForm()">+</button>
-          </div>
-        </div>
-        <div class="whereami-list" id="whereami-list">
-          <div class="whereami-empty">Thinking...</div>
+    <!-- ROW 1, COL 2: Coming Up Next -->
+    <div class="panel home-weekend-panel weekend-tile hg-comingup">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title" style="color:var(--accent)">Coming Up Next</span>
         </div>
       </div>
+      <div id="home-next3-events"><div class="weekend-clear">Hold up...</div></div>
+    </div>
 
-    </div><!-- /home-left-col -->
-
-    <!-- RIGHT COLUMN: [Bulletin + Grocery] + Month Calendar -->
-    <div class="home-right-col">
-
-      <div class="home-right-top">
-
-        <div class="panel home-bulletin-panel corkboard" style="overflow:hidden">
-          <div class="section-header">
-            <div class="section-header-left">
-              <span class="section-title">Bulletin Board</span>
-            </div>
-            <div class="section-header-actions">
-              <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
-            </div>
-          </div>
-          <div class="home-bulletin-strip" id="home-bulletin-list">
-            <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Doing my Thing...</div>
-          </div>
+    <!-- ROW 1, COL 3: Grocery List -->
+    <div class="panel home-grocery-panel hg-grocery">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Grocery List</span>
         </div>
-
-        <div class="panel home-grocery-panel">
-          <div class="section-header">
-            <div class="section-header-left">
-              <span class="section-title">Grocery List</span>
-            </div>
-            <div class="section-header-actions">
-              <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
-              <button class="add-btn" onclick="openGroceryForm()">+</button>
-            </div>
-          </div>
-          <div class="quick-add-wrap">
-            <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
-              onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
-            <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
-          </div>
-          <div class="grocery-grid" id="grocery-list">
-            <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Hacking Into the Fridge...</div>
-          </div>
-        </div>
-
-      </div><!-- /home-right-top -->
-
-      <div class="panel home-month-panel" id="upcoming-panel">
-        <div class="section-header">
-          <div class="section-header-left">
-            <span class="section-title">Family Calendar</span>
-            <span class="section-badge" id="mini-cal-range"></span>
-          </div>
-          <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
-        </div>
-        <div id="upcoming-list" style="overflow-y:auto;flex:1;min-height:0;">
-          <div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">WAT?...</div>
+        <div class="section-header-actions">
+          <button class="clear-btn" onclick="clearBoughtGroceries()">Clear Bought</button>
+          <button class="add-btn" onclick="openGroceryForm()">+</button>
         </div>
       </div>
+      <div class="quick-add-wrap">
+        <input class="quick-add-input" id="qa-grocery" placeholder="Quick add" autocomplete="off"
+          onkeydown="if(event.key==='Enter') quickAddGrocery(this)">
+        <span class="quick-add-spinner" id="qa-grocery-spin">↻</span>
+      </div>
+      <div class="grocery-grid" id="grocery-list">
+        <div class="grocery-item" style="color:var(--muted);grid-column:1/-1">Hacking Into the Fridge...</div>
+      </div>
+    </div>
 
-    </div><!-- /home-right-col -->
+    <!-- ROW 2, COL 1: Bulletin Board -->
+    <div class="panel home-bulletin-panel hg-bulletin" style="overflow:hidden">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Bulletin Board</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openBulletinForm()">+ Post</button>
+        </div>
+      </div>
+      <div class="home-bulletin-strip corkboard-body" id="home-bulletin-list">
+        <div style="color:var(--muted);font-size:0.8rem;padding:4px 0">Doing my Thing...</div>
+      </div>
+    </div>
+
+    <!-- ROW 2-3, COL 2-3: Family Calendar -->
+    <div class="panel home-month-panel hg-calendar" id="upcoming-panel">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Family Calendar</span>
+          <span class="section-badge" id="mini-cal-range"></span>
+        </div>
+        <button class="clear-btn" onclick="loadUpcomingTile()" style="font-size:0.7rem">↻</button>
+      </div>
+      <div id="upcoming-list" style="flex:1;min-height:0;display:flex;flex-direction:column;">
+        <div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">WAT?...</div>
+      </div>
+    </div>
+
+    <!-- ROW 3, COL 1: Where I'll Be -->
+    <div class="panel home-whereami-panel hg-whereami">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">📍 Where I'll Be:</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="openWhereAmIForm()">+</button>
+        </div>
+      </div>
+      <div class="whereami-list" id="whereami-list">
+        <div class="whereami-empty">Thinking...</div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -5768,79 +5716,73 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         const days = await res.json();
         if (!Array.isArray(days)) { el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; return; }
 
-        // Build event map: date string -> [event names]
+        // Build event map
         const eventMap = {};
         days.forEach(day => { if (day.events && day.events.length) eventMap[day.date] = day.events; });
 
         const today = new Date(); today.setHours(0,0,0,0);
-        const todayStr = today.toISOString().slice(0,10);
-        const end = new Date(today); end.setDate(end.getDate() + 13);
 
-        // Update range badge
+        // Show 4 weeks: start from Sunday of current week
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - today.getDay()); // back to Sunday
+
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 27); // 4 weeks = 28 days
+
         const fmtShort = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        if (rangeEl) rangeEl.textContent = fmtShort(today) + ' – ' + fmtShort(end);
+        if (rangeEl) rangeEl.textContent = fmtShort(today) + ' – ' + fmtShort(endDate);
 
-        const DOW_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
         const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const DOW_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-        // Build 14 days as two 7-day arrays
-        const week1 = [], week2 = [];
-        for (let i = 0; i <= 13; i++) {
-          const dateObj = new Date(today); dateObj.setDate(today.getDate() + i);
+        // Month label
+        const m1 = MONTH_NAMES[startDate.getMonth()];
+        const m2 = MONTH_NAMES[endDate.getMonth()];
+        const yr1 = startDate.getFullYear(), yr2 = endDate.getFullYear();
+        const monthLabel = m1 === m2 ? `${m1} ${yr1}` : (yr1 === yr2 ? `${m1} / ${m2} ${yr1}` : `${m1} ${yr1} / ${m2} ${yr2}`);
+
+        // Build 28 cells (4 rows × 7 cols)
+        let cells = '';
+        for (let i = 0; i < 28; i++) {
+          const dateObj = new Date(startDate);
+          dateObj.setDate(startDate.getDate() + i);
           const dateStr = dateObj.toISOString().slice(0,10);
-          const dow = dateObj.getDay();
-          const isToday = i === 0;
-          const isWeekend = dow === 0 || dow === 6;
+          const isToday = dateObj.getTime() === today.getTime();
+          const isPast = dateObj < today;
+          const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
           const events = eventMap[dateStr] || [];
           const hasEvents = events.length > 0;
-          const cell = { dateObj, dateStr, dow, isToday, isWeekend, events, hasEvents };
-          if (i < 7) week1.push(cell); else week2.push(cell);
-        }
 
-        function renderCell(cell) {
-          let cls = 'two-week-cell';
-          if (cell.isToday) cls += ' today';
-          if (cell.isWeekend) cls += ' weekend';
-          if (cell.hasEvents) cls += ' has-events';
-          const pills = cell.hasEvents
-            ? `<div class="two-week-pills">${cell.events.map((ev, i) =>
-                `<div class="two-week-pill${cell.events.length > 1 ? ' multi' : ''}">${esc(ev)}</div>`
-              ).join('')}</div>`
+          let cls = 'cal-day';
+          if (isToday) cls += ' cal-today';
+          if (isPast) cls += ' cal-past';
+          if (isWeekend) cls += ' cal-weekend';
+          if (hasEvents) cls += ' cal-has-events';
+
+          const safeEvents = esc(JSON.stringify(events));
+          const clickAttr = hasEvents
+            ? `onclick="showDayEvents(this)" data-date="${dateStr}" data-events="${safeEvents}"`
             : '';
-          const safeEvents = esc(JSON.stringify(cell.events));
-          const clickAttr = cell.hasEvents
-            ? `onclick="showDayEvents(this)" data-date="${cell.dateStr}" data-events="${safeEvents}"`
-            : '';
-          return `<div class="${cls}" ${clickAttr}><span class="two-week-num">${cell.dateObj.getDate()}</span>${pills}</div>`;
-        }
 
-        // Month label(s)
-        const m1 = MONTH_NAMES[week1[0].dateObj.getMonth()];
-        const m2 = MONTH_NAMES[week2[week2.length-1].dateObj.getMonth()];
-        const monthLabel = m1 === m2 ? m1 : `${m1} / ${m2}`;
+          const evPills = events.map(ev =>
+            `<div class="cal-pill">${esc(ev)}</div>`
+          ).join('');
 
-        // Single grid: DOW header + week1 row + week2 row
-        // week1[0].dow tells us which column today starts on — pad so row 1 aligns to correct DOW
-        const padCells = week1[0].dow; // today's day-of-week = number of empty leading cells
-        let gridCells = '';
-        for (let p = 0; p < padCells; p++) gridCells += `<div class="two-week-cell other"></div>`;
-        week1.forEach(cell => { gridCells += renderCell(cell); });
-        // Fill remainder of week1 row if < 7 cells (e.g. today is mid-week and we only have 7 days total)
-        const week1Filled = padCells + week1.length;
-        for (let p = week1Filled; p < 7; p++) gridCells += `<div class="two-week-cell other"></div>`;
-        week2.forEach(cell => { gridCells += renderCell(cell); });
-        const week2Filled = week2.length;
-        for (let p = week2Filled; p < 7; p++) gridCells += `<div class="two-week-cell other"></div>`;
-
-        let html = `<div class="two-week-wrap">
-          <div class="two-week-month-label">${monthLabel} ${today.getFullYear()}</div>
-          <div class="two-week-grid">
-            ${DOW_LABELS.map(d => `<div class="two-week-dow">${d}</div>`).join('')}
-            ${gridCells}
+          cells += `<div class="${cls}" ${clickAttr}>
+            <span class="cal-day-num">${dateObj.getDate()}</span>
+            ${evPills ? `<div class="cal-pills">${evPills}</div>` : ''}
           </div>`;
+        }
 
-        html += '</div>';
-        el.innerHTML = html;
+        const dowRow = DOW_LABELS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+        el.innerHTML = `<div class="cal-wrap">
+          <div class="cal-month-label">${monthLabel}</div>
+          <div class="cal-grid">
+            ${dowRow}
+            ${cells}
+          </div>
+        </div>`;
 
       } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; }
     }
