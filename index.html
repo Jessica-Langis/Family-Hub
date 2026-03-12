@@ -2262,18 +2262,18 @@
   }
   .two-week-cell {
     position: relative;
-    aspect-ratio: 1;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    padding-top: 3px;
+    align-items: center;
+    padding: 4px 2px 5px;
     border-radius: 5px;
     cursor: default;
     transition: background 0.12s;
-    min-height: 26px;
+    min-height: 30px;
+    vertical-align: top;
   }
   .two-week-cell.other { opacity: 0; pointer-events: none; }
   .two-week-cell.has-events { cursor: pointer; }
-  .two-week-cell.has-events:hover { background: rgba(255,255,255,0.07); }
+  .two-week-cell.has-events:hover { background: rgba(255,255,255,0.04); }
   .two-week-cell.today .two-week-num {
     background: var(--accent2); color: #0f1117;
     border-radius: 50%; width: 18px; height: 18px;
@@ -2282,9 +2282,16 @@
   }
   .two-week-cell.weekend .two-week-num { color: var(--accent2); }
   .two-week-cell.today.weekend .two-week-num { color: #0f1117; }
-  .two-week-num { font-size: 0.68rem; line-height: 1; color: var(--text); }
-  .two-week-dots { display: flex; gap: 2px; justify-content: center; margin-top: 2px; }
-  .two-week-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+  .two-week-num { font-size: 0.68rem; line-height: 1; color: var(--text); flex-shrink: 0; }
+  .two-week-pills { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; width: 100%; }
+  .two-week-pill {
+    font-size: 0.55rem; font-weight: 600; line-height: 1.2;
+    background: rgba(126,184,212,0.18); color: var(--accent2);
+    border-radius: 3px; padding: 2px 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center; width: 100%; box-sizing: border-box;
+  }
+  .two-week-pill.multi { background: rgba(232,184,109,0.15); color: var(--accent); }
   .two-week-holiday {
     display: flex; align-items: center; gap: 6px;
     padding: 7px 2px 2px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 8px;
@@ -5747,14 +5754,16 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           if (cell.isToday) cls += ' today';
           if (cell.isWeekend) cls += ' weekend';
           if (cell.hasEvents) cls += ' has-events';
-          const dots = cell.hasEvents
-            ? `<div class="two-week-dots">${cell.events.slice(0,3).map(() => '<div class="two-week-dot"></div>').join('')}</div>`
+          const pills = cell.hasEvents
+            ? `<div class="two-week-pills">${cell.events.map((ev, i) =>
+                `<div class="two-week-pill${cell.events.length > 1 ? ' multi' : ''}">${esc(ev)}</div>`
+              ).join('')}</div>`
             : '';
           const safeEvents = esc(JSON.stringify(cell.events));
           const clickAttr = cell.hasEvents
             ? `onclick="showDayEvents(this)" data-date="${cell.dateStr}" data-events="${safeEvents}"`
             : '';
-          return `<div class="${cls}" ${clickAttr}><span class="two-week-num">${cell.dateObj.getDate()}</span>${dots}</div>`;
+          return `<div class="${cls}" ${clickAttr}><span class="two-week-num">${cell.dateObj.getDate()}</span>${pills}</div>`;
         }
 
         // Month label(s)
