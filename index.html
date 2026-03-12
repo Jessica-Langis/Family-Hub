@@ -584,10 +584,10 @@
   .next3-holiday-badge { font-size: 0.6rem; font-weight: 600; color: var(--accent2); flex-shrink: 0; white-space: nowrap; }
 
   /* ── FAMILY PLANS STACK ── */
-  .fp-stack { display: flex; flex-direction: column; padding: 4px 16px 10px; }
-  .fp-row { display: flex; flex-direction: column; gap: 3px; padding: 10px 0 8px; }
-  .fp-row-holiday { padding: 8px 0 4px; }
-  .fp-divider { height: 1px; background: rgba(255,255,255,0.06); }
+  .fp-stack { display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 0 14px; padding: 8px 16px 12px; align-items: start; }
+  .fp-row { display: flex; flex-direction: column; gap: 3px; padding: 4px 0; }
+  .fp-row-holiday { padding: 4px 0; }
+  .fp-divider { background: var(--border); align-self: stretch; }
   .fp-row-label {
     font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
     text-transform: uppercase; margin-bottom: 4px;
@@ -608,7 +608,7 @@
   }
   .fp-none { font-size: 0.78rem; color: var(--muted); font-style: italic; }
   .fp-holiday-inner {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    display: flex; flex-direction: column; gap: 4px;
   }
   .fp-holiday-left { display: flex; flex-direction: column; gap: 2px; }
   .fp-holiday-label {
@@ -2457,7 +2457,7 @@
       <div class="panel home-weekend-panel weekend-tile">
         <div class="section-header">
           <div class="section-header-left">
-            <span class="section-title" style="color:var(--accent2)">Family Plans</span>
+            <span class="section-title" style="color:var(--accent)">Family Plans</span>
           </div>
         </div>
         <div id="home-next3-events"><div class="weekend-clear">Hold up...</div></div>
@@ -5585,7 +5585,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
 
         // NEXT UP
         html += '<div class="fp-row">';
-        html += '<div class="fp-row-label" style="color:var(--accent3)">NEXT UP</div>';
+        html += '<div class="fp-row-label" style="color:var(--accent)">NEXT UP</div>';
         if (nextUpEvts.length) {
           const diff = getDayDiff(nextUpEvts[0].date);
           const badge = countdownBadge(diff);
@@ -5616,7 +5616,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         if (holiday) {
           const hDiff = getDayDiff(holiday.date.toISOString().slice(0,10));
           const hBadge = countdownBadge(hDiff);
-          html += `<div class="fp-holiday-inner"><div class="fp-holiday-left"><div class="fp-holiday-label">NEXT HOLIDAY</div><div class="fp-holiday-name">${esc(holiday.name)}</div><div class="fp-holiday-date">${fmtDate(holiday.date.toISOString().slice(0,10))}</div></div><div class="countdown-badge ${hBadge.cls}" style="font-size:0.62rem;padding:1px 7px;align-self:center">${hBadge.text}</div></div>`;
+          html += `<div class="fp-holiday-inner"><div class="fp-holiday-label">NEXT HOLIDAY</div><div class="fp-holiday-name">${esc(holiday.name)}</div><div class="fp-holiday-date">${fmtDate(holiday.date.toISOString().slice(0,10))}</div><div style="margin-top:5px"><span class="countdown-badge ${hBadge.cls}" style="font-size:0.62rem;padding:1px 7px">${hBadge.text}</span></div></div>`;
         }
         html += '</div></div>';
         el.innerHTML = html;
