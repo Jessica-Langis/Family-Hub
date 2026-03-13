@@ -2289,7 +2289,17 @@
     font-size: 0.72rem; font-weight: 600; color: var(--text);
     line-height: 1; flex-shrink: 0; margin-bottom: 3px;
   }
-  .cal-pills { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; min-height: 0; }
+  .cal-pills {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0; flex: 1; min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+  .cal-pills::-webkit-scrollbar { width: 2px; }
+  .cal-pills::-webkit-scrollbar-track { background: transparent; }
+  .cal-pills::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+  .cal-pills::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
   .cal-pill {
     font-size: 0.58rem; font-weight: 600; line-height: 1.25;
     background: rgba(126,184,212,0.2); color: var(--accent2);
@@ -3798,10 +3808,11 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  });
     // Sort by due date ascending (no due date goes last), cap at 6
     filtered.sort((a, b) => {
-      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate && !b.dueDate) return a.name.localeCompare(b.name);
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
-      return a.dueDate.localeCompare(b.dueDate);
+      const dateCmp = a.dueDate.localeCompare(b.dueDate);
+      return dateCmp !== 0 ? dateCmp : a.name.localeCompare(b.name);
     });
     renderPersonalChoreList(filtered, 'parent-chore-list', 'parent-chore-badge', 'home');
  } catch (e) {
@@ -4060,10 +4071,10 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  const sorted = [...normalized].sort((a, b) => {
  const dA = a.date ? new Date(a.date) : null;
  const dB = b.date ? new Date(b.date) : null;
- if (dA && dB) return dA - dB;
+ if (dA && dB) { const dc = dA - dB; return dc !== 0 ? dc : a.text.localeCompare(b.text); }
  if (dA) return -1;
  if (dB) return 1;
- return 0;
+ return a.text.localeCompare(b.text);
  });
 
  listEl.innerHTML = sorted.map(item => {
@@ -4339,10 +4350,10 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  const sorted = [...items].sort((a, b) => {
  const dA = a.date ? new Date(a.date) : null;
  const dB = b.date ? new Date(b.date) : null;
- if (dA && dB) return dA - dB;
+ if (dA && dB) { const dc = dA - dB; return dc !== 0 ? dc : a.text.localeCompare(b.text); }
  if (dA) return -1;
  if (dB) return 1;
- return 0;
+ return a.text.localeCompare(b.text);
  });
  list.innerHTML = sorted.map(item => {
  const label = formatReminderDate(item.date);
@@ -4539,9 +4550,11 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  return;
  }
 
- const sorted = [...items].sort((a, b) =>
- bought.includes(a) ? 1 : bought.includes(b) ? -1 : 0
- );
+ const sorted = [...items].sort((a, b) => {
+ const aBought = bought.includes(a), bBought = bought.includes(b);
+ if (aBought !== bBought) return aBought ? 1 : -1;
+ return a.localeCompare(b);
+ });
  grid.innerHTML = sorted.map(item => {
  const isBought = bought.includes(item);
  return `<div class="grocery-item${isBought ? ' bought' : ''}" data-grocery-item="${esc(item)}">
@@ -5568,7 +5581,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         let nextUpEvts = [];
         if (futureEvts.length) {
           const soonestDate = futureEvts[0].date;
-          nextUpEvts = futureEvts.filter(e => e.date === soonestDate);
+          nextUpEvts = futureEvts.filter(e => e.date === soonestDate).sort((a,b) => a.name.localeCompare(b.name));
         }
 
         // ── Next Event: next upcoming wrestling event ──
@@ -5788,31 +5801,8 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           </div>
         </div>`;
 
-        // After render: trim pills that overflow and show "+N more"
-        requestAnimationFrame(() => trimCalPills(el));
 
       } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; }
-    }
-
-    function trimCalPills(container) {
-      // Hard cap: show max 3 pills, rest become "+N more"
-      // Each pill ~18px + 2px gap; day-num ~20px; padding ~9px top+bottom = ~29px overhead
-      // At typical row height (~100-130px) this shows 3 pills comfortably
-      const MAX_PILLS = 3;
-      container.querySelectorAll('.cal-day .cal-pills').forEach(pillsEl => {
-        const pills = Array.from(pillsEl.querySelectorAll('.cal-pill'));
-        if (pills.length <= MAX_PILLS) return; // nothing to trim
-
-        // Hide pills beyond the cap
-        for (let i = MAX_PILLS; i < pills.length; i++) {
-          pills[i].style.display = 'none';
-        }
-        const hidden = pills.length - MAX_PILLS;
-        const more = document.createElement('span');
-        more.className = 'cal-pill-more';
-        more.textContent = '+' + hidden + ' more';
-        pillsEl.appendChild(more);
-      });
     }
 
     function showDayEvents(el) {
