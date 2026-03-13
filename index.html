@@ -5795,58 +5795,23 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
     }
 
     function trimCalPills(container) {
+      // Hard cap: show max 3 pills, rest become "+N more"
+      // Each pill ~18px + 2px gap; day-num ~20px; padding ~9px top+bottom = ~29px overhead
+      // At typical row height (~100-130px) this shows 3 pills comfortably
+      const MAX_PILLS = 3;
       container.querySelectorAll('.cal-day .cal-pills').forEach(pillsEl => {
-        const dayEl = pillsEl.closest('.cal-day');
         const pills = Array.from(pillsEl.querySelectorAll('.cal-pill'));
-        if (!pills.length) return;
+        if (pills.length <= MAX_PILLS) return; // nothing to trim
 
-        // Remove any stale "+more" from previous render
-        pillsEl.querySelectorAll('.cal-pill-more').forEach(el => el.remove());
-
-        // Temporarily remove overflow:hidden so we can measure real heights
-        pillsEl.style.overflow = 'visible';
-        pills.forEach(p => { p.style.display = ''; });
-
-        // Measure available height: cell height minus day-number area minus padding
-        const dayH = dayEl.clientHeight;
-        const numEl = dayEl.querySelector('.cal-day-num');
-        const numH = numEl ? (numEl.offsetHeight + 3) : 20; // 3px margin-bottom
-        const available = dayH - numH - 10; // 10px = top+bottom padding
-
-        // Walk pills, accumulate real heights, find cut point
-        let usedH = 0;
-        let lastFit = -1;
-        for (let i = 0; i < pills.length; i++) {
-          const ph = pills[i].getBoundingClientRect().height + 2; // 2px gap
-          if (usedH + ph <= available) {
-            usedH += ph;
-            lastFit = i;
-          } else {
-            break;
-          }
+        // Hide pills beyond the cap
+        for (let i = MAX_PILLS; i < pills.length; i++) {
+          pills[i].style.display = 'none';
         }
-
-        // Restore overflow
-        pillsEl.style.overflow = '';
-
-        const hiddenCount = pills.length - 1 - lastFit;
-        if (hiddenCount > 0) {
-          // If we need to show "+N more", reserve ~14px for it — pull back one pill if needed
-          const moreH = 14;
-          if (lastFit >= 0 && (available - usedH) < moreH) {
-            lastFit--;
-          }
-          const finalHidden = pills.length - 1 - lastFit;
-          for (let i = lastFit + 1; i < pills.length; i++) {
-            pills[i].style.display = 'none';
-          }
-          if (finalHidden > 0) {
-            const more = document.createElement('span');
-            more.className = 'cal-pill-more';
-            more.textContent = '+' + finalHidden + ' more';
-            pillsEl.appendChild(more);
-          }
-        }
+        const hidden = pills.length - MAX_PILLS;
+        const more = document.createElement('span');
+        more.className = 'cal-pill-more';
+        more.textContent = '+' + hidden + ' more';
+        pillsEl.appendChild(more);
       });
     }
 
