@@ -43,9 +43,9 @@
 
  /* ── TOP BAR ── */
  .topbar {
- display: flex;
+ display: grid;
+ grid-template-columns: 1fr auto 1fr;
  align-items: center;
- justify-content: space-between;
  background: var(--surface);
  border: 1px solid var(--border);
  border-radius: 12px;
@@ -71,7 +71,7 @@
 
  #date { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 
- .weather-block { display: flex; gap: 12px; align-items: center; }
+ .weather-block { display: flex; gap: 12px; align-items: center; justify-content: flex-end; }
  .topbar-bottom-row { display: contents; } /* transparent wrapper on desktop */
 
  .weather-day {
@@ -1917,8 +1917,7 @@
  .this-week-panel > div:first-child { flex-wrap: wrap; gap: 6px; }
  .this-week-text { white-space: normal !important; }
 
- .topbar { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 6px; padding: 10px 12px; overflow: hidden; }
- .topbar-bottom-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
+ .topbar { display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 6px; padding: 10px 12px; overflow: hidden; }
  .home-title { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
  .clock-block { flex-shrink: 0; text-align: left; }
  #clock { font-size: 1.1rem; white-space: nowrap; }
@@ -2469,18 +2468,16 @@
 <!-- ── TOP BAR (shared) ── -->
 <div class="topbar">
  <div class="home-title" id="topbar-title">What Up Fam?</div>
- <div class="topbar-bottom-row">
  <div class="clock-block">
- <div id="clock">--:--</div>
- <div id="date">Uno Momento...</div>
+  <div id="clock">--:--</div>
+  <div id="date">Uno Momento...</div>
  </div>
  <div class="weather-block" id="weather">
- <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
- <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
- <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
- <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
- <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
- </div>
+  <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+  <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+  <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+  <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
+  <div class="weather-day"><div class="day-name">--</div><div class="icon">⏳</div><div class="temp">--°</div><div class="condition">Loading</div></div>
  </div>
 </div>
 
