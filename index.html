@@ -2289,7 +2289,7 @@
     font-size: 0.72rem; font-weight: 600; color: var(--text);
     line-height: 1; flex-shrink: 0; margin-bottom: 3px;
   }
-  .cal-pills { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; min-height: 0; overflow: hidden; }
+  .cal-pills { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; min-height: 0; }
   .cal-pill {
     font-size: 0.58rem; font-weight: 600; line-height: 1.25;
     background: rgba(126,184,212,0.2); color: var(--accent2);
@@ -5800,22 +5800,24 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         const pills = Array.from(pillsEl.querySelectorAll('.cal-pill'));
         if (!pills.length) return;
 
-        // Clear any existing overflow label
-        const existingMore = pillsEl.querySelector('.cal-pill-more');
-        if (existingMore) existingMore.remove();
+        // Remove any stale "+more" from previous render
+        pillsEl.querySelectorAll('.cal-pill-more').forEach(el => el.remove());
 
-        // Show all pills first
+        // Temporarily remove overflow:hidden so we can measure real heights
+        pillsEl.style.overflow = 'visible';
         pills.forEach(p => { p.style.display = ''; });
 
-        // How much vertical space is available in the cell for pills?
+        // Measure available height: cell height minus day-number area minus padding
         const dayH = dayEl.clientHeight;
-        const pillsTop = pillsEl.offsetTop - dayEl.offsetTop;
-        const available = dayH - pillsTop - 4;
+        const numEl = dayEl.querySelector('.cal-day-num');
+        const numH = numEl ? (numEl.offsetHeight + 3) : 20; // 3px margin-bottom
+        const available = dayH - numH - 10; // 10px = top+bottom padding
 
+        // Walk pills, accumulate real heights, find cut point
         let usedH = 0;
         let lastFit = -1;
         for (let i = 0; i < pills.length; i++) {
-          const ph = pills[i].offsetHeight + 2; // 2px gap
+          const ph = pills[i].getBoundingClientRect().height + 2; // 2px gap
           if (usedH + ph <= available) {
             usedH += ph;
             lastFit = i;
@@ -5824,20 +5826,25 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           }
         }
 
+        // Restore overflow
+        pillsEl.style.overflow = '';
+
         const hiddenCount = pills.length - 1 - lastFit;
         if (hiddenCount > 0) {
+          // If we need to show "+N more", reserve ~14px for it — pull back one pill if needed
+          const moreH = 14;
+          if (lastFit >= 0 && (available - usedH) < moreH) {
+            lastFit--;
+          }
+          const finalHidden = pills.length - 1 - lastFit;
           for (let i = lastFit + 1; i < pills.length; i++) {
             pills[i].style.display = 'none';
           }
-          const more = document.createElement('span');
-          more.className = 'cal-pill-more';
-          more.textContent = '+' + hiddenCount + ' more';
-          pillsEl.appendChild(more);
-
-          // If "+N more" itself pushes overflow, sacrifice one more pill
-          if (lastFit >= 0 && pillsEl.scrollHeight > pillsEl.clientHeight + 2) {
-            pills[lastFit].style.display = 'none';
-            more.textContent = '+' + (hiddenCount + 1) + ' more';
+          if (finalHidden > 0) {
+            const more = document.createElement('span');
+            more.className = 'cal-pill-more';
+            more.textContent = '+' + finalHidden + ' more';
+            pillsEl.appendChild(more);
           }
         }
       });
