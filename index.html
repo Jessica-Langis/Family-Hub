@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Family Hub</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=Fredoka+One&family=Barlow+Condensed:wght@400;600;700&family=Zilla+Slab:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=Fredoka+One&family=Barlow+Condensed:wght@400;600;700&family=Zilla+Slab:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <style>
  :root {
  --bg: #0f1117;
@@ -511,9 +511,10 @@
     align-items: flex-start;
   }
   .home-bulletin-strip .bulletin-item, .corkboard-body .bulletin-item {
-    flex: 1 1 140px;
-    max-width: 200px;
-    min-width: 120px;
+    flex: 0 0 150px;
+    width: 150px;
+    max-width: 150px;
+    min-width: 150px;
   }
 
   /* ── THIS WEEKEND TILE ── */
@@ -1796,7 +1797,7 @@
   .home-grocery-panel .grocery-grid, .home-whereami-panel .whereami-list,
   .home-bulletin-panel .corkboard-body { overflow: visible; max-height: none; flex: none; }
   .corkboard-body { flex-direction: column; overflow-x: visible; }
-  .corkboard-body .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
+  .corkboard-body .bulletin-item { flex: 0 0 150px; width: 150px; max-width: 150px; transform: none !important; }
   .grocery-grid { grid-template-columns: 1fr 1fr; }
  /* Parentals mobile: single column stack */
  .parentals-grid {
@@ -1894,7 +1895,7 @@
   .hg-calendar { order: 4; min-height: 300px; }
   .hg-grocery  { order: 5; }
   .hg-whereami { order: 6; }
-  .corkboard-body .bulletin-item { flex: 1 1 auto; max-width: none; transform: none !important; }
+  .corkboard-body .bulletin-item { flex: 0 0 150px; width: 150px; max-width: 150px; transform: none !important; }
  .home-menu-panel { order: 3; }
  .chore-list { overflow: visible; height: auto; grid-template-columns: 1fr; }
  .panel { height: auto; min-height: 100px; }
@@ -2085,13 +2086,16 @@
  border-top: 3px solid rgba(232,184,109,0.55);
  border-radius: 2px 2px 4px 4px;
  padding: 14px 16px 12px;
+ width: 150px;
+ height: 150px;
  min-width: 150px;
- max-width: 240px;
- flex: 1;
+ max-width: 150px;
+ flex: 0 0 150px;
  position: relative;
  display: flex;
  flex-direction: column;
  gap: 6px;
+ overflow: hidden;
  /* Slight rotation for authentic feel */
  transform: rotate(-0.8deg);
  /* Layered shadow: drop shadow + warm amber glow beneath */
@@ -2143,23 +2147,21 @@
  z-index: 2;
  }
 
- /* Tonight's Dinner sticky — fork pin instead of red pushpin */
- .bulletin-item--dinner::before {
-   content: '🍽';
-   background: none;
-   box-shadow: none;
-   font-size: 14px;
-   width: auto; height: auto;
-   top: -12px;
-   border-radius: 0;
- }
- .bulletin-item--dinner::after { display: none; }
+ /* Tonight's Dinner sticky — calligraphy font, standard red pin */
  .bulletin-item--dinner .bulletin-who {
    font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
    color: rgba(100,200,180,0.7); font-weight: 700;
  }
+ .bulletin-item--dinner .bulletin-text {
+   font-family: 'Dancing Script', cursive;
+   font-size: 1.05rem;
+   font-weight: 600;
+   line-height: 1.4;
+   color: rgba(232,234,240,0.95);
+ }
  .bulletin-item--dinner .bulletin-text.empty-dinner {
-   color: var(--muted); font-style: italic; font-size: 0.8rem;
+   color: var(--muted); font-style: italic; font-size: 0.85rem;
+   font-family: 'DM Sans', sans-serif;
  }
 
  .bulletin-who {
@@ -2176,7 +2178,15 @@
  line-height: 1.5;
  font-family: 'DM Sans', sans-serif;
  word-break: break-word;
+ flex: 1;
+ min-height: 0;
+ overflow-y: auto;
+ scrollbar-width: thin;
+ scrollbar-color: rgba(255,255,255,0.08) transparent;
  }
+ .bulletin-text::-webkit-scrollbar { width: 2px; }
+ .bulletin-text::-webkit-scrollbar-track { background: transparent; }
+ .bulletin-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
  .bulletin-date {
  font-size: 0.65rem;
  color: rgba(136,145,168,0.7);
@@ -5888,7 +5898,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
     // Also refreshes always-visible home elements regardless of active tab.
     // Skips refresh if an overlay/form is open to avoid interrupting input.
     // ─────────────────────────────────────────────
-    const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
+    const POLL_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
     function isAnyOverlayOpen() {
       return Array.from(document.querySelectorAll(
