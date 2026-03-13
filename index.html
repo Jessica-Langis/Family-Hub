@@ -3934,15 +3934,13 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  async function togglePersonalChore(idx, el, person, listId, badgeId) {
  el.classList.toggle('done');
  const isDone = el.classList.contains('done');
- const script = person === 'home' ? SCRIPTS.CHORES
- : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
  const fd = new FormData();
  fd.append('action', 'toggle');
  fd.append('type', 'chores');
  fd.append('idx', idx);
  fd.append('done', isDone.toString());
  try {
- await apiFetch(script, { method: 'POST', body: fd });
+ await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
  } catch (e) {
  el.classList.toggle('done');
  err('togglePersonalChore failed, reverted:', e.message);
@@ -3955,19 +3953,16 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  }
 
  async function deletePersonalChore(idx, person, listId, badgeId) {
-  const script = person === 'home' ? SCRIPTS.CHORES
-    : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
   try {
     const fd = new FormData();
     fd.append('action', 'delete');
     fd.append('type', 'chores');
     fd.append('idx', idx);
-    await apiFetch(script, { method: 'POST', body: fd });
-    if (person === 'home') {
-      if (document.getElementById('chore-list')) await loadChores();
-      if (document.getElementById('parent-chore-list')) await loadParentChores();
-    } else if (person === 'tori') await loadToriChores();
-    else await loadNovaChores();
+    await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
+    if (document.getElementById('chore-list')) await loadChores();
+    if (document.getElementById('parent-chore-list')) loadParentChores();
+    if (document.getElementById('tori-chore-list')) loadToriChores();
+    if (document.getElementById('nova-chore-list')) loadNovaChores();
   } catch (e) {
     err('deletePersonalChore failed:', e.message);
   }
@@ -3977,9 +3972,9 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  const list = document.getElementById('tori-chore-list');
  if (!list) return;
  try {
- const res = await apiFetch(SCRIPTS.TORI + '?type=chores');
+ const res = await apiFetch(SCRIPTS.CHORES + '?type=chores');
  const data = await res.json();
- const chores = Array.isArray(data) ? data : [];
+ const chores = (Array.isArray(data) ? data : []).filter(c => (c.who || '').toLowerCase().trim() === 'tori');
  renderPersonalChoreList(chores, 'tori-chore-list', 'tori-chore-badge', 'tori');
  } catch (e) {
  list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
@@ -3990,9 +3985,9 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  const list = document.getElementById('nova-chore-list');
  if (!list) return;
  try {
- const res = await apiFetch(SCRIPTS.NOVA + '?type=chores');
+ const res = await apiFetch(SCRIPTS.CHORES + '?type=chores');
  const data = await res.json();
- const chores = Array.isArray(data) ? data : [];
+ const chores = (Array.isArray(data) ? data : []).filter(c => (c.who || '').toLowerCase().trim() === 'nova');
  renderPersonalChoreList(chores, 'nova-chore-list', 'nova-chore-badge', 'nova');
  } catch (e) {
  list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable — check connection</div>';
@@ -4039,6 +4034,8 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  closeSharedChoreForm();
  await loadChores();
  loadParentChores();
+ if (document.getElementById('tori-chore-list')) loadToriChores();
+ if (document.getElementById('nova-chore-list')) loadNovaChores();
  } catch (e) {
  clearLoading(btn);
  setStatus('shared-chore-status', 'Failed to save — check connection', true);
@@ -4071,23 +4068,24 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  const editIdx = overlay.dataset.editIdx;
  if (!name) return;
  setLoading(btn);
- const script = person === 'home' ? SCRIPTS.CHORES
- : person === 'tori' ? SCRIPTS.TORI : SCRIPTS.NOVA;
+ // Determine who value: tori/nova tabs stamp their name, home leaves blank
+ const choreWho = person === 'tori' ? 'Tori' : person === 'nova' ? 'Nova' : '';
  try {
  const fd = new FormData();
  fd.append('action', editIdx ? 'update' : 'add');
  fd.append('type', 'chores');
  fd.append('name', name);
- fd.append('who', '');
+ fd.append('who', choreWho);
  fd.append('frequency', frequency);
  fd.append('dueDate', dueDate);
  if (editIdx) fd.append('idx', editIdx);
- await apiFetch(script, { method: 'POST', body: fd });
+ await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd });
  clearLoading(btn);
  closePersonalChoreForm();
- if (person === 'home') { await loadChores(); loadParentChores(); }
- else if (person === 'tori') await loadToriChores();
- else await loadNovaChores();
+ await loadChores();
+ loadParentChores();
+ if (document.getElementById('tori-chore-list')) loadToriChores();
+ if (document.getElementById('nova-chore-list')) loadNovaChores();
  } catch (e) {
  clearLoading(btn);
  err('submitPersonalChore failed:', e.message);
