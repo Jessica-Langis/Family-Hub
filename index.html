@@ -2143,6 +2143,25 @@
  z-index: 2;
  }
 
+ /* Tonight's Dinner sticky — fork pin instead of red pushpin */
+ .bulletin-item--dinner::before {
+   content: '🍽';
+   background: none;
+   box-shadow: none;
+   font-size: 14px;
+   width: auto; height: auto;
+   top: -12px;
+   border-radius: 0;
+ }
+ .bulletin-item--dinner::after { display: none; }
+ .bulletin-item--dinner .bulletin-who {
+   font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
+   color: rgba(100,200,180,0.7); font-weight: 700;
+ }
+ .bulletin-item--dinner .bulletin-text.empty-dinner {
+   color: var(--muted); font-style: italic; font-size: 0.8rem;
+ }
+
  .bulletin-who {
  font-size: 0.68rem;
  font-weight: 700;
@@ -4723,6 +4742,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
      fd.append('meal', '__CLEAR__');
      await apiFetch(SCRIPTS.MEAL, { method: 'POST', body: fd });
      await loadMealPlan();
+     if (document.getElementById('home-bulletin-list')) loadHomeBulletin();
    } catch (e) { err('clearMeal failed:', e.message); }
  }
 
@@ -4754,6 +4774,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
      clearLoading(btn);
      closeMealForm();
      loadMealPlan();
+     if (document.getElementById('home-bulletin-list')) loadHomeBulletin();
    } catch (e) {
      clearLoading(btn);
      setStatus('meal-status', 'Failed to save — check connection', true);
@@ -5501,10 +5522,22 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       const el = document.getElementById('home-bulletin-list');
       if (!el) return;
       try {
-        const res = await apiFetch(SCRIPTS.CHORES + '?type=bulletin');
-        const items = await res.json();
-        if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Nothing posted yet — be the first!</div>'; return; }
-        el.innerHTML = items.slice(0,4).map(b => {
+        const [bulletinRes, mealRes] = await Promise.all([
+          apiFetch(SCRIPTS.CHORES + '?type=bulletin'),
+          apiFetch(SCRIPTS.MEAL)
+        ]);
+        const items = await bulletinRes.json();
+        const meals = await mealRes.json();
+
+        // Tonight's dinner sticky — always first
+        const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const todayMeal = meals[dayNames[new Date().getDay()]] || null;
+        const dinnerNote = `<div class="bulletin-item bulletin-item--dinner" data-color="teal">
+          <div class="bulletin-who">Tonight's Dinner</div>
+          <div class="bulletin-text${todayMeal ? '' : ' empty-dinner'}">${todayMeal ? esc(todayMeal) : 'Nothing planned yet'}</div>
+        </div>`;
+
+        const bulletinHtml = items.slice(0,4).map(b => {
           let dateStr = '';
           if (b.date) { const d = new Date(b.date); dateStr = !isNaN(d.getTime()) ? (d.getMonth()+1)+'/'+d.getDate() : b.date; }
           return `<div class="bulletin-item" data-color="${esc(b.color||'amber')}">
@@ -5514,6 +5547,8 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
             ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
           </div>`;
         }).join('');
+
+        el.innerHTML = dinnerNote + (bulletinHtml || '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Nothing posted yet — be the first!</div>');
       } catch(e) { el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:4px 0">Unavailable</div>'; }
     }
 
@@ -5845,6 +5880,64 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
 
       document.body.appendChild(overlay);
     }
+
+    // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // AUTO-REFRESH POLLING
+    // Silently re-fetches all data for the current tab every 60s.
+    // Also refreshes always-visible home elements regardless of active tab.
+    // Skips refresh if an overlay/form is open to avoid interrupting input.
+    // ─────────────────────────────────────────────
+    const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
+
+    function isAnyOverlayOpen() {
+      return Array.from(document.querySelectorAll(
+        '.overlay, [id$="-overlay"]'
+      )).some(el => !el.classList.contains('hidden') && el.offsetParent !== null);
+    }
+
+    function refreshCurrentTab() {
+      if (isAnyOverlayOpen()) return; // don't interrupt active input
+
+      const tab = currentTab;
+
+      // Always refresh home data (visible in header/home regardless of tab)
+      loadTodayTile();
+      loadWeekendTile();
+
+      if (tab === 'home') {
+        loadChores();
+        loadGroceryList();
+        loadHomeBulletin();
+        loadWhereAmI();
+        loadUpcomingTile();
+      } else if (tab === 'parentals') {
+        loadParentChores();
+        loadParentReminders();
+        loadMealPlan();
+      } else if (tab === 'fun') {
+        loadFunMovies();
+        loadFunBooks();
+        loadFunMeals();
+      } else if (tab === 'tori') {
+        loadToriChores();
+        loadToriReminders();
+        loadToriSchedule();
+        loadToriEvents();
+        loadThisWeek();
+        loadPBs();
+      } else if (tab === 'nova') {
+        loadNovaChores();
+        loadNovaEvents();
+        loadHomework();
+        loadNovaTodayPanel();
+        loadNovaThisWeek();
+        loadNovaReminders();
+        loadNovaNotes();
+      }
+    }
+
+    setInterval(refreshCurrentTab, POLL_INTERVAL_MS);
 
     // ─────────────────────────────────────────────
     // KEYBOARD SHORTCUTS
