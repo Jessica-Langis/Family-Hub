@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Family Hub</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=Fredoka+One&family=Barlow+Condensed:wght@400;600;700&family=Zilla+Slab:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=Fredoka+One&family=Barlow+Condensed:wght@400;600;700&family=Zilla+Slab:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600;700&family=Caveat:wght@500;600&family=Pacifico&family=Satisfy&family=Kalam:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
  :root {
  --bg: #0f1117;
@@ -2094,8 +2094,8 @@
  position: relative;
  display: flex;
  flex-direction: column;
- gap: 6px;
- overflow: hidden;
+ gap: 0;
+ overflow: visible;
  /* Slight rotation for authentic feel */
  transform: rotate(-0.8deg);
  /* Layered shadow: drop shadow + warm amber glow beneath */
@@ -2152,13 +2152,7 @@
    font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
    color: rgba(100,200,180,0.7); font-weight: 700;
  }
- .bulletin-item--dinner .bulletin-text {
-   font-family: 'Dancing Script', cursive;
-   font-size: 1.05rem;
-   font-weight: 600;
-   line-height: 1.4;
-   color: rgba(232,234,240,0.95);
- }
+
  .bulletin-item--dinner .bulletin-text.empty-dinner {
    color: var(--muted); font-style: italic; font-size: 0.85rem;
    font-family: 'DM Sans', sans-serif;
@@ -2187,6 +2181,23 @@
  .bulletin-text::-webkit-scrollbar { width: 2px; }
  .bulletin-text::-webkit-scrollbar-track { background: transparent; }
  .bulletin-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+ /* Handwriting font per-note via data-font attribute */
+ .bulletin-item[data-font="dancing"]  .bulletin-text { font-family: 'Dancing Script', cursive;  font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
+ .bulletin-item[data-font="caveat"]   .bulletin-text { font-family: 'Caveat', cursive;           font-size: 1.1rem;  font-weight: 500; line-height: 1.4; }
+ .bulletin-item[data-font="pacifico"] .bulletin-text { font-family: 'Pacifico', cursive;         font-size: 0.88rem; font-weight: 400; line-height: 1.45; }
+ .bulletin-item[data-font="satisfy"]  .bulletin-text { font-family: 'Satisfy', cursive;          font-size: 0.95rem; font-weight: 400; line-height: 1.45; }
+ .bulletin-item[data-font="kalam"]    .bulletin-text { font-family: 'Kalam', cursive;            font-size: 1rem;    font-weight: 400; line-height: 1.45; }
+ .bulletin-item[data-font="patrick"]  .bulletin-text { font-family: 'Patrick Hand', cursive;     font-size: 0.98rem; font-weight: 400; line-height: 1.45; }
+ /* Inner content wrapper clips text without clipping the pin */
+ .bulletin-inner {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+   flex: 1;
+   min-height: 0;
+   overflow: hidden;
+ }
  .bulletin-date {
  font-size: 0.65rem;
  color: rgba(136,145,168,0.7);
@@ -5508,6 +5519,12 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
     // ─────────────────────────────────────────────
     // HOME: BULLETIN, WEEKEND, NEXT UP, UPCOMING
     // ─────────────────────────────────────────────
+    const BULLETIN_FONTS = ['dancing','caveat','pacifico','satisfy','kalam','patrick'];
+    // Stable font per note: derived from row number so it doesn't change on refresh
+    function bulletinFont(row) {
+      return BULLETIN_FONTS[Math.abs(row || 0) % BULLETIN_FONTS.length];
+    }
+
     async function loadBulletin() {
       const el = document.getElementById('bulletin-list');
       if (!el) return;
@@ -5518,11 +5535,13 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         el.innerHTML = items.map(b => {
           let dateStr = '';
           if (b.date) { const d = new Date(b.date); dateStr = !isNaN(d.getTime()) ? (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear() : b.date; }
-          return `<div class="bulletin-item" data-color="${b.color||'amber'}">
+          return `<div class="bulletin-item" data-color="${b.color||'amber'}" data-font="${bulletinFont(b.row)}">
             <button class="bulletin-delete" onclick="deleteBulletin(${b.row})">×</button>
-            <div class="bulletin-who">${esc(b.who||'Someone')}</div>
-            <div class="bulletin-text">${esc(b.text||'')}</div>
-            ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+            <div class="bulletin-inner">
+              <div class="bulletin-who">${esc(b.who||'Someone')}</div>
+              <div class="bulletin-text">${esc(b.text||'')}</div>
+              ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+            </div>
           </div>`;
         }).join('');
       } catch(e) { el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:8px">Unavailable</div>'; }
@@ -5542,19 +5561,25 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
         // Tonight's dinner sticky — always first
         const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         const todayMeal = meals[dayNames[new Date().getDay()]] || null;
-        const dinnerNote = `<div class="bulletin-item bulletin-item--dinner" data-color="teal">
-          <div class="bulletin-who">Tonight's Dinner</div>
-          <div class="bulletin-text${todayMeal ? '' : ' empty-dinner'}">${todayMeal ? esc(todayMeal) : 'Nothing planned yet'}</div>
+        // Dinner note gets a consistent font keyed to a fixed index (0)
+        const dinnerFont = BULLETIN_FONTS[0]; // always 'dancing' for the dinner note
+        const dinnerNote = `<div class="bulletin-item bulletin-item--dinner" data-color="teal" data-font="${dinnerFont}">
+          <div class="bulletin-inner">
+            <div class="bulletin-who">Tonight's Dinner</div>
+            <div class="bulletin-text${todayMeal ? '' : ' empty-dinner'}">${todayMeal ? esc(todayMeal) : 'Nothing planned yet'}</div>
+          </div>
         </div>`;
 
         const bulletinHtml = items.slice(0,4).map(b => {
           let dateStr = '';
           if (b.date) { const d = new Date(b.date); dateStr = !isNaN(d.getTime()) ? (d.getMonth()+1)+'/'+d.getDate() : b.date; }
-          return `<div class="bulletin-item" data-color="${esc(b.color||'amber')}">
+          return `<div class="bulletin-item" data-color="${esc(b.color||'amber')}" data-font="${bulletinFont(b.row)}">
             <button class="bulletin-delete" onclick="deleteBulletin(${b.row});loadHomeBulletin()">×</button>
-            <div class="bulletin-who">${esc(b.who||'Someone')}</div>
-            <div class="bulletin-text">${esc(b.text||'')}</div>
-            ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+            <div class="bulletin-inner">
+              <div class="bulletin-who">${esc(b.who||'Someone')}</div>
+              <div class="bulletin-text">${esc(b.text||'')}</div>
+              ${dateStr ? `<div class="bulletin-date">${esc(dateStr)}</div>` : ''}
+            </div>
           </div>`;
         }).join('');
 
