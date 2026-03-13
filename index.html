@@ -3843,8 +3843,8 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
  const res = await apiFetch(SCRIPTS.CHORES + '?type=chores');
  const chores = await res.json();
  const filtered = chores.filter(c => {
- const who = (c.who || '').toLowerCase();
- return who === 'dad' || who === 'everyone' || who === 'anyone' || who === '';
+ const who = (c.who || '').toLowerCase().trim();
+ return who !== 'tori' && who !== 'nova';
  });
     // Sort by due date ascending (no due date goes last), cap at 6
     filtered.sort((a, b) => {
