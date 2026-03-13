@@ -2289,13 +2289,17 @@
     font-size: 0.72rem; font-weight: 600; color: var(--text);
     line-height: 1; flex-shrink: 0; margin-bottom: 3px;
   }
-  .cal-pills { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .cal-pills { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; min-height: 0; overflow: hidden; }
   .cal-pill {
     font-size: 0.58rem; font-weight: 600; line-height: 1.25;
     background: rgba(126,184,212,0.2); color: var(--accent2);
     border-radius: 3px; padding: 2px 4px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    display: block; width: 100%; box-sizing: border-box;
+    display: block; width: 100%; box-sizing: border-box; flex-shrink: 0;
+  }
+  .cal-pill-more {
+    font-size: 0.55rem; font-weight: 600; color: var(--muted);
+    padding: 1px 2px; flex-shrink: 0; line-height: 1.2; display: block;
   }
   .cal-day:nth-child(7n+1) .cal-pill, .cal-day:nth-child(7n) .cal-pill {
     background: rgba(232,184,109,0.18); color: var(--accent);
@@ -5712,7 +5716,7 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
       const rangeEl = document.getElementById('mini-cal-range');
       if (!el) return;
       try {
-        const res = await apiFetch(SCRIPTS.CHORES + '?type=upcoming');
+        const res = await apiFetch(SCRIPTS.CHORES + '?type=upcoming&days=28');
         const days = await res.json();
         if (!Array.isArray(days)) { el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; return; }
 
@@ -5784,7 +5788,59 @@ tomorrowBody.innerHTML = buildTodayColumn(tomorrow, [], choreItems, []);
           </div>
         </div>`;
 
+        // After render: trim pills that overflow and show "+N more"
+        requestAnimationFrame(() => trimCalPills(el));
+
       } catch(e) { if (el) el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:8px 12px">Unavailable</div>'; }
+    }
+
+    function trimCalPills(container) {
+      container.querySelectorAll('.cal-day .cal-pills').forEach(pillsEl => {
+        const dayEl = pillsEl.closest('.cal-day');
+        const pills = Array.from(pillsEl.querySelectorAll('.cal-pill'));
+        if (!pills.length) return;
+
+        // Clear any existing overflow label
+        const existingMore = pillsEl.querySelector('.cal-pill-more');
+        if (existingMore) existingMore.remove();
+
+        // Show all pills first
+        pills.forEach(p => { p.style.display = ''; });
+
+        // How much vertical space is available in the cell for pills?
+        const dayH = dayEl.clientHeight;
+        const pillsTop = pillsEl.offsetTop - dayEl.offsetTop;
+        const available = dayH - pillsTop - 4;
+
+        let usedH = 0;
+        let lastFit = -1;
+        for (let i = 0; i < pills.length; i++) {
+          const ph = pills[i].offsetHeight + 2; // 2px gap
+          if (usedH + ph <= available) {
+            usedH += ph;
+            lastFit = i;
+          } else {
+            break;
+          }
+        }
+
+        const hiddenCount = pills.length - 1 - lastFit;
+        if (hiddenCount > 0) {
+          for (let i = lastFit + 1; i < pills.length; i++) {
+            pills[i].style.display = 'none';
+          }
+          const more = document.createElement('span');
+          more.className = 'cal-pill-more';
+          more.textContent = '+' + hiddenCount + ' more';
+          pillsEl.appendChild(more);
+
+          // If "+N more" itself pushes overflow, sacrifice one more pill
+          if (lastFit >= 0 && pillsEl.scrollHeight > pillsEl.clientHeight + 2) {
+            pills[lastFit].style.display = 'none';
+            more.textContent = '+' + (hiddenCount + 1) + ' more';
+          }
+        }
+      });
     }
 
     function showDayEvents(el) {
