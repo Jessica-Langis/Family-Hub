@@ -609,11 +609,13 @@ function TodoPanel() {
 
 // ── Events panel (countdown list) ────────────────────────────
 function EventsPanel({ events, loading, onRefresh }) {
-  const sorted = [...toArr(events)].sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
+  const sorted = [...toArr(events)]
+    .filter(e => getDayDiff(e.date) >= 0)
+    .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
 
   return (
     <Panel>
-      <PanelHeader title="Events" badge={`${events.length}`} />
+      <PanelHeader title="Events" badge={sorted.length > 0 ? `${sorted.length}` : null} />
       {loading
         ? <div className="countdown-empty">Loading…</div>
         : sorted.length === 0

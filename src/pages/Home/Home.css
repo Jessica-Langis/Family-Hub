@@ -2,13 +2,13 @@
 .home-content {
   display: grid;
   grid-template-columns: 0.85fr 1fr 1fr;
-  grid-template-rows: auto 1fr 0.85fr;
+  grid-template-rows: auto 1.3fr 0.7fr;
   grid-template-areas:
     "today    comingup  grocery"
     "bulletin calendar  calendar"
     "whereami calendar  calendar";
   gap: 8px;
-  flex: 1;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }

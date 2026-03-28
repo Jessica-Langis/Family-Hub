@@ -21,16 +21,11 @@ export default function ComingUpPanel() {
 
   useEffect(() => {
     async function load() {
+      // Load calendar upcoming events (independent — failure won't block wrestling)
       try {
-        const [calRes, wrestleRes] = await Promise.all([
-          apiFetch(SCRIPTS.CHORES + '?type=upcoming'),
-          apiFetch(SCRIPTS.TORI + '?type=events'),
-        ])
-        const days          = await calRes.json()
-        const wrestleEvents = await wrestleRes.json()
-        const todayStr      = new Date().toISOString().slice(0,10)
-
-        // Next Up — soonest calendar event
+        const calRes   = await apiFetch(SCRIPTS.CHORES + '?type=upcoming')
+        const days     = await calRes.json()
+        const todayStr = new Date().toISOString().slice(0,10)
         const allEvents = []
         if (Array.isArray(days)) {
           days.forEach(day => (day.events || []).forEach(name => allEvents.push({ date: day.date, name })))
@@ -40,19 +35,26 @@ export default function ComingUpPanel() {
           const soonest = future[0].date
           setNextUpEvts(future.filter(e => e.date === soonest).sort((a,b) => a.name.localeCompare(b.name)))
         }
-
-        // Next wrestling event
-        if (Array.isArray(wrestleEvents)) {
-          const upcoming = wrestleEvents
-            .filter(e => getDayDiff(e.date) >= 0)
-            .sort((a,b) => normalizeDate(a.date) - normalizeDate(b.date))
-          if (upcoming.length) setNextWrestle(upcoming[0])
-        }
-
-        setStatus('ok')
-      } catch {
-        setStatus('error')
+      } catch(e) {
+        console.error('[ComingUp] CHORES fetch failed:', e)
       }
+
+      // Load Tori wrestling events (independent — failure won't block calendar)
+      try {
+        const wrestleRes    = await apiFetch(SCRIPTS.TORI + '?type=events')
+        const wrestleEvents = await wrestleRes.json()
+        const wrestleArr = Array.isArray(wrestleEvents)
+          ? wrestleEvents
+          : (wrestleEvents?.result || wrestleEvents?.items || wrestleEvents?.data || [])
+        const upcoming = wrestleArr
+          .filter(e => e.date && getDayDiff(e.date) >= 0)
+          .sort((a,b) => normalizeDate(a.date) - normalizeDate(b.date))
+        if (upcoming.length) setNextWrestle(upcoming[0])
+      } catch(e) {
+        console.error('[ComingUp] TORI fetch failed:', e)
+      }
+
+      setStatus('ok')
     }
     load()
   }, [])

@@ -4,12 +4,17 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   height: 100vh;
   overflow: hidden;
+  overflow-x: hidden;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 10px;
@@ -978,7 +983,8 @@ button {
   .main-content {
     height: auto;
     min-height: 0;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: visible;
     grid-template-rows: auto;
     padding: 0;
   }

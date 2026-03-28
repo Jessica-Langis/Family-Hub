@@ -6,6 +6,8 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 10px 20px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .topbar-title {
@@ -70,4 +72,35 @@
 .weather-day .condition {
   font-size: 0.65rem;
   color: var(--muted);
+}
+
+/* ── Responsive: progressively hide weather days as viewport narrows ── */
+
+/* Below 900px: hide the 5th day */
+@media (max-width: 900px) {
+  .weather-day:nth-child(5) { display: none; }
+}
+
+/* Below 760px: also hide 4th day, shrink clock */
+@media (max-width: 760px) {
+  .weather-day:nth-child(4) { display: none; }
+  .clock { font-size: 2.2rem; }
+  .weather-day { min-width: 60px; padding: 6px 8px; }
+  .weather-block { gap: 8px; }
+  .topbar { padding: 8px 14px; }
+}
+
+/* Below 640px (phone): hide all but today, shrink clock further */
+@media (max-width: 640px) {
+  .weather-day:nth-child(n+3) { display: none; }
+  .clock { font-size: 1.6rem; }
+  .clock-date { font-size: 0.7rem; }
+  .weather-day { min-width: 52px; padding: 5px 6px; }
+  .weather-block { gap: 6px; }
+  .topbar {
+    padding: 6px 10px;
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+  }
+  .topbar-title { font-size: 1rem; }
 }
