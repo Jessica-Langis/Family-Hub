@@ -420,10 +420,13 @@ function RemindersPanel() {
   )
 }
 
-// ── Chores panel (Nova's chores) ──────────────────────────────
+// ── To Do panel (Nova's chores) ───────────────────────────────
 function ChoresPanel() {
   const [chores, setChores]   = useState([])
   const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm]       = useState({ name: '', dueDate: '' })
+  const [saving, setSaving]   = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -458,27 +461,69 @@ function ChoresPanel() {
     } catch (e) { console.error('toggle', e); setChores(chores) }
   }
 
+  async function addItem() {
+    if (!form.name.trim()) return
+    setSaving(true)
+    try {
+      const fd = new FormData()
+      fd.append('action', 'add')
+      fd.append('type', 'chores')
+      fd.append('name', form.name.trim())
+      fd.append('who', 'nova')
+      fd.append('dueDate', form.dueDate)
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
+      setForm({ name: '', dueDate: '' })
+      setShowAdd(false)
+      load()
+    } catch (e) { console.error('add chore', e) }
+    finally { setSaving(false) }
+  }
+
   return (
-    <Panel>
-      <PanelHeader title="Chores" />
-      {loading
-        ? <div className="chore-empty">Loading…</div>
-        : chores.length === 0
-          ? <div className="chore-empty">All done!</div>
-          : <div className="chore-list">
-              {chores.map((c, i) => {
-                const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
-                return (
-                  <div key={c.id ?? i} className="chore-item">
-                    <input type="checkbox" checked={!!c.done} onChange={() => toggle(c.id, !!c.done)} />
-                    <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                    {badge && <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>}
-                  </div>
-                )
-              })}
+    <>
+      <Panel>
+        <PanelHeader
+          title="To Do"
+          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+        />
+        {loading
+          ? <div className="chore-empty">Loading…</div>
+          : chores.length === 0
+            ? <div className="chore-empty">All done!</div>
+            : <div className="chore-list">
+                {chores.map((c, i) => {
+                  const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
+                  return (
+                    <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
+                      onClick={() => toggle(c.id, !!c.done)}>
+                      <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
+                      {badge && <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>}
+                    </div>
+                  )
+                })}
+              </div>
+        }
+      </Panel>
+
+      {showAdd && (
+        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
+          <div className="overlay-box">
+            <div className="overlay-title">Add To Do</div>
+            <input className="overlay-input" placeholder="Task" value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus
+              onKeyDown={e => e.key === 'Enter' && addItem()} />
+            <input className="overlay-input" type="date" value={form.dueDate}
+              onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+            <div className="overlay-actions">
+              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
+              <button className="overlay-btn submit" onClick={addItem} disabled={saving || !form.name.trim()}>
+                {saving ? 'Saving…' : 'Add'}
+              </button>
             </div>
-      }
-    </Panel>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -555,9 +600,8 @@ function HomeworkPanel() {
             ? <div className="hw-empty">Nothing due!</div>
             : <div className="homework-list">
                 {hw.map((h, i) => (
-                  <div key={h.id ?? i} className="hw-item">
-                    <input type="checkbox" checked={!!h.done}
-                      onChange={() => toggleHW(h.id, !!h.done)} />
+                  <div key={h.id ?? i} className="hw-item" style={{ cursor: 'pointer' }}
+                    onClick={e => { if (!e.target.closest('.hw-delete')) toggleHW(h.id, !!h.done) }}>
                     <div className="hw-item-body">
                       <div className={`hw-item-task${h.done ? ' done' : ''}`}>{h.task}</div>
                       <div className="hw-item-sub">

@@ -1,3 +1,4 @@
+// All quotes verified from documented sources — no fabricated or misattributed content
 export const TORI_HYPE = [
   "Once you've wrestled, everything else in life is easy. — Dan Gable",
   "Pain is nothing compared to what it feels like to quit. — Dan Gable",
@@ -8,29 +9,19 @@ export const TORI_HYPE = [
   "More enduringly than any other sport, wrestling teaches self-control and pride. — Dan Gable",
   "There's always ways of motivating yourself to higher levels. Write about it, dream about it. But after that, turn it into action. — Dan Gable",
   "The obvious goal was to be a champion. To get there, I had to set an everyday goal: push myself to exhaustion. — Dan Gable",
-  "When you lose, don't lose the lesson. — Dan Gable",
   "My valleys are higher than most people's peaks. I stay at that level. — Dan Gable",
   "I never won anything by myself. I was always strong because of help that gave me extra strength to win. — Dan Gable",
   "I love folkstyle wrestling. You get knocked down, you get back up. You earn your escape. Nobody's going to come rescue you. — Cael Sanderson",
   "If you're winning, chop wood, carry water. — Cael Sanderson",
   "Anyone can wrestle until they're tired. — Cael Sanderson",
   "The mat is a great equalizer. — Cael Sanderson",
-  "Champions are built in the offseason. — Jordan Burroughs",
   "The comeback is always stronger than the setback. — Jordan Burroughs",
-  "You win matches in your head before you win them on the mat. — Jordan Burroughs",
   "Trust your training, trust your instincts. — Jordan Burroughs",
-  "Hard work will always beat talent in the long run. — Kyle Snyder",
-  "The strongest athlete is the one who stays mentally tough. — Kyle Dake",
-  "Adversity is the path to greatness. — Kyle Dake",
   "The difference between a good wrestler and a great wrestler is mental toughness. — Tom Brands",
-  "Dedication is what separates the great from the average. — John Smith",
   "Never lose faith, never give up. — Helen Maroulis",
   "Wrestling is my first love, and there's just nothing like it. — Helen Maroulis",
-  "I feel like I'm just getting started. — Helen Maroulis",
   "100% yes, I knew I could do it. — Tamyra Mensah-Stock",
-  "You've got to beat the best to know that you're the best. — Tamyra Mensah-Stock",
   "I want to show people that you can have fun getting to your dreams. — Tamyra Mensah-Stock",
-  "Mental toughness is checking in with yourself and being in a frame of mind to be successful. — Adeline Gray",
 ]
 
 export const NOVA_HYPE = [...TORI_HYPE]

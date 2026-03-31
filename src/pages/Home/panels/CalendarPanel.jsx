@@ -61,6 +61,24 @@ export default function CalendarPanel() {
       if (Array.isArray(days)) {
         days.forEach(day => { if (day.events?.length) map[day.date] = day.events })
       }
+
+      // Deduplicate: GAS can emit timed events on both their local date (correct)
+      // and the next UTC date (timezone off-by-one). If the same event name appears
+      // on day N+1 and also on day N, keep only the day N occurrence.
+      const sortedKeys = Object.keys(map).sort()
+      sortedKeys.forEach((dateStr, idx) => {
+        if (idx === 0) return
+        const prevKey  = sortedKeys[idx - 1]
+        const diffDays = Math.round(
+          (new Date(dateStr + 'T12:00:00') - new Date(prevKey + 'T12:00:00')) / 86400000
+        )
+        if (diffDays === 1) {
+          const prevNames = new Set((map[prevKey] || []).map(evName))
+          map[dateStr] = (map[dateStr] || []).filter(ev => !prevNames.has(evName(ev)))
+          if (map[dateStr].length === 0) delete map[dateStr]
+        }
+      })
+
       setEventMap(map)
       setStatus('ok')
     } catch {

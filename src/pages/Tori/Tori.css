@@ -31,6 +31,60 @@
 .tori-content .section-title { color: var(--accent4); }
 .tori-content .reminder-dot  { background: var(--accent4); }
 
+/* ── Next Up — two events side by side ── */
+.next-up-split-hero {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  padding: 10px 0;
+  overflow: hidden;
+}
+
+.next-up-primary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 12px;
+  min-width: 0;
+}
+
+.next-up-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  margin: 4px 0;
+}
+
+.next-up-secondary {
+  flex: 0 0 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 10px;
+  min-width: 0;
+  opacity: 0.75;
+}
+
+.next-up-name-sm {
+  font-size: 0.82rem !important;
+}
+
+.next-up-secondary .next-up-type,
+.next-up-secondary .next-up-date,
+.next-up-secondary .next-up-loc {
+  font-size: 0.65rem;
+}
+
+.next-up-secondary .countdown-badge {
+  font-size: 0.58rem;
+}
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .tori-content {

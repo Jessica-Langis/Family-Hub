@@ -11,9 +11,9 @@
 }
 
 /* Named wrapper divs — stable regardless of modal overlay being in the DOM */
-.pa-todo   { grid-area: todo;   display: flex; flex-direction: column; min-height: 0; }
-.pa-meals  { grid-area: meals;  display: flex; flex-direction: column; min-height: 0; }
-.pa-agenda { grid-area: agenda; display: flex; flex-direction: column; min-height: 0; }
+.pa-todo   { grid-area: todo;   display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pa-meals  { grid-area: meals;  display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pa-agenda { grid-area: agenda; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 .pa-todo > .panel,
 .pa-meals > .panel,
 .pa-agenda > .panel { flex: 1; }

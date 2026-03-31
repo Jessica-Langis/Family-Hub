@@ -276,7 +276,8 @@ function NextUpPanel({ events, loading, onRefresh }) {
     .filter(e => getDayDiff(e.date) >= 0)
     .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
 
-  const next = upcoming[0] || null
+  const next  = upcoming[0] || null
+  const next2 = upcoming[1] || null
 
   async function addEvent() {
     if (!form.name || !form.date) return
@@ -307,19 +308,41 @@ function NextUpPanel({ events, loading, onRefresh }) {
         {loading
           ? <div className="next-up-hero"><span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Loading…</span></div>
           : next
-            ? <div className="next-up-hero">
-                <div className="next-up-name">{next.name}</div>
-                {next.type && <div className="next-up-type">{next.type}</div>}
-                <div className="next-up-date">{formatDateShort(next.date)}</div>
-                {next.location && <div className="next-up-loc">📍 {next.location}</div>}
-                <span className={`countdown-badge ${choreBadgeCls(next.date)}`}>
-                  {(() => {
-                    const d = getDayDiff(next.date)
-                    if (d === 0) return 'TODAY'
-                    if (d < 0)  return `${Math.abs(d)}d ago`
-                    return `${d}d away`
-                  })()}
-                </span>
+            ? <div className="next-up-split-hero">
+                {/* Primary event — left */}
+                <div className="next-up-primary">
+                  <div className="next-up-name">{next.name}</div>
+                  {next.type && <div className="next-up-type">{next.type}</div>}
+                  <div className="next-up-date">{formatDateShort(next.date)}</div>
+                  {next.location && <div className="next-up-loc">📍 {next.location}</div>}
+                  <span className={`countdown-badge ${choreBadgeCls(next.date)}`}>
+                    {(() => {
+                      const d = getDayDiff(next.date)
+                      if (d === 0) return 'TODAY'
+                      if (d < 0)  return `${Math.abs(d)}d ago`
+                      return `${d}d away`
+                    })()}
+                  </span>
+                </div>
+
+                {/* Second event — right, slightly smaller */}
+                {next2 && <>
+                  <div className="next-up-divider" />
+                  <div className="next-up-secondary">
+                    <div className="next-up-name next-up-name-sm">{next2.name}</div>
+                    {next2.type && <div className="next-up-type">{next2.type}</div>}
+                    <div className="next-up-date">{formatDateShort(next2.date)}</div>
+                    {next2.location && <div className="next-up-loc">📍 {next2.location}</div>}
+                    <span className={`countdown-badge ${choreBadgeCls(next2.date)}`}>
+                      {(() => {
+                        const d = getDayDiff(next2.date)
+                        if (d === 0) return 'TODAY'
+                        if (d < 0)  return `${Math.abs(d)}d ago`
+                        return `${d}d away`
+                      })()}
+                    </span>
+                  </div>
+                </>}
               </div>
             : <div className="next-up-hero"><div className="next-up-empty">No upcoming events</div></div>
         }
@@ -547,6 +570,9 @@ function SchedulePanel() {
 function TodoPanel() {
   const [chores, setChores]   = useState([])
   const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm]       = useState({ name: '', dueDate: '' })
+  const [saving, setSaving]   = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -581,29 +607,71 @@ function TodoPanel() {
     } catch (e) { console.error('toggle', e); setChores(chores) }
   }
 
+  async function addItem() {
+    if (!form.name.trim()) return
+    setSaving(true)
+    try {
+      const fd = new FormData()
+      fd.append('action', 'add')
+      fd.append('type', 'chores')
+      fd.append('name', form.name.trim())
+      fd.append('who', 'tori')
+      fd.append('dueDate', form.dueDate)
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
+      setForm({ name: '', dueDate: '' })
+      setShowAdd(false)
+      load()
+    } catch (e) { console.error('add chore', e) }
+    finally { setSaving(false) }
+  }
+
   return (
-    <Panel>
-      <PanelHeader title="To Do" />
-      {loading
-        ? <div className="chore-empty">Loading…</div>
-        : chores.length === 0
-          ? <div className="chore-empty">All done!</div>
-          : <div className="chore-list">
-              {chores.map((c, i) => {
-                const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
-                return (
-                  <div key={c.id ?? i} className="chore-item">
-                    <input type="checkbox" checked={!!c.done} onChange={() => toggle(c.id, !!c.done)} />
-                    <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                    {badge && (
-                      <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
-                    )}
-                  </div>
-                )
-              })}
+    <>
+      <Panel>
+        <PanelHeader
+          title="To Do"
+          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+        />
+        {loading
+          ? <div className="chore-empty">Loading…</div>
+          : chores.length === 0
+            ? <div className="chore-empty">All done!</div>
+            : <div className="chore-list">
+                {chores.map((c, i) => {
+                  const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
+                  return (
+                    <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
+                      onClick={() => toggle(c.id, !!c.done)}>
+                      <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
+                      {badge && (
+                        <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+        }
+      </Panel>
+
+      {showAdd && (
+        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
+          <div className="overlay-box">
+            <div className="overlay-title">Add To Do</div>
+            <input className="overlay-input" placeholder="Task" value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus
+              onKeyDown={e => e.key === 'Enter' && addItem()} />
+            <input className="overlay-input" type="date" value={form.dueDate}
+              onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+            <div className="overlay-actions">
+              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
+              <button className="overlay-btn submit" onClick={addItem} disabled={saving || !form.name.trim()}>
+                {saving ? 'Saving…' : 'Add'}
+              </button>
             </div>
-      }
-    </Panel>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

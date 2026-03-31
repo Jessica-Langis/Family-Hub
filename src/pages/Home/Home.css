@@ -32,7 +32,7 @@
   flex-direction: row;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   gap: 0;
   padding: 6px 14px 10px;
 }
@@ -69,6 +69,9 @@
 .today-col-body {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .today-clear {
   font-size: 0.78rem;
@@ -86,9 +89,10 @@
   font-weight: 700;
 }
 .today-item {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.78rem; color: var(--text);
-  padding: 2px 0;
+  display: flex; align-items: center; gap: 5px;
+  font-size: clamp(0.62rem, 1.4vh, 0.78rem); color: var(--text);
+  padding: 1px 0;
+  flex-shrink: 0;
 }
 .today-item-dot {
   width: 5px; height: 5px;
@@ -98,7 +102,7 @@
 }
 .today-item.chore .today-item-dot  { background: var(--accent3); }
 .today-item.overdue .today-item-dot { background: #e07070; }
-.today-item-text { font-size: 0.78rem; color: var(--text); line-height: 1.3; }
+.today-item-text { font-size: clamp(0.62rem, 1.4vh, 0.78rem); color: var(--text); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .today-item-meta { font-size: 0.65rem; color: #e07070; margin-left: 2px; }
 
 /* ── Coming Up ────────────────────────────────────────────── */
@@ -211,8 +215,9 @@
     repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.04) 5px, rgba(0,0,0,0.04) 6px),
     repeating-linear-gradient(-45deg, transparent, transparent 7px, rgba(255,255,255,0.02) 7px, rgba(255,255,255,0.02) 8px) !important;
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.3) !important;
-  flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden;
-  display: flex; flex-direction: row; gap: 10px;
+  flex: 1; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: row; flex-wrap: wrap;
+  align-content: flex-start; gap: 10px;
   padding: 18px 14px 12px;
 }
 .bulletin-item {
@@ -221,9 +226,11 @@
   border-top: 3px solid rgba(232,184,109,0.55);
   border-radius: 2px 2px 4px 4px;
   padding: 14px 16px 12px;
-  width: 150px; height: 150px;
-  min-width: 150px; max-width: 150px;
-  flex: 0 0 150px;
+  /* Responsive: 2-up side by side, stacks to 1-up when tile is narrow */
+  flex: 1 1 calc(50% - 5px);
+  max-width: calc(50% - 5px);
+  min-width: 120px;
+  min-height: 130px;
   position: relative; display: flex; flex-direction: column; gap: 0;
   overflow: visible;
   transform: rotate(-0.8deg);
@@ -282,7 +289,7 @@
 .bulletin-text {
   font-size: 0.88rem; color: rgba(232,234,240,0.9); line-height: 1.5;
   font-family: 'DM Sans', sans-serif; word-break: break-word;
-  flex: 1; min-height: 0; overflow-y: auto;
+  flex: 1; min-height: 0; overflow: hidden;
 }
 .bulletin-text.empty-dinner { color: var(--muted); font-style: italic; font-size: 0.85rem; }
 .bulletin-date { font-size: 0.65rem; color: rgba(136,145,168,0.7); margin-top: 4px; }

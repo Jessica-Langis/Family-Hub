@@ -23,14 +23,25 @@ export default function ComingUpPanel() {
     async function load() {
       // Load calendar upcoming events (independent — failure won't block wrestling)
       try {
-        const calRes   = await apiFetch(SCRIPTS.CHORES + '?type=upcoming')
+        const calRes   = await apiFetch(SCRIPTS.CHORES + '?type=upcoming&days=60')
         const days     = await calRes.json()
-        const todayStr = new Date().toISOString().slice(0,10)
+        // Use local date to avoid UTC day-shift at end of day
+        const _n = new Date()
+        const todayStr = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`
         const allEvents = []
         if (Array.isArray(days)) {
           days.forEach(day => (day.events || []).forEach(name => allEvents.push({ date: day.date, name })))
         }
-        const future = allEvents.filter(e => e.date >= todayStr).sort((a,b) => a.date.localeCompare(b.date))
+        // Deduplicate: same event on adjacent days (GAS UTC off-by-one)
+        const sortedEvts = allEvents.sort((a,b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name))
+        const deduped = sortedEvts.filter((e, i) => {
+          if (i === 0) return true
+          const prev = sortedEvts[i - 1]
+          if (e.name !== prev.name) return true
+          const diffDays = Math.round((new Date(e.date+'T12:00:00') - new Date(prev.date+'T12:00:00')) / 86400000)
+          return diffDays !== 1
+        })
+        const future = deduped.filter(e => e.date >= todayStr).sort((a,b) => a.date.localeCompare(b.date))
         if (future.length) {
           const soonest = future[0].date
           setNextUpEvts(future.filter(e => e.date === soonest).sort((a,b) => a.name.localeCompare(b.name)))

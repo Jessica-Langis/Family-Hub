@@ -177,12 +177,8 @@ function TodoPanel() {
                 {chores.map((c, i) => {
                   const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
                   return (
-                    <div key={c.id ?? i} className="chore-item">
-                      <input
-                        type="checkbox"
-                        checked={!!c.done}
-                        onChange={() => toggle(c.id, !!c.done)}
-                      />
+                    <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
+                      onClick={e => { if (!e.target.closest('.chore-edit-btn,.chore-delete-btn')) toggle(c.id, !!c.done) }}>
                       <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
                       {c.who && <span className="chore-item-who">{c.who}</span>}
                       {badge && (
