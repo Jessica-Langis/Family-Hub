@@ -6,6 +6,7 @@ import Parentals from './pages/Parentals/Parentals'
 import Tori      from './pages/Tori/Tori'
 import Nova      from './pages/Nova/Nova'
 import Fun       from './pages/Fun/Fun'
+import Glance    from './pages/Glance/Glance'
 
 const PAGES = {
   home:      Home,
@@ -13,6 +14,7 @@ const PAGES = {
   tori:      Tori,
   nova:      Nova,
   fun:       Fun,
+  glance:    Glance,
 }
 
 const TAB_TITLES = {
@@ -21,6 +23,7 @@ const TAB_TITLES = {
   parentals: '👨‍👩‍👧‍👦 Parentals',
   tori:      'Tori',
   nova:      'Nova',
+  glance:    'At A Glance',
 }
 
 const TAB_COLORS = {
@@ -29,6 +32,7 @@ const TAB_COLORS = {
   parentals: 'var(--accent2)',
   tori:      'var(--accent4)',
   nova:      'var(--accent3)',
+  glance:    'var(--accent6)',
 }
 
 export default function App() {

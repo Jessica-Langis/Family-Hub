@@ -6,6 +6,7 @@ const TABS = [
   { id: 'parentals', icon: '👨‍👩‍👧‍👦', label: 'Parentals' },
   { id: 'tori',      icon: '🤼‍♀️',     label: 'Tori'      },
   { id: 'nova',      icon: '🚲',        label: 'Nova'      },
+  { id: 'glance',    icon: '👀',        label: 'At A Glance' },
 ]
 
 export default function BottomNav({ activeTab, onTabChange }) {

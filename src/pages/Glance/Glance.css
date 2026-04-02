@@ -1,0 +1,288 @@
+/* ══════════════════════════════════════════
+   AT A GLANCE — Page Layout
+══════════════════════════════════════════ */
+
+.glance-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 210px;
+  gap: 12px;
+  height: 100%;
+  padding: 0 4px 4px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.glance-col-events {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.glance-col-bulletin {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.glance-col-agenda {
+  grid-column: 2;
+  grid-row: 2;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════════════════
+   EVENTS PANEL
+══════════════════════════════════════════ */
+
+.glance-events-panel {
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.glance-events-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.glance-section-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent6);
+  margin-bottom: 2px;
+}
+
+.glance-empty {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+  padding: 2px 0;
+}
+
+.glance-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+/* ── Next Event section ── */
+
+.glance-next-event {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.glance-next-date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glance-next-date {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.glance-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.glance-event-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.glance-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent6);
+  flex-shrink: 0;
+}
+
+.glance-event-row.allday .glance-event-dot {
+  background: var(--accent);
+}
+
+.glance-event-name {
+  flex: 1;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glance-event-time {
+  font-size: 0.7rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.glance-allday-tag {
+  font-size: 0.6rem;
+  color: var(--muted);
+  background: var(--surface2);
+  padding: 1px 6px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+/* ── Wrestling section ── */
+
+.glance-wrestle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.glance-wrestle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border-left: 3px solid var(--accent4);
+}
+
+.glance-wrestle-item.secondary {
+  background: rgba(30, 35, 50, 0.6);
+  border-left-color: rgba(245, 184, 206, 0.4);
+}
+
+.glance-wrestle-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.glance-wrestle-name {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.glance-wrestle-item.primary  .glance-wrestle-name { font-size: 0.95rem; }
+.glance-wrestle-item.secondary .glance-wrestle-name { font-size: 0.82rem; color: rgba(232,234,240,0.75); }
+
+.glance-wrestle-type {
+  font-size: 0.68rem;
+  color: var(--accent4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.glance-wrestle-item.secondary .glance-wrestle-type { color: rgba(245,184,206,0.55); }
+
+.glance-wrestle-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.glance-wrestle-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.glance-wrestle-loc {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.glance-wrestle-item.secondary .glance-wrestle-date,
+.glance-wrestle-item.secondary .glance-wrestle-loc {
+  font-size: 0.7rem;
+  color: rgba(136,145,168,0.65);
+}
+
+/* ══════════════════════════════════════════
+   AGENDA PANEL (compact)
+══════════════════════════════════════════ */
+
+.glance-agenda-panel {
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.glance-agenda-empty {
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.glance-agenda-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.glance-agenda-day {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(42,48,69,0.6);
+}
+
+.glance-agenda-day:last-child { border-bottom: none; }
+
+.glance-agenda-date-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.glance-agenda-date {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.glance-agenda-ev {
+  font-size: 0.72rem;
+  color: rgba(232,234,240,0.7);
+  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glance-agenda-more {
+  font-size: 0.65rem;
+  color: var(--muted);
+  padding-left: 10px;
+}
