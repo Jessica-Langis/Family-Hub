@@ -30,7 +30,10 @@ export default function ComingUpPanel() {
         const todayStr = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`
         const allEvents = []
         if (Array.isArray(days)) {
-          days.forEach(day => (day.events || []).forEach(name => allEvents.push({ date: day.date, name })))
+          days.forEach(day => (day.events || []).forEach(ev => {
+            const name = typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
+            allEvents.push({ date: day.date, name })
+          }))
         }
         const future = allEvents.filter(e => e.date >= todayStr).sort((a,b) => a.date.localeCompare(b.date))
         if (future.length) {
