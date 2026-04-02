@@ -67,7 +67,7 @@
 }
 
 .glance-section-label {
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -82,120 +82,70 @@
   padding: 2px 0;
 }
 
-/* ── 2-column card row — fills the section ── */
+/* ── Split row — single surface containing both halves ── */
 
 .glance-card-row {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  background: var(--surface2);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* ── Base card — fills its grid cell ── */
+/* ── Shared half cell ── */
 
-.glance-ev-card {
+.glance-split-half {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--surface2);
-  border-left: 3px solid var(--border);
-  min-width: 0;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.glance-ev-card--cal     { border-left-color: var(--accent6); }
-.glance-ev-card--wrestle { border-left-color: var(--accent4); }
-.glance-ev-card--holiday { border-left-color: var(--accent2); }
-
-.glance-ev-card--empty {
-  opacity: 0.45;
+  align-items: center;
   justify-content: center;
-  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.glance-ev-card-empty-text {
-  font-size: 0.75rem;
-  color: var(--muted);
-  font-style: italic;
+.glance-split-secondary {
+  opacity: 0.7;
 }
 
-/* ── Card internals ── */
-
-.glance-ev-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.glance-ev-card-date {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--muted);
+/* Vertical divider between halves */
+.glance-split-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.07);
   flex-shrink: 0;
+  margin: 8px 0;
 }
 
-.glance-ev-card-name {
-  font-size: 0.82rem;
+/* ── Override next-up-* sizes to fill the taller cells ── */
+
+.glance-split-half .next-up-name {
+  font-size: 1.05rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.glance-split-half .next-up-type {
+  font-size: 0.72rem;
+}
+
+.glance-split-half .next-up-date {
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.glance-ev-card-type {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--accent4);
-  font-weight: 500;
+.glance-split-half .next-up-loc {
+  font-size: 0.75rem;
 }
 
-.glance-ev-card-loc {
-  font-size: 0.7rem;
-  color: var(--muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── Calendar card events list ── */
-
-.glance-ev-card-events {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-top: 2px;
-}
-
-.glance-ev-card-row {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  min-width: 0;
-}
-
-.glance-ev-card-row .glance-ev-card-name {
-  font-size: 0.78rem;
-  font-weight: 400;
-  flex: 1;
-}
-
-.glance-ev-card-time {
-  font-size: 0.68rem;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.glance-ev-card-more {
-  font-size: 0.65rem;
-  color: var(--muted);
+.glance-split-half .next-up-empty {
+  font-size: 0.85rem;
 }
 
 /* ══════════════════════════════════════════
@@ -218,7 +168,7 @@
 .glance-agenda-list {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 4px 14px 8px;
   display: flex;
   flex-direction: column;
@@ -258,4 +208,55 @@
   font-size: 0.65rem;
   color: var(--muted);
   padding-left: 10px;
+}
+
+/* ══════════════════════════════════════════
+   BULLETIN BOARD — square notes override
+══════════════════════════════════════════ */
+
+/* 5-column grid so notes always fill the panel width exactly */
+.glance-bulletin-body {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 8px !important;
+  align-content: start !important;
+  overflow: hidden !important;
+}
+
+/* Square via aspect-ratio — height follows width automatically */
+.glance-bulletin-body .bulletin-item {
+  aspect-ratio: 1 / 1 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: none !important;
+  padding: 10px 10px 8px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Text scaled for the small ~120px square */
+.glance-bulletin-body .bulletin-who   { font-size: 0.52rem !important; letter-spacing: 0.06em !important; }
+.glance-bulletin-body .bulletin-text  { font-size: 0.65rem !important; line-height: 1.3 !important; }
+.glance-bulletin-body .bulletin-date  { font-size: 0.5rem !important; }
+
+/* Handwriting font overrides */
+.glance-bulletin-body .bulletin-item[data-font="dancing"]  .bulletin-text { font-size: 0.72rem !important; }
+.glance-bulletin-body .bulletin-item[data-font="caveat"]   .bulletin-text { font-size: 0.75rem !important; }
+.glance-bulletin-body .bulletin-item[data-font="pacifico"] .bulletin-text { font-size: 0.58rem !important; }
+.glance-bulletin-body .bulletin-item[data-font="satisfy"]  .bulletin-text { font-size: 0.64rem !important; }
+.glance-bulletin-body .bulletin-item[data-font="kalam"]    .bulletin-text { font-size: 0.68rem !important; }
+.glance-bulletin-body .bulletin-item[data-font="patrick"]  .bulletin-text { font-size: 0.66rem !important; }
+
+/* Pushpin — scale down for small notes */
+.glance-bulletin-body .bulletin-item::before {
+  width: 9px !important;
+  height: 9px !important;
+  top: -6px !important;
+}
+.glance-bulletin-body .bulletin-item::after {
+  height: 6px !important;
+  top: 1px !important;
 }

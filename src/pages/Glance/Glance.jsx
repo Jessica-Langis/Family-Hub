@@ -17,13 +17,22 @@ function evSummary(ev) {
   return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
 }
 
-function fmtDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
 function dateParts(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
+// "Apr 9" format — accepts date string or Date object
+function fmtMed(dateInput) {
+  const str = dateInput instanceof Date
+    ? dateParts(dateInput)
+    : String(dateInput)
+  const d = new Date(str + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// date string from either string or Date
+function toDateStr(dateInput) {
+  return dateInput instanceof Date ? dateParts(dateInput) : String(dateInput)
 }
 
 // ── Error Boundary ────────────────────────────────────────────
@@ -95,73 +104,27 @@ export default function Glance() {
   )
 }
 
-// ── Event card sub-components ─────────────────────────────────
-function EmptyCard({ variant }) {
-  return (
-    <div className={`glance-ev-card glance-ev-card--${variant} glance-ev-card--empty`}>
-      <span className="glance-ev-card-empty-text">None</span>
-    </div>
-  )
-}
-
-function CalCard({ day }) {
-  if (!day) return <EmptyCard variant="cal" />
-  const diff = getDayDiff(day.date)
+// ── Split half — shared inner cell for all row types ──────────
+function SplitHalf({ primary, nameColor, name, type, dateStr, location, dateInput }) {
+  const diff = dateInput != null ? getDayDiff(toDateStr(dateInput)) : NaN
   const b    = countdownBadge(diff)
-  const evts = (day.events || []).slice(0, 3)
-  return (
-    <div className="glance-ev-card glance-ev-card--cal">
-      <div className="glance-ev-card-top">
-        <span className="glance-ev-card-date">{fmtDate(day.date)}</span>
-        {b.text && <span className={`countdown-badge ${b.cls}`}>{b.text}</span>}
-      </div>
-      <div className="glance-ev-card-events">
-        {evts.map((ev, i) => {
-          const name    = evSummary(ev)
-          const isAllDay = ev.isAllDay !== false
-          return (
-            <div key={i} className="glance-ev-card-row">
-              <span className="glance-ev-card-name">{name}</span>
-              {!isAllDay && ev.startTime && (
-                <span className="glance-ev-card-time">{ev.startTime}</span>
-              )}
-            </div>
-          )
-        })}
-        {(day.events || []).length > 3 && (
-          <div className="glance-ev-card-more">+{day.events.length - 3} more</div>
-        )}
-      </div>
-    </div>
-  )
-}
+  const cls  = `glance-split-half${primary ? ' glance-split-primary' : ' glance-split-secondary'}`
 
-function WrestleCard({ ev }) {
-  if (!ev) return <EmptyCard variant="wrestle" />
-  const b = countdownBadge(getDayDiff(ev.date))
-  return (
-    <div className="glance-ev-card glance-ev-card--wrestle">
-      <div className="glance-ev-card-top">
-        <span className="glance-ev-card-date">{fmtDate(ev.date)}</span>
-        {b.text && <span className={`countdown-badge ${b.cls}`}>{b.text}</span>}
+  if (!name) {
+    return (
+      <div className={cls}>
+        <span className="next-up-empty">None</span>
       </div>
-      <div className="glance-ev-card-name">{ev.name}</div>
-      {ev.type && <div className="glance-ev-card-type">{ev.type}</div>}
-      {ev.location && <div className="glance-ev-card-loc">📍 {ev.location}</div>}
-    </div>
-  )
-}
+    )
+  }
 
-function HolidayCard({ holiday }) {
-  if (!holiday) return <EmptyCard variant="holiday" />
-  const b = countdownBadge(getDayDiff(holiday.date))
   return (
-    <div className="glance-ev-card glance-ev-card--holiday">
-      <div className="glance-ev-card-top">
-        <span className="glance-ev-card-date">{fmtDate(dateParts(holiday.date))}</span>
-        {b.text && <span className={`countdown-badge ${b.cls}`}>{b.text}</span>}
-      </div>
-      <div className="glance-ev-card-name">{holiday.name}</div>
+    <div className={cls}>
+      <div className="next-up-name" style={{ color: nameColor }}>{name}</div>
+      {type     && <div className="next-up-type">{type}</div>}
+      {dateStr  && <div className="next-up-date">{dateStr}</div>}
+      {location && <div className="next-up-loc">📍 {location}</div>}
+      {b.text   && <span className={`countdown-badge ${b.cls}`}>{b.text}</span>}
     </div>
   )
 }
@@ -186,34 +149,58 @@ function EventsPanel({ calDays, wrestling }) {
   // Next 2 holidays
   const holidays = getNextUSHolidays(2)
 
+  // Build props for each cell
+  function calProps(day) {
+    if (!day) return { name: null }
+    const evts  = day.events || []
+    const first = evts[0] ? evSummary(evts[0]) : null
+    const name  = evts.length > 1 ? `${first} +${evts.length - 1}` : first
+    return { name, dateStr: fmtMed(day.date), dateInput: day.date }
+  }
+
+  function wrestleProps(ev) {
+    if (!ev) return { name: null }
+    return { name: ev.name, type: ev.type || null, dateStr: fmtMed(ev.date), location: ev.location || null, dateInput: ev.date }
+  }
+
+  function holidayProps(h) {
+    if (!h) return { name: null }
+    return { name: h.name, dateStr: fmtMed(h.date), dateInput: h.date }
+  }
+
   return (
     <Panel className="glance-events-panel">
       <PanelHeader title={<span style={{ color: 'var(--accent6)' }}>Events</span>} />
 
       <div className="glance-events-body">
+
         <div className="glance-ev-section">
           <div className="glance-section-label">Calendar</div>
           <div className="glance-card-row">
-            <CalCard day={calWithEvents[0] ?? null} />
-            <CalCard day={calWithEvents[1] ?? null} />
+            <SplitHalf primary nameColor="var(--accent6)" {...calProps(calWithEvents[0] ?? null)} />
+            <div className="glance-split-divider" />
+            <SplitHalf nameColor="var(--accent6)" {...calProps(calWithEvents[1] ?? null)} />
           </div>
         </div>
 
         <div className="glance-ev-section">
           <div className="glance-section-label" style={{ color: 'var(--accent4)' }}>Tori's Events</div>
           <div className="glance-card-row">
-            <WrestleCard ev={wrestleEvents[0] ?? null} />
-            <WrestleCard ev={wrestleEvents[1] ?? null} />
+            <SplitHalf primary nameColor="var(--accent4)" {...wrestleProps(wrestleEvents[0] ?? null)} />
+            <div className="glance-split-divider" />
+            <SplitHalf nameColor="var(--accent4)" {...wrestleProps(wrestleEvents[1] ?? null)} />
           </div>
         </div>
 
         <div className="glance-ev-section">
           <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Holidays</div>
           <div className="glance-card-row">
-            <HolidayCard holiday={holidays[0] ?? null} />
-            <HolidayCard holiday={holidays[1] ?? null} />
+            <SplitHalf primary nameColor="var(--accent2)" {...holidayProps(holidays[0] ?? null)} />
+            <div className="glance-split-divider" />
+            <SplitHalf nameColor="var(--accent2)" {...holidayProps(holidays[1] ?? null)} />
           </div>
         </div>
+
       </div>
     </Panel>
   )
@@ -252,9 +239,9 @@ function GlanceBulletinPanel({ notes, dinner }) {
   return (
     <Panel style={{ overflow: 'hidden', height: '100%' }}>
       <PanelHeader title="Bulletin Board" />
-      <div className="home-bulletin-strip corkboard-body">
+      <div className="home-bulletin-strip corkboard-body glance-bulletin-body">
         <GlanceBulletinNote item={{ text: dinner }} isDinner />
-        {notes.slice(0, 4).map((b, i) => (
+        {notes.slice(0, 14).map((b, i) => (
           <GlanceBulletinNote key={i} item={b} />
         ))}
         {notes.length === 0 && (
