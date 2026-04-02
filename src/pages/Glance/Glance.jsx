@@ -191,25 +191,28 @@ function EventsPanel({ calDays, wrestling }) {
       <PanelHeader title={<span style={{ color: 'var(--accent6)' }}>Events</span>} />
 
       <div className="glance-events-body">
-        {/* ── Row label: Calendar ── */}
-        <div className="glance-section-label">Calendar</div>
-        <div className="glance-card-row">
-          <CalCard day={calWithEvents[0] ?? null} />
-          <CalCard day={calWithEvents[1] ?? null} />
+        <div className="glance-ev-section">
+          <div className="glance-section-label">Calendar</div>
+          <div className="glance-card-row">
+            <CalCard day={calWithEvents[0] ?? null} />
+            <CalCard day={calWithEvents[1] ?? null} />
+          </div>
         </div>
 
-        {/* ── Row label: Wrestling ── */}
-        <div className="glance-section-label" style={{ color: 'var(--accent4)' }}>Tori's Events</div>
-        <div className="glance-card-row">
-          <WrestleCard ev={wrestleEvents[0] ?? null} />
-          <WrestleCard ev={wrestleEvents[1] ?? null} />
+        <div className="glance-ev-section">
+          <div className="glance-section-label" style={{ color: 'var(--accent4)' }}>Tori's Events</div>
+          <div className="glance-card-row">
+            <WrestleCard ev={wrestleEvents[0] ?? null} />
+            <WrestleCard ev={wrestleEvents[1] ?? null} />
+          </div>
         </div>
 
-        {/* ── Row label: Holidays ── */}
-        <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Holidays</div>
-        <div className="glance-card-row">
-          <HolidayCard holiday={holidays[0] ?? null} />
-          <HolidayCard holiday={holidays[1] ?? null} />
+        <div className="glance-ev-section">
+          <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Holidays</div>
+          <div className="glance-card-row">
+            <HolidayCard holiday={holidays[0] ?? null} />
+            <HolidayCard holiday={holidays[1] ?? null} />
+          </div>
         </div>
       </div>
     </Panel>

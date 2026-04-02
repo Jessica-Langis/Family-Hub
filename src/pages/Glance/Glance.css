@@ -50,11 +50,20 @@
 .glance-events-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding: 8px 12px 12px;
+  overflow: hidden;
+  padding: 6px 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+}
+
+/* Each section (label + card row) stretches equally */
+.glance-ev-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .glance-section-label {
@@ -63,12 +72,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--accent6);
-  margin-bottom: 2px;
-  margin-top: 4px;
-}
-
-.glance-section-label:first-child {
-  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .glance-empty {
@@ -78,26 +82,29 @@
   padding: 2px 0;
 }
 
-/* ── 2-column card row ── */
+/* ── 2-column card row — fills the section ── */
 
 .glance-card-row {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 4px;
 }
 
-/* ── Base card ── */
+/* ── Base card — fills its grid cell ── */
 
 .glance-ev-card {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: 8px;
   background: var(--surface2);
   border-left: 3px solid var(--border);
   min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .glance-ev-card--cal     { border-left-color: var(--accent6); }
@@ -108,7 +115,6 @@
   opacity: 0.45;
   justify-content: center;
   align-items: center;
-  min-height: 52px;
 }
 
 .glance-ev-card-empty-text {
