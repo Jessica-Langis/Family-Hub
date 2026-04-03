@@ -25,8 +25,14 @@ function toDateStr(di) {
   return di instanceof Date ? dateParts(di) : String(di)
 }
 
-// "Apr 09 2026" format
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTHS      = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const DAYS_FULL   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+
+function ordinal(n) {
+  const v = n % 100
+  return n + (['th','st','nd','rd'][(v - 20) % 10] || ['th','st','nd','rd'][v] || 'th')
+}
 function fmtFull(dateInput) {
   const str = toDateStr(dateInput)
   const d = new Date(str + 'T00:00:00')
@@ -152,9 +158,11 @@ function EventBlock({ name, dateStr, timeStr, location, accentColor }) {
       </div>
       {location && <div className="glance-ev-block-loc">📍 {location}</div>}
       <div className="glance-ev-block-countdown">
-        <span className="glance-ev-cd-days">{cd.days === 0 ? 'TODAY' : `${cd.days}d`}</span>
+        <span className="glance-ev-cd-days" style={{ color: accentColor }}>
+          {cd.days === 0 ? 'TODAY' : `${cd.days} ${cd.days === 1 ? 'day' : 'days'}`}
+        </span>
         {cd.hasTime && cd.hours != null && (
-          <span className="glance-ev-cd-hours">{cd.hours}h</span>
+          <span className="glance-ev-cd-hours" style={{ color: accentColor, opacity: 0.65 }}>{cd.hours}h</span>
         )}
       </div>
     </div>
@@ -324,47 +332,108 @@ function GlanceBulletinPanel({ notes, dinner }) {
   )
 }
 
-// ── Compact Agenda panel ──────────────────────────────────────
-function GlanceAgendaPanel({ calDays }) {
-  const today    = new Date(); today.setHours(0,0,0,0)
-  const todayStr = dateParts(today)
-
-  const filtered = calDays
-    .filter(d => d.events?.length > 0 && d.date >= todayStr)
-    .slice(0, 10)
-
-  function fmtShort(dateStr) {
-    const d = new Date(dateStr + 'T00:00:00')
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  }
+// ── 7-day week view panel ─────────────────────────────────────
+// ── Day detail popup (matches CalendarPanel modal style) ──────────
+function WeekDayModal({ dateStr, events, onClose }) {
+  const d       = new Date(dateStr + 'T00:00:00')
+  const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  const diff    = Math.round((d - (() => { const t = new Date(); t.setHours(0,0,0,0); return t })()) / 86400000)
+  const diffStr   = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`
+  const diffColor = diff === 0 ? 'var(--accent3)' : diff === 1 ? 'var(--accent2)' : 'var(--accent4)'
 
   return (
-    <Panel className="glance-agenda-panel">
-      <PanelHeader title="Upcoming" />
-      {filtered.length === 0 ? (
-        <div className="glance-agenda-empty">Nothing coming up</div>
-      ) : (
-        <div className="glance-agenda-list">
-          {filtered.map(day => {
-            const diff = getDayDiff(day.date)
-            const cls  = diff === 0 ? 'today' : diff <= 3 ? 'soon' : 'upcoming'
-            const lbl  = diff === 0 ? 'Today' : diff === 1 ? 'Tmrw' : `${diff}d`
+    <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
+        <button onClick={onClose} style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize:'1.1rem', cursor:'pointer' }}>✕</button>
+        <div style={{ fontSize:'0.65rem', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent2)', marginBottom:6, fontWeight:700 }}>📅 Family Events</div>
+        <div style={{ fontSize:'1.05rem', fontWeight:700, color:'var(--text)', marginBottom:4 }}>{fmtFull}</div>
+        <div style={{ fontSize:'0.78rem', color:diffColor, fontWeight:600, marginBottom:16 }}>{diffStr}</div>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:4 }}>
+          {events.map((ev, i) => {
+            const name = evSummary(ev)
+            const time = typeof ev === 'string' ? null : (ev.startTime || ev.time || null)
             return (
-              <div key={day.date} className="glance-agenda-day">
-                <div className="glance-agenda-date-row">
-                  <span className="glance-agenda-date">{fmtShort(day.date)}</span>
-                  <span className={`countdown-badge ${cls}`} style={{ fontSize: '0.58rem', padding: '1px 5px' }}>{lbl}</span>
+              <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'8px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--accent2)', flexShrink:0, marginTop:5 }} />
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:'0.88rem', fontWeight:500, color:'var(--text)', lineHeight:1.4 }}>{name}</div>
+                  <div style={{ fontSize:'0.7rem', color: time ? 'var(--accent)' : 'var(--muted)', marginTop:2 }}>{time || 'All day'}</div>
                 </div>
-                {day.events.slice(0, 2).map((ev, i) => (
-                  <div key={i} className="glance-agenda-ev">{evSummary(ev)}</div>
-                ))}
-                {day.events.length > 2 && (
-                  <div className="glance-agenda-more">+{day.events.length - 2} more</div>
-                )}
               </div>
             )
           })}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function GlanceAgendaPanel({ calDays }) {
+  const [selected, setSelected] = useState(null) // { dateStr, events }
+  const today = new Date(); today.setHours(0,0,0,0)
+
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() + i)
+    const dateStr = dateParts(d)
+    const calDay  = calDays.find(cd => cd.date === dateStr)
+    return { date: d, dateStr, events: calDay?.events || [] }
+  })
+
+  return (
+    <Panel className="glance-agenda-panel">
+      <PanelHeader title="This Week" />
+      <div className="glance-week-grid">
+        {week.map(({ date, dateStr, events }, i) => {
+          const dayName   = DAYS_FULL[date.getDay()]
+          const dateShort = `${MONTHS[date.getMonth()]} ${date.getDate()}`
+          const dateOrd   = `${MONTHS[date.getMonth()]} ${ordinal(date.getDate())}`
+          const isToday   = i === 0
+          const isWeekend = date.getDay() === 0 || date.getDay() === 6
+          const hasEvents = events.length > 0
+
+          let cls = 'glance-week-day'
+          if (isToday)   cls += ' glance-week-today'
+          if (isWeekend) cls += ' gwk-weekend'
+          if (hasEvents) cls += ' gwk-has-events'
+
+          return (
+            <div
+              key={dateStr}
+              className={cls}
+              onClick={hasEvents ? () => setSelected({ dateStr, events }) : undefined}
+            >
+              {/* Desktop: stacked header */}
+              <div className="gwk-desktop-header">
+                <span className="gwk-day-name">{dayName}</span>
+                <span className="gwk-day-date">{dateShort}</span>
+              </div>
+
+              {/* Mobile: inline label "Monday Apr 3rd" */}
+              <div className="gwk-mobile-label">
+                <span className="gwk-day-name-mob">{dayName} {dateOrd}</span>
+              </div>
+
+              {/* Events — shared between both layouts */}
+              <div className="gwk-events">
+                {events.length === 0
+                  ? <span className="gwk-no-events">—</span>
+                  : events.map((ev, j) => (
+                    <span key={j} className={`gwk-ev${isWeekend ? ' gwk-ev-weekend' : ''}`}>{evSummary(ev)}</span>
+                  ))
+                }
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {selected && (
+        <WeekDayModal
+          dateStr={selected.dateStr}
+          events={selected.events}
+          onClose={() => setSelected(null)}
+        />
       )}
     </Panel>
   )

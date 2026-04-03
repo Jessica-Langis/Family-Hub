@@ -136,9 +136,9 @@
 
 /* Row 2 — date + time */
 .glance-ev-block-date {
-  font-size: clamp(0.75rem, 3.5cqi, 1.1rem);
+  font-size: clamp(1rem, 5cqi, 1.5rem);
   color: var(--text);
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   line-height: 1.2;
   flex-shrink: 0;
@@ -168,16 +168,14 @@
 }
 
 .glance-ev-cd-days {
-  font-size: clamp(1.1rem, 6cqi, 2rem);
+  font-size: clamp(1.3rem, 7cqi, 2.4rem);
   font-weight: 700;
-  color: var(--text);
   line-height: 1;
 }
 
 .glance-ev-cd-hours {
-  font-size: clamp(0.85rem, 4cqi, 1.4rem);
+  font-size: clamp(1rem, 5cqi, 1.6rem);
   font-weight: 500;
-  color: var(--muted);
   line-height: 1;
 }
 
@@ -218,7 +216,7 @@
 }
 
 /* ══════════════════════════════════════════
-   AGENDA PANEL (compact)
+   THIS WEEK — 7-day calendar panel
 ══════════════════════════════════════════ */
 
 .glance-agenda-panel {
@@ -227,56 +225,137 @@
   flex-direction: column;
 }
 
-.glance-agenda-empty {
-  padding: 8px 14px;
-  font-size: 0.75rem;
-  color: var(--muted);
-  font-style: italic;
-}
-
-.glance-agenda-list {
+/* Desktop: 7-column grid */
+.glance-week-grid {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 4px 14px 8px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  padding: 4px 10px 10px;
+}
+
+/* Each day column */
+.glance-week-day {
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-.glance-agenda-day {
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(42,48,69,0.6);
-}
-
-.glance-agenda-day:last-child { border-bottom: none; }
-
-.glance-agenda-date-row {
-  display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 2px;
+  padding: 6px 4px 4px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  min-width: 0;
+  overflow: hidden;
 }
 
-.glance-agenda-date {
-  font-size: 0.72rem;
-  font-weight: 600;
+.glance-week-day:last-child {
+  border-right: none;
+}
+
+/* Today highlight */
+.glance-week-today {
+  background: rgba(136, 201, 168, 0.07);
+  border-radius: 6px;
+}
+
+/* Desktop stacked header: day name + date */
+.gwk-desktop-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.gwk-day-name {
+  font-size: clamp(0.58rem, 1vw, 0.8rem);
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.glance-week-today .gwk-day-name {
+  color: var(--accent6);
+}
+
+.gwk-day-date {
+  font-size: clamp(0.55rem, 0.9vw, 0.75rem);
   color: var(--muted);
+  white-space: nowrap;
 }
 
-.glance-agenda-ev {
-  font-size: 0.72rem;
-  color: rgba(232,234,240,0.7);
-  padding-left: 10px;
+.glance-week-today .gwk-day-date {
+  color: var(--accent6);
+  opacity: 0.8;
+}
+
+/* Mobile inline label — hidden on desktop */
+.gwk-mobile-label {
+  display: none;
+}
+
+.gwk-day-name-mob {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.glance-week-today .gwk-day-name-mob {
+  color: var(--accent6);
+}
+
+/* Clickable day */
+.gwk-has-events {
+  cursor: pointer;
+}
+.gwk-has-events:hover {
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+}
+
+/* Events area — shared desktop/mobile */
+.gwk-events {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Event pill — matches cal-pill on home page */
+.gwk-ev {
+  font-size: clamp(0.5rem, 0.85vw, 0.62rem);
+  font-weight: 600;
+  line-height: 1.25;
+  background: rgba(126, 184, 212, 0.2);
+  color: var(--accent2);
+  border-radius: 3px;
+  padding: 2px 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.glance-agenda-more {
-  font-size: 0.65rem;
+/* Weekend pill — gold tint (matches cal-day weekend rule) */
+.gwk-ev-weekend {
+  background: rgba(232, 184, 109, 0.18);
+  color: var(--accent);
+}
+
+.gwk-no-events {
+  font-size: clamp(0.5rem, 0.85vw, 0.72rem);
   color: var(--muted);
-  padding-left: 10px;
+  opacity: 0.4;
+  text-align: center;
 }
 
 /* ══════════════════════════════════════════
@@ -386,8 +465,87 @@
     grid-template-columns: repeat(3, 1fr) !important;
   }
 
-  /* Agenda: allow scroll on mobile */
-  .glance-agenda-list {
+  /* Week: switch to vertical list on mobile */
+  .glance-week-grid {
+    grid-template-columns: 1fr;
     overflow-y: auto;
+    gap: 0;
+    padding: 4px 10px 10px;
+  }
+
+  .glance-week-day {
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 5px 4px;
+    gap: 6px;
+  }
+
+  .glance-week-day:last-child {
+    border-bottom: none;
+  }
+
+  /* Hide desktop stacked header on mobile */
+  .gwk-desktop-header {
+    display: none;
+  }
+
+  /* Show inline mobile label */
+  .gwk-mobile-label {
+    display: flex;
+    align-items: baseline;
+    flex-shrink: 0;
+  }
+
+  /* Events inline after label — strip pill style on mobile, show as plain comma-separated text */
+  .gwk-events {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    gap: 0;
+  }
+
+  .gwk-ev {
+    font-size: 0.8rem;
+    font-weight: 400;
+    background: none;
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
+    white-space: nowrap;
+    color: rgba(232, 234, 240, 0.75);
+  }
+
+  .gwk-ev-weekend {
+    background: none;
+    color: var(--accent);
+  }
+
+  /* Comma separator between events */
+  .gwk-ev + .gwk-ev::before {
+    content: ", ";
+    color: var(--muted);
+  }
+
+  .gwk-no-events {
+    font-size: 0.78rem;
+    opacity: 0.35;
+    text-align: left;
+  }
+
+  /* Dash between label and events */
+  .gwk-mobile-label::after {
+    content: " —";
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-right: 5px;
+    flex-shrink: 0;
   }
 }

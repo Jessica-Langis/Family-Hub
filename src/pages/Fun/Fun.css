@@ -172,12 +172,12 @@
 @media (max-width: 640px) {
   .fun-content {
     grid-template-columns: 1fr;
-    flex: none;
-    height: auto;
-    overflow: visible;
+    grid-template-rows: 1fr 1fr 1fr;
+    height: 100%;
+    overflow: hidden;
   }
   .fun-list {
-    overflow-y: visible;
-    flex: none;
+    overflow-y: auto;
+    flex: 1;
   }
 }
