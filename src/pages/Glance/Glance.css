@@ -75,13 +75,6 @@
   flex-shrink: 0;
 }
 
-.glance-empty {
-  font-size: 0.8rem;
-  color: var(--muted);
-  font-style: italic;
-  padding: 2px 0;
-}
-
 /* ── Split row — single surface containing both halves ── */
 
 .glance-card-row {
@@ -93,22 +86,23 @@
   overflow: hidden;
 }
 
-/* ── Shared half cell ── */
+/* ── Half cell ── */
 
 .glance-split-half {
   flex: 1;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 10px 14px;
+  gap: 0;
+  padding: 12px 16px;
   min-width: 0;
   overflow: hidden;
 }
 
 .glance-split-secondary {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 /* Vertical divider between halves */
@@ -116,36 +110,111 @@
   width: 1px;
   background: rgba(255, 255, 255, 0.07);
   flex-shrink: 0;
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
-/* ── Override next-up-* sizes to fill the taller cells ── */
+/* ── 4-row event block ── */
 
-.glance-split-half .next-up-name {
-  font-size: 1.05rem;
-  text-align: center;
+.glance-ev-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Row 1 — dynamic title, fills width exactly */
+.glance-ev-title {
   white-space: nowrap;
   overflow: hidden;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  line-height: 1.15;
+  flex-shrink: 0;
+}
+
+/* Row 2 — date + time */
+.glance-ev-block-date {
+  font-size: clamp(0.75rem, 3.5cqi, 1.1rem);
+  color: var(--text);
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+/* Row 3 — location */
+.glance-ev-block-loc {
+  font-size: clamp(0.65rem, 3cqi, 0.95rem);
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.2;
+  flex-shrink: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   max-width: 100%;
 }
 
-.glance-split-half .next-up-type {
-  font-size: 0.72rem;
+/* Row 4 — countdown */
+.glance-ev-block-countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.glance-split-half .next-up-date {
-  font-size: 1rem;
-  font-weight: 600;
+.glance-ev-cd-days {
+  font-size: clamp(1.1rem, 6cqi, 2rem);
+  font-weight: 700;
   color: var(--text);
+  line-height: 1;
 }
 
-.glance-split-half .next-up-loc {
-  font-size: 0.75rem;
+.glance-ev-cd-hours {
+  font-size: clamp(0.85rem, 4cqi, 1.4rem);
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1;
 }
 
-.glance-split-half .next-up-empty {
-  font-size: 0.85rem;
+/* ── Multi-event divider and overflow titles ── */
+
+.glance-ev-inner-divider {
+  width: 80%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+  margin: 8px 0;
+  align-self: center;
+}
+
+.glance-ev-rest {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.glance-ev-rest-item {
+  font-size: clamp(0.6rem, 2.5cqi, 0.82rem);
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Empty state */
+.next-up-empty {
+  font-size: clamp(0.75rem, 3cqi, 0.95rem);
+  color: var(--muted);
+  font-style: italic;
 }
 
 /* ══════════════════════════════════════════
@@ -235,22 +304,23 @@
   padding: 10px 10px 8px !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
+  container-type: inline-size !important;
 }
 
-/* Text scaled for the small ~120px square */
-.glance-bulletin-body .bulletin-who   { font-size: 0.52rem !important; letter-spacing: 0.06em !important; }
-.glance-bulletin-body .bulletin-text  { font-size: 0.65rem !important; line-height: 1.3 !important; }
-.glance-bulletin-body .bulletin-date  { font-size: 0.5rem !important; }
+/* Text proportional to note width via container queries */
+.glance-bulletin-body .bulletin-who   { font-size: clamp(0.5rem, 8cqi, 0.85rem) !important; letter-spacing: 0.05em !important; }
+.glance-bulletin-body .bulletin-text  { font-size: clamp(0.7rem, 10cqi, 1.05rem) !important; line-height: 1.35 !important; }
+.glance-bulletin-body .bulletin-date  { font-size: clamp(0.48rem, 7cqi, 0.75rem) !important; }
 
-/* Handwriting font overrides */
-.glance-bulletin-body .bulletin-item[data-font="dancing"]  .bulletin-text { font-size: 0.72rem !important; }
-.glance-bulletin-body .bulletin-item[data-font="caveat"]   .bulletin-text { font-size: 0.75rem !important; }
-.glance-bulletin-body .bulletin-item[data-font="pacifico"] .bulletin-text { font-size: 0.58rem !important; }
-.glance-bulletin-body .bulletin-item[data-font="satisfy"]  .bulletin-text { font-size: 0.64rem !important; }
-.glance-bulletin-body .bulletin-item[data-font="kalam"]    .bulletin-text { font-size: 0.68rem !important; }
-.glance-bulletin-body .bulletin-item[data-font="patrick"]  .bulletin-text { font-size: 0.66rem !important; }
+/* Handwriting fonts also proportional */
+.glance-bulletin-body .bulletin-item[data-font="dancing"]  .bulletin-text { font-size: clamp(0.78rem, 11cqi, 1.15rem) !important; }
+.glance-bulletin-body .bulletin-item[data-font="caveat"]   .bulletin-text { font-size: clamp(0.8rem, 12cqi, 1.2rem) !important; }
+.glance-bulletin-body .bulletin-item[data-font="pacifico"] .bulletin-text { font-size: clamp(0.62rem, 9cqi, 0.92rem) !important; }
+.glance-bulletin-body .bulletin-item[data-font="satisfy"]  .bulletin-text { font-size: clamp(0.68rem, 10cqi, 1rem) !important; }
+.glance-bulletin-body .bulletin-item[data-font="kalam"]    .bulletin-text { font-size: clamp(0.72rem, 10cqi, 1.05rem) !important; }
+.glance-bulletin-body .bulletin-item[data-font="patrick"]  .bulletin-text { font-size: clamp(0.7rem, 10cqi, 1.02rem) !important; }
 
-/* Pushpin — scale down for small notes */
+/* Pushpin — scale proportionally */
 .glance-bulletin-body .bulletin-item::before {
   width: 9px !important;
   height: 9px !important;
@@ -259,4 +329,65 @@
 .glance-bulletin-body .bulletin-item::after {
   height: 6px !important;
   top: 1px !important;
+}
+
+/* ══════════════════════════════════════════
+   MOBILE — stack vertically: Events > Bulletin > Agenda
+══════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .glance-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    height: auto;
+    overflow: visible;
+    padding: 0 4px 8px;
+  }
+
+  .glance-col-events {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 560px;
+  }
+
+  .glance-col-bulletin {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 360px;
+  }
+
+  .glance-col-agenda {
+    grid-column: 1;
+    grid-row: 3;
+    min-height: 220px;
+  }
+
+  /* Allow events body to scroll on mobile */
+  .glance-events-body {
+    overflow-y: auto;
+  }
+  .glance-ev-section {
+    flex-shrink: 0;
+    min-height: 140px;
+  }
+
+  /* Stack split halves vertically on mobile */
+  .glance-card-row {
+    flex-direction: column;
+  }
+  .glance-split-divider {
+    width: auto;
+    height: 1px;
+    margin: 0 10px;
+  }
+
+  /* Notes: 3 columns on mobile */
+  .glance-bulletin-body {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Agenda: allow scroll on mobile */
+  .glance-agenda-list {
+    overflow-y: auto;
+  }
 }

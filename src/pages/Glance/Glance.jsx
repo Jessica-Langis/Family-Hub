@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, Component } from 'react'
+import { useState, useEffect, useCallback, useLayoutEffect, useRef, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, getNextUSHolidays, countdownBadge } from '../Home/homeUtils'
+import { getDayDiff, getNextUSHolidays } from '../Home/homeUtils'
 import './Glance.css'
 
 // ── helpers ───────────────────────────────────────────────────
@@ -21,18 +21,36 @@ function dateParts(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
-// "Apr 9" format — accepts date string or Date object
-function fmtMed(dateInput) {
-  const str = dateInput instanceof Date
-    ? dateParts(dateInput)
-    : String(dateInput)
-  const d = new Date(str + 'T00:00:00')
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+function toDateStr(di) {
+  return di instanceof Date ? dateParts(di) : String(di)
 }
 
-// date string from either string or Date
-function toDateStr(dateInput) {
-  return dateInput instanceof Date ? dateParts(dateInput) : String(dateInput)
+// "Apr 09 2026" format
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+function fmtFull(dateInput) {
+  const str = toDateStr(dateInput)
+  const d = new Date(str + 'T00:00:00')
+  if (isNaN(d.getTime())) return ''
+  return `${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')} ${d.getFullYear()}`
+}
+
+// Returns { days, hours, hasTime } — hours only available when a time is provided
+function getCountdown(dateStr, timeStr) {
+  const now        = new Date()
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0)
+  const targetDay  = new Date(dateStr + 'T00:00:00')
+  const days       = Math.round((targetDay - todayStart) / 86400000)
+
+  if (timeStr) {
+    const full = new Date(dateStr + ' ' + timeStr)
+    if (!isNaN(full.getTime())) {
+      const ms = full - now
+      if (ms <= 0) return { days: 0, hours: 0, hasTime: true, past: true }
+      const totalH = Math.floor(ms / 3600000)
+      return { days: Math.floor(totalH / 24), hours: totalH % 24, hasTime: true }
+    }
+  }
+  return { days: Math.max(0, days), hours: null, hasTime: false }
 }
 
 // ── Error Boundary ────────────────────────────────────────────
@@ -104,27 +122,80 @@ export default function Glance() {
   )
 }
 
-// ── Split half — shared inner cell for all row types ──────────
-function SplitHalf({ primary, nameColor, name, type, dateStr, location, dateInput }) {
-  const diff = dateInput != null ? getDayDiff(toDateStr(dateInput)) : NaN
-  const b    = countdownBadge(diff)
-  const cls  = `glance-split-half${primary ? ' glance-split-primary' : ' glance-split-secondary'}`
+// ── Auto-sizing title — binary-searches for largest fitting font ──
+function AutoSizeTitle({ text, color }) {
+  const ref = useRef(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let lo = 0.55, hi = 2.8
+    for (let i = 0; i < 18; i++) {
+      const mid = (lo + hi) / 2
+      el.style.fontSize = `${mid}rem`
+      if (el.scrollWidth <= el.clientWidth) lo = mid
+      else hi = mid
+    }
+    el.style.fontSize = `${(lo * 0.96).toFixed(3)}rem`
+  }, [text])
+  return <div ref={ref} className="glance-ev-title" style={{ color }}>{text}</div>
+}
 
-  if (!name) {
-    return (
-      <div className={cls}>
-        <span className="next-up-empty">None</span>
+// ── 4-row event block ─────────────────────────────────────────
+function EventBlock({ name, dateStr, timeStr, location, accentColor }) {
+  const ds = toDateStr(dateStr)
+  const cd = getCountdown(ds, timeStr)
+  return (
+    <div className="glance-ev-block">
+      <AutoSizeTitle text={name} color={accentColor} />
+      <div className="glance-ev-block-date">
+        {fmtFull(dateStr)}{timeStr ? ` · ${timeStr}` : ''}
       </div>
-    )
-  }
+      {location && <div className="glance-ev-block-loc">📍 {location}</div>}
+      <div className="glance-ev-block-countdown">
+        <span className="glance-ev-cd-days">{cd.days === 0 ? 'TODAY' : `${cd.days}d`}</span>
+        {cd.hasTime && cd.hours != null && (
+          <span className="glance-ev-cd-hours">{cd.hours}h</span>
+        )}
+      </div>
+    </div>
+  )
+}
 
+// ── Calendar cell — handles 1, 2, or 3+ events on the same day ─
+function CalCell({ day, accentColor, secondary }) {
+  const cls = `glance-split-half${secondary ? ' glance-split-secondary' : ''}`
+  if (!day?.events?.length) {
+    return <div className={cls}><span className="next-up-empty">None</span></div>
+  }
+  const evts   = day.events
+  const getTime = ev => (ev.isAllDay === false && ev.startTime) ? ev.startTime : null
+  const ev1    = evts[0]
+  const ev2    = evts[1] ?? null
+  const rest   = evts.slice(2)
   return (
     <div className={cls}>
-      <div className="next-up-name" style={{ color: nameColor }}>{name}</div>
-      {type     && <div className="next-up-type">{type}</div>}
-      {dateStr  && <div className="next-up-date">{dateStr}</div>}
-      {location && <div className="next-up-loc">📍 {location}</div>}
-      {b.text   && <span className={`countdown-badge ${b.cls}`}>{b.text}</span>}
+      <EventBlock name={evSummary(ev1)} dateStr={day.date} timeStr={getTime(ev1)} accentColor={accentColor} />
+      {ev2 && <>
+        <div className="glance-ev-inner-divider" />
+        <EventBlock name={evSummary(ev2)} dateStr={day.date} timeStr={getTime(ev2)} accentColor={accentColor} />
+      </>}
+      {rest.length > 0 && <>
+        <div className="glance-ev-inner-divider" />
+        <div className="glance-ev-rest">
+          {rest.map((ev, i) => <div key={i} className="glance-ev-rest-item">· {evSummary(ev)}</div>)}
+        </div>
+      </>}
+    </div>
+  )
+}
+
+// ── Single-event cell (wrestling, holiday) ────────────────────
+function SingleCell({ name, dateStr, timeStr, location, accentColor, secondary }) {
+  const cls = `glance-split-half${secondary ? ' glance-split-secondary' : ''}`
+  if (!name) return <div className={cls}><span className="next-up-empty">None</span></div>
+  return (
+    <div className={cls}>
+      <EventBlock name={name} dateStr={dateStr} timeStr={timeStr} location={location} accentColor={accentColor} />
     </div>
   )
 }
@@ -134,70 +205,69 @@ function EventsPanel({ calDays, wrestling }) {
   const today    = new Date(); today.setHours(0,0,0,0)
   const todayStr = dateParts(today)
 
-  // Next 2 calendar days with events
   const calWithEvents = calDays
     .filter(d => d.date >= todayStr && d.events?.length > 0)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 2)
 
-  // Next 2 wrestling events
   const wrestleEvents = toArr(wrestling)
     .filter(e => e.date && getDayDiff(e.date) >= 0)
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, 2)
 
-  // Next 2 holidays
   const holidays = getNextUSHolidays(2)
-
-  // Build props for each cell
-  function calProps(day) {
-    if (!day) return { name: null }
-    const evts  = day.events || []
-    const first = evts[0] ? evSummary(evts[0]) : null
-    const name  = evts.length > 1 ? `${first} +${evts.length - 1}` : first
-    return { name, dateStr: fmtMed(day.date), dateInput: day.date }
-  }
-
-  function wrestleProps(ev) {
-    if (!ev) return { name: null }
-    return { name: ev.name, type: ev.type || null, dateStr: fmtMed(ev.date), location: ev.location || null, dateInput: ev.date }
-  }
-
-  function holidayProps(h) {
-    if (!h) return { name: null }
-    return { name: h.name, dateStr: fmtMed(h.date), dateInput: h.date }
-  }
 
   return (
     <Panel className="glance-events-panel">
       <PanelHeader title={<span style={{ color: 'var(--accent6)' }}>Events</span>} />
-
       <div className="glance-events-body">
 
         <div className="glance-ev-section">
           <div className="glance-section-label">Calendar</div>
           <div className="glance-card-row">
-            <SplitHalf primary nameColor="var(--accent6)" {...calProps(calWithEvents[0] ?? null)} />
+            <CalCell day={calWithEvents[0] ?? null} accentColor="var(--accent6)" />
             <div className="glance-split-divider" />
-            <SplitHalf nameColor="var(--accent6)" {...calProps(calWithEvents[1] ?? null)} />
+            <CalCell day={calWithEvents[1] ?? null} accentColor="var(--accent6)" secondary />
           </div>
         </div>
 
         <div className="glance-ev-section">
           <div className="glance-section-label" style={{ color: 'var(--accent4)' }}>Tori's Events</div>
           <div className="glance-card-row">
-            <SplitHalf primary nameColor="var(--accent4)" {...wrestleProps(wrestleEvents[0] ?? null)} />
+            <SingleCell
+              name={wrestleEvents[0]?.name ?? null}
+              dateStr={wrestleEvents[0]?.date}
+              timeStr={wrestleEvents[0]?.time || wrestleEvents[0]?.startTime || null}
+              location={wrestleEvents[0]?.location ?? null}
+              accentColor="var(--accent4)"
+            />
             <div className="glance-split-divider" />
-            <SplitHalf nameColor="var(--accent4)" {...wrestleProps(wrestleEvents[1] ?? null)} />
+            <SingleCell
+              name={wrestleEvents[1]?.name ?? null}
+              dateStr={wrestleEvents[1]?.date}
+              timeStr={wrestleEvents[1]?.time || wrestleEvents[1]?.startTime || null}
+              location={wrestleEvents[1]?.location ?? null}
+              accentColor="var(--accent4)"
+              secondary
+            />
           </div>
         </div>
 
         <div className="glance-ev-section">
           <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Holidays</div>
           <div className="glance-card-row">
-            <SplitHalf primary nameColor="var(--accent2)" {...holidayProps(holidays[0] ?? null)} />
+            <SingleCell
+              name={holidays[0]?.name ?? null}
+              dateStr={holidays[0]?.date ?? null}
+              accentColor="var(--accent2)"
+            />
             <div className="glance-split-divider" />
-            <SplitHalf nameColor="var(--accent2)" {...holidayProps(holidays[1] ?? null)} />
+            <SingleCell
+              name={holidays[1]?.name ?? null}
+              dateStr={holidays[1]?.date ?? null}
+              accentColor="var(--accent2)"
+              secondary
+            />
           </div>
         </div>
 

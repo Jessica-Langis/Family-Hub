@@ -190,6 +190,14 @@
 .nova-content .section-title { color: var(--accent3); }
 .nova-content .chore-item input[type="checkbox"] { accent-color: var(--accent3); }
 
+/* ── Prevent any child from blowing out the grid columns ── */
+.nova-row-1 > *,
+.nova-row-2 > *,
+.nova-row-3 > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .nova-content {
@@ -198,28 +206,34 @@
     height: auto;
     overflow: visible;
     gap: 8px;
+    /* Prevent right-side overflow */
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   /* Row 1: stack This Week above Hype */
   .nova-row-1 {
     grid-template-columns: 1fr;
     overflow: visible;
+    max-width: 100%;
   }
-  .nova-row-1 > * { min-height: 110px; overflow: visible; }
+  .nova-row-1 > * { min-height: 110px; overflow: visible; min-width: 0; }
 
   /* Row 2: 2-col grid for the 4 fun tiles — they're compact */
   .nova-row-2 {
     grid-template-columns: 1fr 1fr;
     overflow: visible;
+    max-width: 100%;
   }
-  .fun-fact-panel  { min-height: 140px; }
-  .nova-today-panel { min-height: 100px; }
+  .fun-fact-panel   { min-height: 140px; min-width: 0; overflow: hidden; }
+  .nova-today-panel { min-height: 100px; min-width: 0; }
 
   /* Row 3: 2-col grid for the 4 info panels */
   .nova-row-3 {
     grid-template-columns: 1fr 1fr;
     overflow: visible;
+    max-width: 100%;
   }
-  .na-cell { min-height: 200px; overflow: visible; }
-  .na-cell .panel { flex: none; min-height: 180px; }
+  .na-cell { min-height: 200px; overflow: visible; min-width: 0; }
+  .na-cell .panel { flex: none; min-height: 180px; min-width: 0; max-width: 100%; }
 }
