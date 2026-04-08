@@ -59,6 +59,14 @@ function getCountdown(dateStr, timeStr) {
   return { days: Math.max(0, days), hours: null, hasTime: false }
 }
 
+// Returns true if a timed event ended 2+ hours ago (triggers removal from the tile)
+function isStale(dateStr, timeStr) {
+  if (!timeStr) return false  // all-day events stay visible all day
+  const t = new Date(dateStr + ' ' + timeStr)
+  if (isNaN(t.getTime())) return false
+  return (new Date() - t) >= 2 * 60 * 60 * 1000
+}
+
 // ── Weather icon (NWS api.weather.gov — no API key, same data as Google) ──
 // Maps NWS shortForecast text to an emoji
 function nwsForecastToEmoji(shortForecast) {
@@ -261,23 +269,24 @@ function EventBlock({ name, dateStr, timeStr, location, accentColor }) {
           {weatherIcon ?? '📍'} {location}
         </div>
       )}
-      <div className="glance-ev-block-countdown">
-        {/* < 24 h away with a known time → show hours only, never "TODAY Xh" */}
-        {cd.hasTime && cd.days === 0
-          ? <span className="glance-ev-cd-days" style={{ color: accentColor }}>
-              {cd.hours === 0 ? 'NOW' : `${cd.hours}h`}
-            </span>
-          : <>
-              <span className="glance-ev-cd-days" style={{ color: accentColor }}>
-                {cd.days === 0 ? 'TODAY' : `${cd.days} ${cd.days === 1 ? 'day' : 'days'}`}
+      {!cd.past && (
+        <div className="glance-ev-block-countdown">
+          {/* < 24 h away with a known time → show hours only, never "TODAY Xh" */}
+          {cd.hasTime && cd.days === 0
+            ? <span className="glance-ev-cd-days" style={{ color: accentColor }}>
+                {cd.hours === 0 ? 'NOW' : `${cd.hours}h`}
               </span>
-              {/* Show hours alongside days only when 1+ days out and time is known */}
-              {cd.hasTime && cd.days > 0 && cd.hours != null && (
-                <span className="glance-ev-cd-hours" style={{ color: accentColor, opacity: 0.65 }}>{cd.hours}h</span>
-              )}
-            </>
-        }
-      </div>
+            : <>
+                <span className="glance-ev-cd-days" style={{ color: accentColor }}>
+                  {cd.days === 0 ? 'TODAY' : `${cd.days} ${cd.days === 1 ? 'day' : 'days'}`}
+                </span>
+                {cd.hasTime && cd.days > 0 && cd.hours != null && (
+                  <span className="glance-ev-cd-hours" style={{ color: accentColor, opacity: 0.65 }}>{cd.hours}h</span>
+                )}
+              </>
+          }
+        </div>
+      )}
     </div>
   )
 }
@@ -328,11 +337,23 @@ function EventsPanel({ calDays, wrestling }) {
 
   const calWithEvents = calDays
     .filter(d => d.date >= todayStr && d.events?.length > 0)
+    .map(d => ({
+      ...d,
+      events: d.events.filter(ev => {
+        const t = ev.isAllDay === false && ev.startTime ? ev.startTime : null
+        return !isStale(d.date, t)
+      })
+    }))
+    .filter(d => d.events.length > 0)   // drop days where every event has gone stale
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 2)
 
   const wrestleEvents = toArr(wrestling)
-    .filter(e => e.date && getDayDiff(e.date) >= 0)
+    .filter(e => {
+      if (!e.date || getDayDiff(e.date) < 0) return false
+      const t = e.time || e.startTime || null
+      return !isStale(e.date, t)
+    })
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, 2)
 
