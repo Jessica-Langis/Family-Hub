@@ -5,7 +5,7 @@
 .glance-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 210px;
+  grid-template-rows: 1fr 1fr 1fr;
   gap: 12px;
   height: 100%;
   padding: 0 4px 4px;
@@ -15,7 +15,7 @@
 
 .glance-col-events {
   grid-column: 1;
-  grid-row: 1 / 3;
+  grid-row: 1 / 4;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -31,7 +31,7 @@
 
 .glance-col-agenda {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 2 / 4;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -225,13 +225,14 @@
   flex-direction: column;
 }
 
-/* Desktop: 7-column grid */
+/* Desktop: 7-column × 2-row grid for 14-day view */
 .glance-week-grid {
   flex: 1;
   min-height: 0;
   overflow: hidden;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: 1fr 1fr;
   gap: 0;
   padding: 4px 10px 10px;
 }
@@ -247,8 +248,14 @@
   overflow: hidden;
 }
 
-.glance-week-day:last-child {
+/* Strip right border on the last column of each week row */
+.glance-week-day:nth-child(7n) {
   border-right: none;
+}
+
+/* Horizontal divider between week 1 and week 2 */
+.glance-week-day:nth-child(-n+7) {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 /* Today highlight */
@@ -468,6 +475,7 @@
   /* Week: switch to vertical list on mobile */
   .glance-week-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
     overflow-y: auto;
     gap: 0;
     padding: 4px 10px 10px;

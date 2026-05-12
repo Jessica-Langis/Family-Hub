@@ -298,16 +298,17 @@ function CalCell({ day, accentColor, secondary }) {
     return <div className={cls}><span className="next-up-empty">None</span></div>
   }
   const evts   = day.events
-  const getTime = ev => (ev.isAllDay === false && ev.startTime) ? ev.startTime : null
+  const getTime     = ev => (ev.isAllDay === false && ev.startTime) ? ev.startTime : null
+  const getLocation = ev => (typeof ev === 'string' ? null : (ev.location || null))
   const ev1    = evts[0]
   const ev2    = evts[1] ?? null
   const rest   = evts.slice(2)
   return (
     <div className={cls}>
-      <EventBlock name={evSummary(ev1)} dateStr={day.date} timeStr={getTime(ev1)} accentColor={accentColor} />
+      <EventBlock name={evSummary(ev1)} dateStr={day.date} timeStr={getTime(ev1)} location={getLocation(ev1)} accentColor={accentColor} />
       {ev2 && <>
         <div className="glance-ev-inner-divider" />
-        <EventBlock name={evSummary(ev2)} dateStr={day.date} timeStr={getTime(ev2)} accentColor={accentColor} />
+        <EventBlock name={evSummary(ev2)} dateStr={day.date} timeStr={getTime(ev2)} location={getLocation(ev2)} accentColor={accentColor} />
       </>}
       {rest.length > 0 && <>
         <div className="glance-ev-inner-divider" />
@@ -506,7 +507,7 @@ function GlanceAgendaPanel({ calDays }) {
   const [selected, setSelected] = useState(null) // { dateStr, events }
   const today = new Date(); today.setHours(0,0,0,0)
 
-  const week = Array.from({ length: 7 }, (_, i) => {
+  const week = Array.from({ length: 14 }, (_, i) => {
     const d = new Date(today)
     d.setDate(d.getDate() + i)
     const dateStr = dateParts(d)
@@ -516,7 +517,7 @@ function GlanceAgendaPanel({ calDays }) {
 
   return (
     <Panel className="glance-agenda-panel">
-      <PanelHeader title="This Week" />
+      <PanelHeader title="Next 2 Weeks" />
       <div className="glance-week-grid">
         {week.map(({ date, dateStr, events }, i) => {
           const dayName   = DAYS_FULL[date.getDay()]
