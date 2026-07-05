@@ -7,14 +7,14 @@
 //    Apps Script editor → Services → + → Google Calendar API → Add
 //
 //  Tab names (case-sensitive):
-//    Chores           A=Name  B=Who  C=Frequency  D=DueDate  E=Done
+//    Chores           A=Name  B=Who  C=Frequency  D=DueDate  E=Done  F=Weight(1-3, blank=1)
 //    Reminders        A=Name  B=Date
 //    Movies           A=Title  B=Type(movie/show)  C=Status
 //    Books            A=Title  B=Author  C=Category
 //    MealIdeas        A=Name  B=Category  C=Main Ingredient  D=Link
 //    Bulletin         A=Note  B=Who  C=Date  D=Color
 //    FamilyReminders  A=Name  B=Date  (home tab reminders)
-//    WhereAmI         A=Name  B=Location  C=Date  D=Time
+//    WhereAmI         A=Name  B=Location  C=Date(start)  D=Time(note)  E=EndDate  F=Phone
 //    tori_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
 //    nova_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
 //
@@ -140,13 +140,16 @@ function doGet(e) {
           ? Utilities.formatDate(dd, Session.getScriptTimeZone(), 'yyyy-MM-dd')
           : String(dueDateVal);
       }
+      var weightVal = parseInt(r[5], 10);
+      if (!(weightVal >= 1 && weightVal <= 3)) weightVal = 1;
       result.push({
         id:        i + 1,
         name:      r[0] || '',
         who:       r[1] || '',
         frequency: r[2] || '',
         dueDate:   dueDateStr,
-        done:      r[4] === true || r[4] === 'TRUE' || r[4] === 1
+        done:      r[4] === true || r[4] === 'TRUE' || r[4] === 1,
+        weight:    weightVal
       });
     }
     return json(result);
@@ -253,16 +256,32 @@ function doGet(e) {
     var result = [];
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i];
-      if (!r[0]) continue;
-      var dateVal = r[2];
+      // Location (col B) is the only required field — Name (col A) is
+      // intentionally optional now, so don't skip rows just because it's blank.
+      if (!r[1]) continue;
       var dateStr = '';
-      if (dateVal) {
-        var d = new Date(dateVal);
+      if (r[2]) {
+        var d = new Date(r[2]);
         dateStr = !isNaN(d.getTime())
-          ? Utilities.formatDate(d, Session.getScriptTimeZone(), 'MMM d')
-          : String(dateVal);
+          ? Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+          : String(r[2]);
       }
-      result.push({ id: i + 1, name: r[0] || '', location: r[1] || '', date: dateStr, time: r[3] || '' });
+      var endDateStr = '';
+      if (r[4]) {
+        var ed = new Date(r[4]);
+        endDateStr = !isNaN(ed.getTime())
+          ? Utilities.formatDate(ed, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+          : String(r[4]);
+      }
+      result.push({
+        id:       i + 1,
+        name:     r[0] || '',
+        location: r[1] || '',
+        date:     dateStr,
+        time:     r[3] || '',
+        endDate:  endDateStr,
+        phone:    r[5] || ''
+      });
     }
     return json(result);
   }
@@ -434,7 +453,9 @@ function doPost(e) {
   if (type === 'chores') {
     var sheet = getSheet('Chores');
     if (action === 'add') {
-      sheet.appendRow([p.name || '', p.who || '', p.frequency || '', p.dueDate || '', false]);
+      var addWeight = parseInt(p.weight, 10);
+      if (!(addWeight >= 1 && addWeight <= 3)) addWeight = 1;
+      sheet.appendRow([p.name || '', p.who || '', p.frequency || '', p.dueDate || '', false, addWeight]);
       return json({ status: 'ok' });
     }
     if (action === 'update') {
@@ -444,6 +465,11 @@ function doPost(e) {
         sheet.getRange(row, 2).setValue(p.who       || '');
         sheet.getRange(row, 3).setValue(p.frequency || '');
         if (p.dueDate !== undefined) sheet.getRange(row, 4).setValue(p.dueDate || '');
+        if (p.weight  !== undefined) {
+          var updWeight = parseInt(p.weight, 10);
+          if (!(updWeight >= 1 && updWeight <= 3)) updWeight = 1;
+          sheet.getRange(row, 6).setValue(updWeight);
+        }
       }
       return json({ status: 'ok' });
     }
@@ -554,7 +580,7 @@ function doPost(e) {
     var sheet = getSheet('WhereAmI');
     if (!sheet) return json({ error: 'WhereAmI tab not found' });
     if (action === 'add') {
-      sheet.appendRow([p.name || '', p.location || '', p.date || '', p.time || '']);
+      sheet.appendRow([p.name || '', p.location || '', p.date || '', p.time || '', p.endDate || '', p.phone || '']);
       return json({ status: 'ok' });
     }
     if (action === 'delete') {

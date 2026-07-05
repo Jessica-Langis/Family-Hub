@@ -96,9 +96,10 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 8px 12px;
+  padding: clamp(10px, 2.2vh, 22px) 12px;
   min-width: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .glance-split-secondary {

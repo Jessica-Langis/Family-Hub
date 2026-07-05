@@ -141,6 +141,35 @@ button {
   flex-shrink: 0;
 }
 
+.chore-item-weight {
+  font-size: 0.7rem;
+  color: #f5c842;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.weight-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.weight-btn {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  padding: 6px 0;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.weight-btn.active {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
 .chore-empty {
   padding: 8px 14px;
   color: var(--muted);
@@ -263,142 +292,6 @@ button {
 }
 
 .countdown-empty {
-  padding: 8px 14px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-style: italic;
-}
-
-/* ══════════════════════════════════════════
-   SCHEDULE ITEMS
-══════════════════════════════════════════ */
-.schedule-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 6px 14px 10px;
-  overflow-y: auto;
-}
-
-.schedule-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
-  color: var(--text);
-}
-.schedule-item:last-child { border-bottom: none; }
-
-.schedule-item-day {
-  font-size: 0.65rem;
-  color: var(--muted);
-  background: var(--surface2);
-  padding: 2px 7px;
-  border-radius: 20px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  min-width: 36px;
-  text-align: center;
-}
-
-.schedule-item-class {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.schedule-item-time {
-  font-size: 0.68rem;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.schedule-delete {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.9rem;
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-.schedule-delete:hover { color: #e07070; }
-
-.schedule-empty {
-  padding: 8px 14px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-style: italic;
-}
-
-/* ══════════════════════════════════════════
-   PERSONAL BESTS (pb)
-══════════════════════════════════════════ */
-.pb-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 6px 14px 10px;
-  overflow-y: auto;
-}
-
-.pb-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
-  color: var(--text);
-}
-.pb-item:last-child { border-bottom: none; }
-
-.pb-item-cat {
-  font-size: 0.65rem;
-  color: var(--muted);
-  background: var(--surface2);
-  padding: 2px 7px;
-  border-radius: 20px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.pb-item-val {
-  flex: 1;
-  font-weight: 600;
-  color: var(--accent4);
-  min-width: 0;
-}
-
-.pb-item-notes {
-  font-size: 0.68rem;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 90px;
-}
-
-.pb-delete {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.9rem;
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-.pb-delete:hover { color: #e07070; }
-
-.pb-empty {
   padding: 8px 14px;
   color: var(--muted);
   font-size: 0.8rem;
@@ -593,6 +486,46 @@ button {
   padding: 12px 0;
 }
 
+/* ══════════════════════════════════════════
+   COUNTDOWN HERO (name-tagged calendar event)
+══════════════════════════════════════════ */
+.countdown-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  gap: 2px;
+  flex: 1;
+  text-align: center;
+}
+
+.countdown-hero-num {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.countdown-hero-unit {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.countdown-hero-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.countdown-hero-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
 .next-up-name {
   font-size: 1rem;
   font-weight: 700;
@@ -623,179 +556,6 @@ button {
 }
 
 /* ══════════════════════════════════════════
-   HYPE TILE (Tori) — standalone gradient card
-══════════════════════════════════════════ */
-.hype-panel {
-  background: linear-gradient(135deg, rgba(168,130,200,0.12), rgba(126,184,212,0.08));
-  border: 1px solid rgba(168,130,200,0.25);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow: hidden;
-  position: relative;
-  min-height: 0;
-}
-
-.hype-quote {
-  font-family: 'Playfair Display', 'Georgia', serif;
-  font-size: clamp(0.82rem, 1.4vw, 1.15rem);
-  font-style: italic;
-  text-align: center;
-  color: var(--text);
-  line-height: 1.6;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.hype-source {
-  font-size: 0.72rem;
-  color: var(--accent4);
-  text-align: center;
-  margin-top: 6px;
-}
-
-.hype-refresh-btn {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 2px 4px;
-  line-height: 1;
-  transition: color 0.15s, transform 0.2s;
-}
-.hype-refresh-btn:hover { color: var(--accent4); transform: rotate(90deg); }
-
-/* ══════════════════════════════════════════
-   HYPE TILE (Nova) — standalone gradient card
-══════════════════════════════════════════ */
-.nova-hype-panel {
-  background: linear-gradient(135deg, rgba(135,206,235,0.12), rgba(100,180,220,0.08));
-  border: 1px solid rgba(135,206,235,0.25);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow: hidden;
-  min-height: 0;
-  position: relative;
-}
-
-.nova-hype-quote {
-  font-family: 'Playfair Display', 'Georgia', serif;
-  font-size: clamp(0.82rem, 1.3vw, 1.1rem);
-  font-style: italic;
-  text-align: center;
-  color: var(--text);
-  line-height: 1.6;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.nova-hype-source {
-  font-size: 0.72rem;
-  color: var(--accent3);
-  text-align: center;
-  margin-top: 6px;
-}
-
-.nova-hype-refresh {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 2px 4px;
-  line-height: 1;
-  transition: color 0.15s, transform 0.2s;
-}
-.nova-hype-refresh:hover { color: var(--accent3); transform: rotate(90deg); }
-
-/* ══════════════════════════════════════════
-   THIS WEEK PANEL
-══════════════════════════════════════════ */
-.this-week-panel {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 14px;
-  gap: 8px;
-  flex: 1;
-  overflow: hidden;
-}
-
-.this-week-goal {
-  font-size: 0.88rem;
-  color: var(--text);
-  line-height: 1.5;
-  flex: 1;
-}
-
-.this-week-goal.placeholder {
-  color: var(--muted);
-  font-style: italic;
-}
-
-.this-week-edit-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.this-week-textarea {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 8px 10px;
-  font-size: 0.82rem;
-  color: var(--text);
-  font-family: inherit;
-  resize: none;
-  min-height: 60px;
-}
-.this-week-textarea:focus { outline: none; border-color: var(--accent); }
-
-.this-week-actions {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
-}
-
-.this-week-save-btn {
-  background: var(--accent);
-  color: #0f1117;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  padding: 4px 12px;
-  cursor: pointer;
-}
-.this-week-save-btn:hover { opacity: 0.85; }
-
-.this-week-cancel-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.78rem;
-  padding: 4px 12px;
-  cursor: pointer;
-}
-.this-week-cancel-btn:hover { border-color: var(--muted); }
-
-/* ══════════════════════════════════════════
    FUN FACT / JOKE / COOL FACT TILES
 ══════════════════════════════════════════ */
 .fun-fact-panel {
@@ -822,35 +582,6 @@ button {
   text-align: center;
   line-height: 1.5;
 }
-
-/* ══════════════════════════════════════════
-   NOVA TODAY PANEL (dinner)
-══════════════════════════════════════════ */
-.nova-today-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  gap: 4px;
-  flex: 1;
-  overflow: hidden;
-}
-
-.nova-today-label {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
-
-.nova-today-meal {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--accent3);
-  text-align: center;
-}
-.nova-today-meal.empty { color: var(--muted); font-style: italic; font-weight: normal; }
 
 /* ══════════════════════════════════════════
    QUICK ADD (inline input strip)

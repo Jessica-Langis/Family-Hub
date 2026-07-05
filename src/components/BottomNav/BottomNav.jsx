@@ -1,11 +1,10 @@
 import './BottomNav.css'
 
 const TABS = [
-  { id: 'home',   icon: '🏡',       label: 'Home'        },
+  { id: 'glance', icon: '👀',        label: 'At A Glance' },
   { id: 'unwind', icon: '🛋️',        label: 'Unwind'      },
   { id: 'tori',   icon: '🤼‍♀️',     label: 'Tori'        },
   { id: 'nova',   icon: '🚲',        label: 'Nova'        },
-  { id: 'glance', icon: '👀',        label: 'At A Glance' },
 ]
 
 export default function BottomNav({ activeTab, onTabChange }) {

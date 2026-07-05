@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort, formatReminderDate } from '../Home/homeUtils'
-import { TORI_HYPE, pickDailyIndex } from '../../data/hypeContent'
+import { getDayDiff, formatDateShort, formatReminderDate, parsePersonEvent } from '../Home/homeUtils'
 import './Tori.css'
 
 // ── Normalize API response → array ───────────────────────────
@@ -52,227 +51,56 @@ function choreBadgeCls(dateStr) {
 
 // ── Main tab ──────────────────────────────────────────────────
 export default function Tori() {
-  const [events, setEvents]     = useState([])
-  const [evtLoading, setEvtLoading] = useState(true)
-
-  const loadEvents = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.TORI}?type=events`)
-      const data = await res.json()
-      setEvents(toArr(data))
-    } catch (e) {
-      console.error('tori events', e)
-    } finally {
-      setEvtLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { loadEvents() }, [loadEvents])
-
   return (
     <ToriErrorBoundary>
       <div className="tori-content">
-        <div className="ta-thisweek"><ThisWeekPanel /></div>
-        <div className="ta-pb"><PBsPanel /></div>
-        <div className="ta-hype"><HypePanel /></div>
-        <div className="ta-nextup"><NextUpPanel events={events} loading={evtLoading} onRefresh={loadEvents} /></div>
+        <div className="ta-nextup"><NextUpPanel /></div>
         <div className="ta-reminders"><RemindersPanel /></div>
-        <div className="ta-schedule"><SchedulePanel /></div>
         <div className="ta-todo"><TodoPanel /></div>
-        <div className="ta-events"><EventsPanel events={events} loading={evtLoading} onRefresh={loadEvents} /></div>
       </div>
     </ToriErrorBoundary>
   )
 }
 
-// ── This Week panel ───────────────────────────────────────────
-function ThisWeekPanel() {
-  const [current, setCurrent] = useState('')
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft]     = useState('')
-  const [saving, setSaving]   = useState(false)
+// ── Next Up panel — merges Tori's manual events with any family- ─
+// calendar event tagged "Tori - ..."; shows whichever is soonest.
+function NextUpPanel() {
+  const [manualEvents, setManualEvents] = useState([])
+  const [calEvents, setCalEvents]       = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [showAdd, setShowAdd]           = useState(false)
+  const [form, setForm]                 = useState({ name: '', evtType: '', date: '', location: '' })
+  const [saving, setSaving]             = useState(false)
+
+  const loadManual = useCallback(async () => {
+    try {
+      const res  = await apiFetch(`${SCRIPTS.TORI}?type=events`)
+      const data = await res.json()
+      setManualEvents(toArr(data))
+    } catch (e) { console.error('tori events', e) }
+  }, [])
+
+  const loadCalendar = useCallback(async () => {
+    try {
+      const res  = await apiFetch(`${SCRIPTS.CHORES}?type=upcoming&days=365`)
+      const data = await res.json()
+      const found = toArr(data)
+        .flatMap(d => (d.events || []).map(ev => ({ summary: ev.summary, date: d.date, location: ev.location })))
+        .map(ev => {
+          const title = parsePersonEvent(ev.summary, 'Tori')
+          return title ? { id: `cal-${ev.date}-${title}`, name: title, date: ev.date, location: ev.location, type: '' } : null
+        })
+        .filter(Boolean)
+      setCalEvents(found)
+    } catch (e) { console.error('tori calendar countdown', e) }
+  }, [])
 
   useEffect(() => {
-    apiFetch(`${SCRIPTS.CHORES}?type=tori_this_week`)
-      .then(r => r.json())
-      .then(d => setCurrent(d?.current || ''))
-      .catch(e => console.error('this week load', e))
-  }, [])
+    setLoading(true)
+    Promise.all([loadManual(), loadCalendar()]).finally(() => setLoading(false))
+  }, [loadManual, loadCalendar])
 
-  async function save() {
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('type', 'tori_this_week')
-      fd.append('action', 'set')
-      fd.append('value', draft)
-      fd.append('previous', current)
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setCurrent(draft)
-      setEditing(false)
-    } catch (e) {
-      console.error('this week save', e)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Panel>
-      <PanelHeader
-        title="This Week"
-        actions={!editing && (
-          <button className="add-btn" onClick={() => { setDraft(current); setEditing(true) }}>edit</button>
-        )}
-      />
-      <div className="this-week-panel">
-        {editing
-          ? <div className="this-week-edit-wrap">
-              <textarea
-                className="this-week-textarea"
-                value={draft}
-                onChange={e => setDraft(e.target.value)}
-                placeholder="What's the focus this week?"
-              />
-              <div className="this-week-actions">
-                <button className="this-week-cancel-btn" onClick={() => setEditing(false)}>Cancel</button>
-                <button className="this-week-save-btn" onClick={save} disabled={saving}>
-                  {saving ? 'Saving…' : 'Save'}
-                </button>
-              </div>
-            </div>
-          : <div className={`this-week-goal${!current ? ' placeholder' : ''}`}>
-              {current || 'No goal set yet — tap edit to add one.'}
-            </div>
-        }
-      </div>
-    </Panel>
-  )
-}
-
-// ── Personal Bests panel ──────────────────────────────────────
-function PBsPanel() {
-  const [pbs, setPbs]         = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm]       = useState({ category: '', value: '', notes: '' })
-  const [saving, setSaving]   = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.TORI}?type=pbs`)
-      const data = await res.json()
-      setPbs(toArr(data))
-    } catch (e) { console.error('pbs load', e) }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { load() }, [load])
-
-  async function addPB() {
-    if (!form.category || !form.value) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'add')
-      fd.append('type', 'pbs')
-      fd.append('category', form.category)
-      fd.append('value', form.value)
-      fd.append('notes', form.notes)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-      setForm({ category: '', value: '', notes: '' })
-      setShowAdd(false)
-      load()
-    } catch (e) { console.error('add pb', e) }
-    finally { setSaving(false) }
-  }
-
-  async function deletePB(id) {
-    setPbs(p => p.filter(x => x.id !== id))
-    try {
-      const fd = new FormData()
-      fd.append('action', 'delete')
-      fd.append('type', 'pbs')
-      fd.append('idx', id)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-    } catch (e) { console.error('delete pb', e); load() }
-  }
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="Personal Bests"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
-        />
-        {loading
-          ? <div className="pb-empty">Loading…</div>
-          : pbs.length === 0
-            ? <div className="pb-empty">No PRs yet — time to set some!</div>
-            : <div className="pb-list">
-                {pbs.map((pb, i) => (
-                  <div key={pb.id ?? i} className="pb-item">
-                    <span className="pb-item-cat">{pb.category}</span>
-                    <span className="pb-item-val">{pb.value}</span>
-                    {pb.notes && <span className="pb-item-notes">{pb.notes}</span>}
-                    <button className="pb-delete" onClick={() => deletePB(pb.id)}>×</button>
-                  </div>
-                ))}
-              </div>
-        }
-      </Panel>
-
-      {showAdd && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">Add Personal Best</div>
-            <input className="overlay-input" placeholder="Category (e.g. 100 Back)" value={form.category}
-              onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
-            <input className="overlay-input" placeholder="Value (e.g. 1:02.3)" value={form.value}
-              onChange={e => setForm(f => ({ ...f, value: e.target.value }))} />
-            <input className="overlay-input" placeholder="Notes (optional)" value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={addPB} disabled={saving || !form.category || !form.value}>
-                {saving ? 'Saving…' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// ── Hype panel ────────────────────────────────────────────────
-function HypePanel() {
-  const [idx, setIdx] = useState(() => pickDailyIndex(TORI_HYPE))
-  const raw   = TORI_HYPE[idx]
-  const dash  = raw.lastIndexOf(' — ')
-  const quote = dash !== -1 ? raw.slice(0, dash) : raw
-  const src   = dash !== -1 ? raw.slice(dash + 3) : ''
-
-  return (
-    <div className="hype-panel">
-      <div className="hype-quote">"{quote}"</div>
-      {src && <div className="hype-source">— {src}</div>}
-      <button
-        className="hype-refresh-btn"
-        title="New quote"
-        onClick={() => setIdx(i => (i + 1) % TORI_HYPE.length)}
-      >↻</button>
-    </div>
-  )
-}
-
-// ── Next Up panel ─────────────────────────────────────────────
-function NextUpPanel({ events, loading, onRefresh }) {
-  const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm]       = useState({ name: '', evtType: '', date: '', location: '' })
-  const [saving, setSaving]   = useState(false)
-
-  const upcoming = toArr(events)
+  const upcoming = [...toArr(manualEvents), ...calEvents]
     .filter(e => getDayDiff(e.date) >= 0)
     .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
 
@@ -293,7 +121,7 @@ function NextUpPanel({ events, loading, onRefresh }) {
       await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
       setForm({ name: '', evtType: '', date: '', location: '' })
       setShowAdd(false)
-      onRefresh()
+      loadManual()
     } catch (e) { console.error('add event', e) }
     finally { setSaving(false) }
   }
@@ -466,113 +294,17 @@ function RemindersPanel() {
   )
 }
 
-// ── Schedule panel ────────────────────────────────────────────
-function SchedulePanel() {
-  const [schedule, setSchedule] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [showAdd, setShowAdd]   = useState(false)
-  const [form, setForm]         = useState({ day: '', class: '', time: '' })
-  const [saving, setSaving]     = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.TORI}?type=schedule`)
-      const data = await res.json()
-      setSchedule(toArr(data))
-    } catch (e) { console.error('schedule load', e) }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { load() }, [load])
-
-  async function addSchedule() {
-    if (!form.day || !form.class) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'add')
-      fd.append('type', 'schedule')
-      fd.append('day', form.day)
-      fd.append('class', form.class)
-      fd.append('time', form.time)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-      setForm({ day: '', class: '', time: '' })
-      setShowAdd(false)
-      load()
-    } catch (e) { console.error('add schedule', e) }
-    finally { setSaving(false) }
-  }
-
-  async function deleteSchedule(id) {
-    setSchedule(s => s.filter(x => x.id !== id))
-    try {
-      const fd = new FormData()
-      fd.append('action', 'delete')
-      fd.append('type', 'schedule')
-      fd.append('idx', id)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-    } catch (e) { console.error('delete schedule', e); load() }
-  }
-
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="Schedule"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
-        />
-        {loading
-          ? <div className="schedule-empty">Loading…</div>
-          : schedule.length === 0
-            ? <div className="schedule-empty">No schedule entries yet.</div>
-            : <div className="schedule-list">
-                {schedule.map((s, i) => (
-                  <div key={s.id ?? i} className="schedule-item">
-                    <span className="schedule-item-day">{s.day}</span>
-                    <span className="schedule-item-class">{s.class}</span>
-                    {s.time && <span className="schedule-item-time">{s.time}</span>}
-                    <button className="schedule-delete" onClick={() => deleteSchedule(s.id)}>×</button>
-                  </div>
-                ))}
-              </div>
-        }
-      </Panel>
-
-      {showAdd && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">Add Schedule Entry</div>
-            <select className="overlay-select" value={form.day}
-              onChange={e => setForm(f => ({ ...f, day: e.target.value }))}>
-              <option value="">Select day…</option>
-              {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <input className="overlay-input" placeholder="Class / activity" value={form.class}
-              onChange={e => setForm(f => ({ ...f, class: e.target.value }))} />
-            <input className="overlay-input" placeholder="Time (optional, e.g. 4:30 PM)" value={form.time}
-              onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={addSchedule} disabled={saving || !form.day || !form.class}>
-                {saving ? 'Saving…' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
 // ── To Do panel (Tori's chores) ───────────────────────────────
+const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
+
 function TodoPanel() {
   const [chores, setChores]   = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm]       = useState({ name: '', dueDate: '' })
+  const [form, setForm]       = useState({ name: '', dueDate: '', weight: 2 })
   const [saving, setSaving]   = useState(false)
+
+  const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
 
   const load = useCallback(async () => {
     try {
@@ -617,8 +349,9 @@ function TodoPanel() {
       fd.append('name', form.name.trim())
       fd.append('who', 'tori')
       fd.append('dueDate', form.dueDate)
+      fd.append('weight', String(form.weight))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setForm({ name: '', dueDate: '' })
+      setForm({ name: '', dueDate: '', weight: 2 })
       setShowAdd(false)
       load()
     } catch (e) { console.error('add chore', e) }
@@ -630,6 +363,7 @@ function TodoPanel() {
       <Panel>
         <PanelHeader
           title="To Do"
+          badge={points > 0 ? `🏆 ${points} pts` : null}
           actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
         />
         {loading
@@ -643,6 +377,9 @@ function TodoPanel() {
                     <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
                       onClick={() => toggle(c.id, !!c.done)}>
                       <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
+                      <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
+                        {'★'.repeat(c.weight || 1)}
+                      </span>
                       {badge && (
                         <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
                       )}
@@ -662,6 +399,15 @@ function TodoPanel() {
               onKeyDown={e => e.key === 'Enter' && addItem()} />
             <input className="overlay-input" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+            <div className="weight-picker">
+              {[1, 2, 3].map(w => (
+                <button key={w} type="button"
+                  className={`weight-btn${form.weight === w ? ' active' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, weight: w }))}>
+                  {WEIGHT_LABELS[w]}
+                </button>
+              ))}
+            </div>
             <div className="overlay-actions">
               <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
               <button className="overlay-btn submit" onClick={addItem} disabled={saving || !form.name.trim()}>
@@ -672,43 +418,5 @@ function TodoPanel() {
         </div>
       )}
     </>
-  )
-}
-
-// ── Events panel (countdown list) ────────────────────────────
-function EventsPanel({ events, loading, onRefresh }) {
-  const sorted = [...toArr(events)]
-    .filter(e => getDayDiff(e.date) >= 0)
-    .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
-
-  return (
-    <Panel>
-      <PanelHeader title="Events" badge={sorted.length > 0 ? `${sorted.length}` : null} />
-      {loading
-        ? <div className="countdown-empty">Loading…</div>
-        : sorted.length === 0
-          ? <div className="countdown-empty">No events added yet.</div>
-          : <div className="countdown-list">
-              {sorted.map((e, i) => {
-                const diff = getDayDiff(e.date)
-                const cls  = isNaN(diff) ? 'upcoming' : diff < 0 ? 'past' : diff === 0 ? 'today' : diff <= 7 ? 'soon' : 'upcoming'
-                const label = isNaN(diff) ? '' : diff < 0 ? `${Math.abs(diff)}d ago` : diff === 0 ? 'TODAY' : `${diff}d`
-                return (
-                  <div key={e.id ?? i} className="countdown-item">
-                    <span className="countdown-item-dot" />
-                    <div className="countdown-item-body">
-                      <div className="countdown-item-name">{e.name}</div>
-                      <div className="countdown-item-sub">
-                        {e.type && `${e.type} · `}{formatDateShort(e.date)}
-                        {e.location && ` · ${e.location}`}
-                      </div>
-                    </div>
-                    <span className={`countdown-badge ${cls}`}>{label}</span>
-                  </div>
-                )
-              })}
-            </div>
-      }
-    </Panel>
   )
 }

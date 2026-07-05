@@ -32,6 +32,16 @@ export function formatDateShort(dateStr) {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`
 }
 
+// ── Person-tagged calendar events ──────────────────────────────
+// Matches summaries like "Nova - Basketball Tournament" or "Tori: Recital".
+// Returns the remainder after the name + separator, or null if no match.
+export function parsePersonEvent(summary, name) {
+  if (!summary || !name) return null
+  const re = new RegExp('^\\s*' + name + '\\s*[-:–]\\s*(.+)$', 'i')
+  const m = String(summary).match(re)
+  return m ? m[1].trim() : null
+}
+
 export function formatReminderDate(dateStr) {
   if (!dateStr?.trim()) return ''
   const today = new Date(); today.setHours(0,0,0,0)

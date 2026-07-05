@@ -1,41 +1,31 @@
-/* ── 3-row outer grid ── */
+/* ── Single row, 3 equal columns: Joke | Today | Countdown ── */
 .nova-content {
   display: grid;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
   gap: 8px;
   height: auto;
   min-height: 0;
   overflow: hidden;
 }
 
-/* ── Row 1: This Week (1fr) | Hype (1fr) ── */
-.nova-row-1 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
+.countdown-cell {
+  min-height: 130px;
 }
 
-/* ── Row 2: Joke | Fact | Cool | Dinner (4 equal cols) ── */
-.nova-row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
+/* ── Today tile — two stacked sections (Chores / Coming Up) ── */
+.today-subhead {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 8px 14px 2px;
+  flex-shrink: 0;
 }
+.today-subhead:first-of-type { padding-top: 10px; }
 
-/* ── Row 3: Events | Reminders | Chores | Homework ── */
-.nova-row-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* Row 3 wrapper cells — each is a flex container so Panel fills it */
+/* Wrapper cells — each is a flex container so Panel fills it */
 .na-cell {
   display: flex;
   flex-direction: column;
@@ -43,13 +33,6 @@
   overflow: hidden;
 }
 .na-cell .panel { flex: 1; }
-
-/* Row 1 items fill their cells */
-.nova-row-1 > * {
-  min-height: 0;
-  overflow: hidden;
-}
-.nova-row-1 .panel { flex: 1; }
 
 /* ── Tile: fun-fact panels ── */
 .fun-fact-panel {
@@ -84,44 +67,6 @@
   color: var(--text);
 }
 
-/* Fun Fact tile — cool, editorial */
-.fun-fact-panel.tile-fact {
-  background: linear-gradient(135deg, rgba(100,180,255,0.09), rgba(60,140,220,0.05));
-  border: 1px solid rgba(100,180,255,0.2);
-}
-.fun-fact-panel.tile-fact .fun-fact-label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #7ec8f5;
-}
-.fun-fact-panel.tile-fact .fun-fact-text {
-  font-size: 0.88rem;
-  line-height: 1.5;
-  letter-spacing: 0.01em;
-  color: var(--text);
-}
-
-/* Did You Know tile — curious */
-.fun-fact-panel.tile-cool {
-  background: linear-gradient(135deg, rgba(160,120,220,0.10), rgba(100,80,180,0.06));
-  border: 1px solid rgba(160,120,220,0.22);
-}
-.fun-fact-panel.tile-cool .fun-fact-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-style: italic;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: #b899e8;
-}
-.fun-fact-panel.tile-cool .fun-fact-text {
-  font-size: 0.88rem;
-  line-height: 1.6;
-  color: var(--text);
-}
-
 .fun-fact-header {
   display: flex;
   align-items: center;
@@ -149,51 +94,12 @@
 }
 .fact-shuffle-btn:hover { color: var(--accent3); transform: rotate(90deg); }
 
-/* ── Nova today panel (dinner) ── */
-.nova-today-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  overflow: hidden;
-  justify-content: center;
-}
-
-.nova-today-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--accent3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-}
-
-.nova-today-meal {
-  font-family: 'Playfair Display', 'Georgia', serif;
-  font-size: 1.05rem;
-  font-style: italic;
-  color: var(--text);
-  line-height: 1.4;
-}
-.nova-today-meal.empty {
-  font-family: inherit;
-  font-style: normal;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
 /* ── Accent overrides ── */
 .nova-content .section-title { color: var(--accent3); }
 .nova-content .chore-item input[type="checkbox"] { accent-color: var(--accent3); }
 
 /* ── Prevent any child from blowing out the grid columns ── */
-.nova-row-1 > *,
-.nova-row-2 > *,
-.nova-row-3 > * {
+.nova-content > * {
   min-width: 0;
   max-width: 100%;
 }
@@ -201,39 +107,18 @@
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .nova-content {
-    grid-template-rows: auto auto auto;
+    grid-template-columns: 1fr;
     flex: none;
     height: auto;
     overflow: visible;
     gap: 8px;
-    /* Prevent right-side overflow */
     max-width: 100%;
     box-sizing: border-box;
   }
 
-  /* Row 1: stack This Week above Hype */
-  .nova-row-1 {
-    grid-template-columns: 1fr;
-    overflow: visible;
-    max-width: 100%;
-  }
-  .nova-row-1 > * { min-height: 110px; overflow: visible; min-width: 0; }
-
-  /* Row 2: 2-col grid for the 4 fun tiles — they're compact */
-  .nova-row-2 {
-    grid-template-columns: 1fr 1fr;
-    overflow: visible;
-    max-width: 100%;
-  }
-  .fun-fact-panel   { min-height: 140px; min-width: 0; overflow: hidden; }
-  .nova-today-panel { min-height: 100px; min-width: 0; }
-
-  /* Row 3: 2-col grid for the 4 info panels */
-  .nova-row-3 {
-    grid-template-columns: 1fr 1fr;
-    overflow: visible;
-    max-width: 100%;
-  }
-  .na-cell { min-height: 200px; overflow: visible; min-width: 0; }
-  .na-cell .panel { flex: none; min-height: 180px; min-width: 0; max-width: 100%; }
+  .fun-fact-panel { min-height: 140px; min-width: 0; overflow: hidden; }
+  .na-cell { min-height: 320px; overflow: visible; min-width: 0; }
+  .na-cell .panel { flex: none; min-height: 300px; min-width: 0; max-width: 100%; }
+  .countdown-cell { min-height: 160px; }
+  .countdown-cell .panel { min-height: 150px; }
 }

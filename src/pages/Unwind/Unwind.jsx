@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort } from '../Home/homeUtils'
+import GroceryPanel  from '../Home/panels/GroceryPanel'
+import BulletinPanel from '../Home/panels/BulletinPanel'
+import WhereAmIPanel from '../Home/panels/WhereAmIPanel'
 import './Unwind.css'
 
 // ── Helpers (from Parentals) ──────────────────────────────────
@@ -44,7 +47,7 @@ const FREQUENCY_OPTIONS = [
   { value: 'Sunday',    label: 'Every Sunday' },
 ]
 
-// ── To Do panel (from Parentals) ──────────────────────────────
+// ── To Do panel (family/shared chores — Tori & Nova have their own) ──
 function TodoPanel() {
   const [chores, setChores]       = useState([])
   const [loading, setLoading]     = useState(true)
@@ -334,7 +337,7 @@ function WhatForDinnerPanel() {
   )
 }
 
-// ── Shared Fun list items ─────────────────────────────────────
+// ── Read / Watch list items ────────────────────────────────────
 function FunItem({ item, titleKey, subKey, onDelete }) {
   const title = item[titleKey] || ''
   const sub   = subKey && item[subKey] ? item[subKey] : null
@@ -353,44 +356,19 @@ function FunItem({ item, titleKey, subKey, onDelete }) {
   )
 }
 
-function MealIdeaItem({ item, onDelete }) {
-  const tags = [item.category, item.ingredient].filter(Boolean)
-  return (
-    <div className="fun-item">
-      <div className="fun-item-dot" />
-      <div className="fun-item-body">
-        <span className="fun-item-title">{item.name}</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        {tags.map(t => <span key={t} className="fun-item-tag">{t}</span>)}
-        {item.link && (
-          <a href={item.link} target="_blank" rel="noreferrer"
-            style={{ fontSize: '0.7rem', color: 'var(--accent2)', textDecoration: 'none' }}>
-            🔗 Recipe
-          </a>
-        )}
-      </div>
-      <button className="fun-delete" title="Remove" onClick={() => onDelete(item.id)}>×</button>
-    </div>
-  )
-}
-
-function FunList({ items, status, titleKey, subKey, isMealIdeas, onDelete }) {
+function FunList({ items, status, titleKey, subKey, onDelete }) {
   if (status === 'loading') return <div className="fun-empty">Loading…</div>
   if (status === 'error')   return <div className="fun-empty">Unavailable</div>
   if (!items.length)        return <div className="fun-empty">Nothing here yet</div>
 
   return (
     <div className="fun-list">
-      {isMealIdeas
-        ? items.map(item => <MealIdeaItem key={item.id} item={item} onDelete={onDelete} />)
-        : items.map(item => <FunItem      key={item.id} item={item} titleKey={titleKey} subKey={subKey} onDelete={onDelete} />)
-      }
+      {items.map(item => <FunItem key={item.id} item={item} titleKey={titleKey} subKey={subKey} onDelete={onDelete} />)}
     </div>
   )
 }
 
-// ── Add modal ─────────────────────────────────────────────────
+// ── Add modal (Watch / Read only) ──────────────────────────────
 const FORM_CONFIG = {
   movies: {
     title:  '🎬 Add to Watch List:',
@@ -404,22 +382,6 @@ const FORM_CONFIG = {
     fields: [
       { id: 'title',  placeholder: 'e.g. Atomic Habits' },
       { id: 'author', placeholder: 'e.g. James Clear' },
-    ],
-  },
-  mealideas: {
-    title:  '🍽 Add a Meal Idea:',
-    fields: [
-      { id: 'name',       placeholder: 'e.g. Chicken Tikka Masala' },
-      { id: 'category',   placeholder: 'e.g. Dinner, Quick' },
-      { id: 'ingredient', placeholder: 'e.g. Chicken' },
-      { id: 'link',       placeholder: 'https://…' },
-    ],
-  },
-  weekendideas: {
-    title:  '🏕 Add a Weekend Idea:',
-    fields: [
-      { id: 'title',       placeholder: 'e.g. Hiking at Mt. Rainier' },
-      { id: 'description', placeholder: 'Notes (optional)' },
     ],
   },
 }
@@ -476,7 +438,7 @@ function AddModal({ type, onClose, onAdded }) {
   )
 }
 
-// ── Read / Watch panel (col 1, full height) ───────────────────
+// ── Read / Watch panel ─────────────────────────────────────────
 function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
   const [tab, setTab] = useState('watch')
   const isWatch = tab === 'watch'
@@ -488,7 +450,6 @@ function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
         actions={
           <button
             className="add-btn"
-            style={{ background: 'var(--accent5)', color: '#0f1117' }}
             onClick={() => onAdd(isWatch ? 'movies' : 'books')}
           >+</button>
         }
@@ -509,66 +470,23 @@ function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
   )
 }
 
-// ── Weekend Ideas panel ───────────────────────────────────────
-function WeekendIdeasPanel({ items, status, onDelete, onAdd }) {
-  return (
-    <Panel>
-      <PanelHeader
-        title={<span style={{ color: 'var(--accent3)' }}>Weekend Ideas</span>}
-        actions={
-          <button
-            className="add-btn"
-            style={{ background: 'var(--accent3)', color: '#0f1117' }}
-            onClick={() => onAdd('weekendideas')}
-          >+</button>
-        }
-      />
-      <FunList items={items} status={status} titleKey="title" subKey="description" onDelete={id => onDelete('weekendideas', id)} />
-    </Panel>
-  )
-}
-
-// ── Meal Ideas panel ──────────────────────────────────────────
-function MealIdeasPanel({ items, status, onDelete, onAdd }) {
-  return (
-    <Panel>
-      <PanelHeader
-        title={<span style={{ color: 'var(--accent5)' }}>Meal Ideas</span>}
-        actions={
-          <button className="add-btn" style={{ background: 'var(--accent5)', color: '#0f1117' }}
-            onClick={() => onAdd('mealideas')}>+ Add</button>
-        }
-      />
-      <FunList items={items} status={status} isMealIdeas onDelete={id => onDelete('mealideas', id)} />
-    </Panel>
-  )
-}
-
 // ── Main page ─────────────────────────────────────────────────
-const ALL_TYPES = ['movies', 'books', 'mealideas', 'weekendideas']
-const TYPE_TO_KEY = { mealideas: 'meals', weekendideas: 'weekendideas' }
-
-function typeKey(type) { return TYPE_TO_KEY[type] || type }
+const ALL_TYPES = ['movies', 'books']
 
 export default function Unwind() {
-  const [data, setData] = useState({
-    movies: [], books: [], meals: [], weekendideas: [],
-  })
-  const [status, setStatus] = useState({
-    movies: 'loading', books: 'loading', meals: 'loading', weekendideas: 'loading',
-  })
+  const [data, setData] = useState({ movies: [], books: [] })
+  const [status, setStatus] = useState({ movies: 'loading', books: 'loading' })
   const [modal, setModal] = useState(null)
 
   const load = useCallback(async (type) => {
-    const key = typeKey(type)
-    setStatus(s => ({ ...s, [key]: 'loading' }))
+    setStatus(s => ({ ...s, [type]: 'loading' }))
     try {
       const res   = await apiFetch(SCRIPTS.CHORES + `?type=${type}`)
       const items = await res.json()
-      setData(d => ({ ...d, [key]: items || [] }))
-      setStatus(s => ({ ...s, [key]: 'ok' }))
+      setData(d => ({ ...d, [type]: items || [] }))
+      setStatus(s => ({ ...s, [type]: 'ok' }))
     } catch {
-      setStatus(s => ({ ...s, [key]: 'error' }))
+      setStatus(s => ({ ...s, [type]: 'error' }))
     }
   }, [])
 
@@ -586,10 +504,14 @@ export default function Unwind() {
   }
 
   return (
-    <div className="fun-content">
+    <div className="unwind-content">
 
-      {/* Col 1 — Read / Watch (spans both rows) */}
-      <div className="fun-col1">
+      <div className="un-grocery"><GroceryPanel /></div>
+      <div className="un-bulletin"><BulletinPanel /></div>
+      <div className="un-whereami"><WhereAmIPanel /></div>
+
+      <div className="un-todo"><TodoPanel /></div>
+      <div className="un-readwatch">
         <ReadWatchPanel
           movies={data.movies}
           books={data.books}
@@ -598,36 +520,7 @@ export default function Unwind() {
           onAdd={setModal}
         />
       </div>
-
-      {/* Col 2 row 1 — Weekend Ideas */}
-      <div className="fun-col2-row1">
-        <WeekendIdeasPanel
-          items={data.weekendideas}
-          status={status.weekendideas}
-          onDelete={handleDelete}
-          onAdd={setModal}
-        />
-      </div>
-
-      {/* Col 2 row 2 — To Do (from Parentals) */}
-      <div className="fun-col2-row2">
-        <TodoPanel />
-      </div>
-
-      {/* Col 3 row 1 — Meal Ideas */}
-      <div className="fun-col3-row1">
-        <MealIdeasPanel
-          items={data.meals}
-          status={status.meals}
-          onDelete={handleDelete}
-          onAdd={setModal}
-        />
-      </div>
-
-      {/* Col 3 row 2 — What's For Dinner (from Parentals) */}
-      <div className="fun-col3-row2">
-        <WhatForDinnerPanel />
-      </div>
+      <div className="un-dinner"><WhatForDinnerPanel /></div>
 
       {modal && (
         <AddModal

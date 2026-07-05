@@ -227,7 +227,25 @@ function AutoSizeTitle({ text, color }) {
   const measure = useCallback(() => {
     const el = ref.current
     if (!el || el.clientWidth === 0) return
-    let lo = 0.4, hi = 2.0
+
+    // Height ceiling: the title shouldn't claim more room than its tile can
+    // spare once date/location/countdown rows and padding take their share —
+    // keeps big titles from crowding the tile's top/bottom padding.
+    const block  = el.closest('.glance-ev-block')
+    const cell   = el.closest('.glance-split-half')
+    let heightCapRem = 2.0
+    if (block && cell) {
+      const siblingsH = Array.from(block.children)
+        .filter(c => c !== el)
+        .reduce((sum, c) => sum + c.getBoundingClientRect().height, 0)
+      const available = cell.clientHeight - siblingsH
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      // line-height 1.15 on the title, leave a little slack
+      heightCapRem = Math.max(0.6, (available / 1.15 / rootPx) * 0.85)
+    }
+
+    let lo = 0.4, hi = Math.min(2.0, heightCapRem)
+    if (hi <= lo) hi = lo + 0.1
     for (let i = 0; i < 22; i++) {
       const mid = (lo + hi) / 2
       el.style.fontSize = `${mid}rem`
