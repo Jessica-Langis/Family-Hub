@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
+import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, parsePersonEvent } from '../Home/homeUtils'
 import { NOVA_JOKES, pickDailyIndex } from '../../data/hypeContent'
@@ -56,7 +57,10 @@ export default function Nova() {
     <div className="nova-content">
       <JokePanel />
       <div className="na-cell"><TodayPanel /></div>
-      <div className="na-cell countdown-cell"><CountdownPanel name="Nova" /></div>
+      <div className="na-countdown-col">
+        <div className="na-cell countdown-cell"><CountdownPanel name="Nova" /></div>
+        <div className="na-wishlist"><WishlistPanel type="nova_wishlist" /></div>
+      </div>
     </div>
     </NovaErrorBoundary>
   )

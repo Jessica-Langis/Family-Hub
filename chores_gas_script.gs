@@ -15,8 +15,8 @@
 //    Bulletin         A=Note  B=Who  C=Date  D=Color
 //    FamilyReminders  A=Name  B=Date  (home tab reminders)
 //    WhereAmI         A=Name  B=Location  C=Date(start)  D=Time(note)  E=EndDate  F=Phone
-//    tori_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
-//    nova_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
+//    ToriWishlist     A=Item
+//    NovaWishlist     A=Item
 //
 //  Calendar events (upcoming/weekend) are read via the Calendar advanced
 //  service with singleEvents:true, so recurring events are expanded by
@@ -63,58 +63,6 @@ function getWeekendDates() {
     saturday: Utilities.formatDate(sat, tz, 'yyyy-MM-dd'),
     sunday:   Utilities.formatDate(sun, tz, 'yyyy-MM-dd')
   };
-}
-
-// ─────────────────────────────────────────────
-//  HELPER: read this-week sheet
-// ─────────────────────────────────────────────
-function readThisWeek(tabName) {
-  var sheet = getSheet(tabName);
-  if (!sheet) return { current: '', history: [] };
-  var rows = sheet.getDataRange().getValues();
-  var current = '';
-  var history = [];
-  for (var i = 0; i < rows.length; i++) {
-    var text = String(rows[i][0] || '').trim();
-    if (!text) continue;
-    var dateVal = rows[i][1];
-    var dateStr = '';
-    if (dateVal) {
-      var d = new Date(dateVal);
-      dateStr = !isNaN(d.getTime())
-        ? Utilities.formatDate(d, Session.getScriptTimeZone(), 'M/d/yyyy')
-        : String(dateVal);
-    }
-    if (i === 0) current = text;
-    else history.push({ text: text, date: dateStr });
-  }
-  return { current: current, history: history };
-}
-
-// ─────────────────────────────────────────────
-//  HELPER: set new goal, shift current into history (max 3 past)
-// ─────────────────────────────────────────────
-function setThisWeek(tabName, newValue, previous) {
-  var sheet = getSheet(tabName);
-  if (!sheet) return;
-  var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'M/d/yyyy');
-  if (!newValue) {
-    sheet.getRange(1, 1, 1, 2).setValues([['', '']]);
-    return;
-  }
-  var lastRow = sheet.getLastRow();
-  var existing = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 2).getValues() : [];
-  var newRows = [[newValue, today]];
-  var prevText = existing.length > 0 ? String(existing[0][0] || '').trim() : '';
-  if (prevText && prevText !== newValue) {
-    newRows.push([prevText, existing[0][1] || '']);
-  }
-  for (var i = 1; i < existing.length && newRows.length < 4; i++) {
-    var t = String(existing[i][0] || '').trim();
-    if (t) newRows.push([t, existing[i][1]]);
-  }
-  sheet.clearContents();
-  sheet.getRange(1, 1, newRows.length, 2).setValues(newRows);
 }
 
 // ─────────────────────────────────────────────
@@ -176,9 +124,19 @@ function doGet(e) {
     return json(result);
   }
 
-  // ── THIS WEEK (TORI / NOVA) ──
-  if (type === 'tori_this_week') return json(readThisWeek('tori_this_week'));
-  if (type === 'nova_this_week') return json(readThisWeek('nova_this_week'));
+  // ── WISHLIST (TORI / NOVA) ──
+  if (type === 'tori_wishlist' || type === 'nova_wishlist') {
+    var sheetName = type === 'tori_wishlist' ? 'ToriWishlist' : 'NovaWishlist';
+    var sheet = getSheet(sheetName);
+    if (!sheet) return json({ error: sheetName + ' tab not found' });
+    var rows = sheet.getDataRange().getValues();
+    var result = [];
+    for (var i = 0; i < rows.length; i++) {
+      if (!rows[i][0]) continue;
+      result.push({ id: i + 1, text: rows[i][0] || '' });
+    }
+    return json(result);
+  }
 
   // ── MOVIES ──
   if (type === 'movies') {
@@ -507,28 +465,23 @@ function doPost(e) {
     }
   }
 
-  // ── THIS WEEK (TORI) ──
-  if (type === 'tori_this_week') {
-    if (action === 'set') {
-      setThisWeek('tori_this_week', p.value || '', p.previous || '');
+  // ── WISHLIST (TORI / NOVA) ──
+  if (type === 'tori_wishlist' || type === 'nova_wishlist') {
+    var sheetName = type === 'tori_wishlist' ? 'ToriWishlist' : 'NovaWishlist';
+    var sheet = getSheet(sheetName);
+    if (!sheet) return json({ error: sheetName + ' tab not found' });
+    if (action === 'add') {
+      sheet.appendRow([p.text || '']);
       return json({ status: 'ok' });
     }
-    if (action === 'delete_history') {
-      var row = parseInt(p.row);
-      if (row > 1) getSheet('tori_this_week').deleteRow(row);
+    if (action === 'update') {
+      var row = parseInt(p.idx);
+      if (row > 0) sheet.getRange(row, 1).setValue(p.text || '');
       return json({ status: 'ok' });
     }
-  }
-
-  // ── THIS WEEK (NOVA) ──
-  if (type === 'nova_this_week') {
-    if (action === 'set') {
-      setThisWeek('nova_this_week', p.value || '', p.previous || '');
-      return json({ status: 'ok' });
-    }
-    if (action === 'delete_history') {
-      var row = parseInt(p.row);
-      if (row > 1) getSheet('nova_this_week').deleteRow(row);
+    if (action === 'delete') {
+      var row = parseInt(p.idx);
+      if (row > 0) sheet.deleteRow(row);
       return json({ status: 'ok' });
     }
   }

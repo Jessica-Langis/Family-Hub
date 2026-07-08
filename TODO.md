@@ -1,5 +1,9 @@
 # Family Hub — Next Iteration To-Do
 
+## Deployment — needed before Wishlist works live
+- [ ] Add `ToriWishlist` and `NovaWishlist` tabs to the shared CHORES Google Sheet (single column A = Item, no header row — same setup as `Reminders`)
+- [ ] Redeploy `chores_gas_script.gs` in the Apps Script editor (Deploy → Manage deployments → new version)
+
 ## Unwind Tab
 
 ### Local Events tile

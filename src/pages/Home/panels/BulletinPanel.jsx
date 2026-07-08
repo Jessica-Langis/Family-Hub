@@ -9,7 +9,7 @@ function bulletinFont(row) {
 
 const NOTE_COLORS = ['amber','rose','teal','blue','lavender']
 
-function BulletinNote({ item, isDinner, onDelete }) {
+function BulletinNote({ item, isDinner, onDelete, onOpen }) {
   const color = isDinner ? 'teal' : (item.color || 'amber')
   const font  = isDinner ? 'dancing' : bulletinFont(item.row)
 
@@ -22,9 +22,15 @@ function BulletinNote({ item, isDinner, onDelete }) {
   }
 
   return (
-    <div className="bulletin-item" data-color={color} data-font={font}>
+    <div
+      className="bulletin-item"
+      data-color={color}
+      data-font={font}
+      onClick={() => onOpen && onOpen({ item, isDinner })}
+      style={{ cursor: onOpen ? 'pointer' : undefined }}
+    >
       {!isDinner && onDelete && (
-        <button className="bulletin-delete" onClick={() => onDelete(item.row)}>×</button>
+        <button className="bulletin-delete" onClick={e => { e.stopPropagation(); onDelete(item.row) }}>×</button>
       )}
       <div className="bulletin-inner">
         <div className={`bulletin-who${isDinner ? ' bulletin-dinner-who' : ''}`}>
@@ -34,6 +40,33 @@ function BulletinNote({ item, isDinner, onDelete }) {
           {isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')}
         </div>
         {dateStr && <div className="bulletin-date">{dateStr}</div>}
+      </div>
+    </div>
+  )
+}
+
+// ── Note detail popup (matches the calendar day-detail modal style) ──
+function BulletinNoteModal({ item, isDinner, onClose }) {
+  let dateStr = ''
+  if (item.date) {
+    const d = new Date(item.date)
+    dateStr = !isNaN(d.getTime())
+      ? d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+      : String(item.date)
+  }
+  const who  = isDinner ? "Tonight's Dinner" : (item.who || 'Someone')
+  const text = isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')
+
+  return (
+    <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
+        <button onClick={onClose} style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize:'1.1rem', cursor:'pointer' }}>✕</button>
+        <div style={{ fontSize:'0.65rem', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:6, fontWeight:700 }}>
+          📌 {isDinner ? "Tonight's Dinner" : 'Bulletin Note'}
+        </div>
+        <div style={{ fontSize:'1.05rem', fontWeight:700, color:'var(--text)', marginBottom:12 }}>{who}</div>
+        <div style={{ fontSize:'0.9rem', color:'var(--text)', lineHeight:1.55, whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{text}</div>
+        {dateStr && <div style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:16 }}>{dateStr}</div>}
       </div>
     </div>
   )
@@ -98,10 +131,11 @@ function AddNoteModal({ onClose, onAdded }) {
   )
 }
 
-export default function BulletinPanel() {
+export default function BulletinPanel({ bodyClassName, limit = 4, style }) {
   const [bulletins, setBulletins] = useState([])
   const [dinner,    setDinner]    = useState(null)
   const [showAdd,   setShowAdd]   = useState(false)
+  const [opened,    setOpened]    = useState(null) // { item, isDinner } | null
 
   async function load() {
     try {
@@ -129,18 +163,18 @@ export default function BulletinPanel() {
   }
 
   return (
-    <Panel className="hg-bulletin" style={{ overflow: 'hidden' }}>
+    <Panel className="hg-bulletin" style={{ overflow: 'hidden', ...style }}>
       <PanelHeader
         title="Bulletin Board"
         actions={
           <button className="add-btn" onClick={() => setShowAdd(true)}>+ Post</button>
         }
       />
-      <div className="home-bulletin-strip corkboard-body">
+      <div className={bodyClassName || 'home-bulletin-strip corkboard-body'}>
         {/* Tonight's dinner always first */}
-        <BulletinNote item={{ text: dinner }} isDinner />
-        {bulletins.slice(0, 4).map((b, i) => (
-          <BulletinNote key={i} item={b} onDelete={deleteNote} />
+        <BulletinNote item={{ text: dinner }} isDinner onOpen={setOpened} />
+        {bulletins.slice(0, limit).map((b, i) => (
+          <BulletinNote key={i} item={b} onDelete={deleteNote} onOpen={setOpened} />
         ))}
         {bulletins.length === 0 && (
           <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '4px 0' }}>
@@ -150,6 +184,13 @@ export default function BulletinPanel() {
       </div>
       {showAdd && (
         <AddNoteModal onClose={() => setShowAdd(false)} onAdded={load} />
+      )}
+      {opened && (
+        <BulletinNoteModal
+          item={opened.item}
+          isDinner={opened.isDinner}
+          onClose={() => setOpened(null)}
+        />
       )}
     </Panel>
   )

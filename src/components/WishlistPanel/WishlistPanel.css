@@ -1,0 +1,4 @@
+/* WishlistPanel reuses the global .reminder-list / .reminder-item and
+   .overlay / .overlay-box / .overlay-input / .overlay-actions classes
+   (see src/styles/global.css) so it matches every other list tile.
+   No panel-specific overrides needed right now. */

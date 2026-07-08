@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-.un-bulletin, .un-grocery, .un-whereami,
+.un-grocery,
 .un-todo, .un-readwatch, .un-dinner {
   min-height: 0;
   display: flex;
@@ -17,11 +17,14 @@
   height: 100%;
 }
 
-.un-bulletin > .panel, .un-grocery > .panel, .un-whereami > .panel,
+.un-grocery > .panel,
 .un-todo > .panel, .un-readwatch > .panel, .un-dinner > .panel {
   flex: 1;
   height: 100%;
 }
+
+/* Grocery takes the full row 1 now that Bulletin Board lives only on At A Glance */
+.un-grocery { grid-column: 1 / 4; }
 
 /* ── Read/Watch toggle ── */
 .fun-toggle {
@@ -261,7 +264,7 @@
 .grocery-grid {
   flex: 1; overflow-y: auto; min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 4px;
   padding: 2px 14px 10px;
   align-content: start;
@@ -397,69 +400,20 @@
 .note-color-swatch[data-color="lavender"] { background: rgba(170,130,220,0.7); }
 .note-color-swatch.selected { border-color: var(--text); }
 
-/* ── Where Am I (moved from Home) ── */
-.whereami-list {
-  flex: 1; overflow-y: auto; min-height: 0;
-  padding: 6px 14px 10px;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.whereami-empty { font-size: 0.8rem; color: var(--muted); font-style: italic; }
-.whereami-item {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-}
-.whereami-item:last-child { border-bottom: none; }
-.whereami-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--accent3); flex-shrink: 0; margin-top: 4px;
-}
-.whereami-info { flex: 1; min-width: 0; }
-.whereami-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
-.whereami-loc  { font-size: 0.78rem; color: var(--muted); }
-.whereami-meta { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
-.whereami-delete {
-  background: none; border: none; color: var(--muted);
-  font-size: 1rem; cursor: pointer; padding: 0 2px; line-height: 1;
-  flex-shrink: 0; transition: color 0.15s;
-}
-.whereami-delete:hover { color: #e07070; }
-.whereami-item:hover { background: rgba(255,255,255,0.03); border-radius: 6px; }
-
-/* ── Where Am I detail popup rows ── */
-.whereami-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.85rem;
-  color: var(--text);
-}
-.whereami-detail-row:last-of-type { border-bottom: none; }
-.whereami-detail-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .unwind-content {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(6, auto);
+    grid-template-rows: repeat(4, auto);
     height: auto;
     overflow: visible;
   }
-  .un-bulletin, .un-grocery, .un-whereami,
+  .un-grocery,
   .un-todo, .un-readwatch, .un-dinner {
     min-height: 220px;
     overflow: visible;
   }
+  .un-grocery { grid-column: auto; }
   .fun-list { overflow-y: auto; flex: 1; }
   .grocery-grid { grid-template-columns: 1fr 1fr; }
 

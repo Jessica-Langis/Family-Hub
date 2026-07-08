@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useLayoutEffect, useRef, Component } 
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, getNextUSHolidays } from '../Home/homeUtils'
+import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
 
 // ── helpers ───────────────────────────────────────────────────
@@ -176,23 +177,14 @@ class GlanceErrorBoundary extends Component {
 export default function Glance() {
   const [calDays,   setCalDays]   = useState([])
   const [wrestling, setWrestling] = useState([])
-  const [bulletin,  setBulletin]  = useState([])
-  const [dinner,    setDinner]    = useState(null)
 
   const loadAll = useCallback(async () => {
-    const [calRes, wrestleRes, bulletinRes, mealRes] = await Promise.allSettled([
+    const [calRes, wrestleRes] = await Promise.allSettled([
       apiFetch(SCRIPTS.CHORES + '?type=upcoming&days=60').then(r => r.json()),
       apiFetch(SCRIPTS.TORI   + '?type=events').then(r => r.json()),
-      apiFetch(SCRIPTS.CHORES + '?type=bulletin').then(r => r.json()),
-      apiFetch(SCRIPTS.MEAL).then(r => r.json()),
     ])
     if (calRes.status     === 'fulfilled') setCalDays(Array.isArray(calRes.value)     ? calRes.value     : [])
     if (wrestleRes.status === 'fulfilled') setWrestling(toArr(wrestleRes.value))
-    if (bulletinRes.status === 'fulfilled') setBulletin(Array.isArray(bulletinRes.value) ? bulletinRes.value : [])
-    if (mealRes.status === 'fulfilled') {
-      const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-      setDinner(mealRes.value?.[DAYS[new Date().getDay()]] || null)
-    }
   }, [])
 
   useEffect(() => {
@@ -208,7 +200,11 @@ export default function Glance() {
           <EventsPanel calDays={calDays} wrestling={wrestling} />
         </div>
         <div className="glance-col-bulletin">
-          <GlanceBulletinPanel notes={bulletin} dinner={dinner} />
+          <BulletinPanel
+            bodyClassName="home-bulletin-strip corkboard-body glance-bulletin-body"
+            limit={14}
+            style={{ height: '100%' }}
+          />
         </div>
         <div className="glance-col-agenda">
           <GlanceAgendaPanel calDays={calDays} />
@@ -432,54 +428,6 @@ function EventsPanel({ calDays, wrestling }) {
           </div>
         </div>
 
-      </div>
-    </Panel>
-  )
-}
-
-// ── Bulletin panel (read-only mirror of Home) ─────────────────
-const BULLETIN_FONTS = ['dancing','caveat','pacifico','satisfy','kalam','patrick']
-function bulletinFont(row) {
-  return BULLETIN_FONTS[Math.abs(row || 0) % BULLETIN_FONTS.length]
-}
-
-function GlanceBulletinNote({ item, isDinner }) {
-  const color = isDinner ? 'teal' : (item.color || 'amber')
-  const font  = isDinner ? 'dancing' : bulletinFont(item.row)
-  let dateStr = ''
-  if (item.date) {
-    const d = new Date(item.date)
-    if (!isNaN(d.getTime())) dateStr = `${d.getMonth()+1}/${d.getDate()}`
-  }
-  return (
-    <div className="bulletin-item" data-color={color} data-font={font}>
-      <div className="bulletin-inner">
-        <div className={`bulletin-who${isDinner ? ' bulletin-dinner-who' : ''}`}>
-          {isDinner ? "Tonight's Dinner" : (item.who || 'Someone')}
-        </div>
-        <div className={`bulletin-text${isDinner && !item.text ? ' empty-dinner' : ''}`}>
-          {isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')}
-        </div>
-        {dateStr && <div className="bulletin-date">{dateStr}</div>}
-      </div>
-    </div>
-  )
-}
-
-function GlanceBulletinPanel({ notes, dinner }) {
-  return (
-    <Panel style={{ overflow: 'hidden', height: '100%' }}>
-      <PanelHeader title="Bulletin Board" />
-      <div className="home-bulletin-strip corkboard-body glance-bulletin-body">
-        <GlanceBulletinNote item={{ text: dinner }} isDinner />
-        {notes.slice(0, 14).map((b, i) => (
-          <GlanceBulletinNote key={i} item={b} />
-        ))}
-        {notes.length === 0 && (
-          <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '4px 0' }}>
-            Nothing posted yet
-          </div>
-        )}
       </div>
     </Panel>
   )

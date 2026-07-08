@@ -15,7 +15,7 @@ const PAGES = {
 
 const TAB_TITLES = {
   glance: 'At A Glance',
-  unwind: '🛋️ Unwind',
+  unwind: '🛋️ And Stuff',
   tori:   'Tori',
   nova:   'Nova',
 }

@@ -12,7 +12,11 @@
 /* Named grid-area wrappers — each is a flex container so the Panel fills it */
 .ta-nextup    { display: flex; flex-direction: column; min-height: 0; }
 .ta-reminders { display: flex; flex-direction: column; min-height: 0; }
-.ta-todo      { display: flex; flex-direction: column; min-height: 0; }
+
+/* Last column stacks To Do (majority of height) over Wishlist (compact) */
+.ta-todo-col  { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ta-todo      { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+.ta-wishlist  { display: flex; flex-direction: column; min-height: 0; flex: 0 0 34%; }
 
 /* Panels and standalone tile divs inside wrappers fill available space */
 .tori-content .panel { flex: 1; }
@@ -87,10 +91,12 @@
   }
 
   .ta-nextup,
-  .ta-reminders, .ta-todo {
+  .ta-reminders, .ta-todo, .ta-wishlist {
     min-height: 140px;
     overflow: visible;
   }
+
+  .ta-todo-col { min-height: 0; }
 
   /* panels fill their wrapper so whitespace is inside the border, not outside */
   .tori-content .panel { flex: 1; }

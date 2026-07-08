@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
+import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, formatReminderDate, parsePersonEvent } from '../Home/homeUtils'
 import './Tori.css'
@@ -56,7 +57,10 @@ export default function Tori() {
       <div className="tori-content">
         <div className="ta-nextup"><NextUpPanel /></div>
         <div className="ta-reminders"><RemindersPanel /></div>
-        <div className="ta-todo"><TodoPanel /></div>
+        <div className="ta-todo-col">
+          <div className="ta-todo"><TodoPanel /></div>
+          <div className="ta-wishlist"><WishlistPanel type="tori_wishlist" /></div>
+        </div>
       </div>
     </ToriErrorBoundary>
   )

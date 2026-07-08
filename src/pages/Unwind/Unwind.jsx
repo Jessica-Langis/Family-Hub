@@ -3,8 +3,6 @@ import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort } from '../Home/homeUtils'
 import GroceryPanel  from '../Home/panels/GroceryPanel'
-import BulletinPanel from '../Home/panels/BulletinPanel'
-import WhereAmIPanel from '../Home/panels/WhereAmIPanel'
 import './Unwind.css'
 
 // ── Helpers (from Parentals) ──────────────────────────────────
@@ -507,8 +505,6 @@ export default function Unwind() {
     <div className="unwind-content">
 
       <div className="un-grocery"><GroceryPanel /></div>
-      <div className="un-bulletin"><BulletinPanel /></div>
-      <div className="un-whereami"><WhereAmIPanel /></div>
 
       <div className="un-todo"><TodoPanel /></div>
       <div className="un-readwatch">
