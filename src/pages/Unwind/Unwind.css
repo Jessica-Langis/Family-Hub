@@ -17,6 +17,13 @@
   height: 100%;
 }
 
+/* Prevent any child's intrinsic content width (long chore/grocery/meal
+   text, etc.) from blowing out the grid track — same fix as Nova.css */
+.unwind-content > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .un-grocery > .panel,
 .un-todo > .panel, .un-readwatch > .panel, .un-dinner > .panel {
   flex: 1;
@@ -280,7 +287,7 @@
 }
 .grocery-item.bought { opacity: 0.4; text-decoration: line-through; }
 .grocery-item:hover { background: rgba(255,255,255,0.04); }
-.grocery-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grocery-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .grocery-delete {
   background: none; border: none; color: var(--muted);
   font-size: 1rem; cursor: pointer; padding: 0 2px; line-height: 1;
