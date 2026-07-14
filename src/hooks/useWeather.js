@@ -1,8 +1,25 @@
 import { useState, useEffect } from 'react'
 import { WEATHER_CONFIG } from '../api/scripts'
+import { cacheGet, cacheSet } from '../utils/cache'
 
 const NWS_HEADERS = { 'User-Agent': 'FamilyHubApp (family-hub)' }
 const DAY_LABELS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+
+// The NWS "points" lookup just resolves lat/lon → forecast office grid —
+// for a fixed home location that answer never changes, so there's no
+// reason to re-fetch it every single page load. Cache it for a month.
+const POINTS_TTL_MS   = 30 * 24 * 60 * 60 * 1000
+// The actual forecast does change — refresh at most every 30 min, but show
+// the last cached forecast instantly instead of a loading spinner while
+// the fresh one comes in (stale-while-revalidate).
+const FORECAST_TTL_MS = 30 * 60 * 1000
+
+function forecastCacheKey() {
+  const { lat, lon } = WEATHER_CONFIG
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+  const count    = isMobile ? 3 : 5
+  return `nws_forecast_${lat},${lon}_${count}`
+}
 
 function nwsToIcon(shortForecast) {
   if (!shortForecast) return '🌡️'
@@ -25,24 +42,40 @@ function nwsToIcon(shortForecast) {
 }
 
 export function useWeather() {
-  const [days,    setDays]    = useState([])
-  const [loading, setLoading] = useState(true)
+  const [days,    setDays]    = useState(() => cacheGet(forecastCacheKey()) || [])
+  const [loading, setLoading] = useState(() => !cacheGet(forecastCacheKey()))
   const [error,   setError]   = useState(null)
 
   useEffect(() => {
     async function load() {
+      // Fresh cached forecast? Skip the network entirely.
+      const forecastKey = forecastCacheKey()
+      const cached = cacheGet(forecastKey, FORECAST_TTL_MS)
+      if (cached) {
+        setDays(cached)
+        setLoading(false)
+        return
+      }
+
       try {
         const { lat, lon } = WEATHER_CONFIG
 
-        // Step 1 — resolve the NWS grid for this lat/lon
-        const pointsRes  = await fetch(
-          `https://api.weather.gov/points/${lat},${lon}`,
-          { headers: NWS_HEADERS }
-        )
-        if (!pointsRes.ok) throw new Error(`NWS points ${pointsRes.status}`)
-        const pointsData = await pointsRes.json()
-        const forecastUrl = pointsData.properties?.forecast
-        if (!forecastUrl) throw new Error('No forecast URL from NWS')
+        // Step 1 — resolve the NWS grid for this lat/lon. This never
+        // changes for a fixed home location, so skip the round trip
+        // entirely once we've resolved it once.
+        const pointsKey = `nws_points_${lat},${lon}`
+        let forecastUrl = cacheGet(pointsKey, POINTS_TTL_MS)
+        if (!forecastUrl) {
+          const pointsRes = await fetch(
+            `https://api.weather.gov/points/${lat},${lon}`,
+            { headers: NWS_HEADERS }
+          )
+          if (!pointsRes.ok) throw new Error(`NWS points ${pointsRes.status}`)
+          const pointsData = await pointsRes.json()
+          forecastUrl = pointsData.properties?.forecast
+          if (!forecastUrl) throw new Error('No forecast URL from NWS')
+          cacheSet(pointsKey, forecastUrl)
+        }
 
         // Step 2 — fetch the daily forecast periods
         const fxRes  = await fetch(forecastUrl, { headers: NWS_HEADERS })
@@ -98,6 +131,7 @@ export function useWeather() {
         }
 
         setDays(result)
+        cacheSet(forecastKey, result)
       } catch (e) {
         setError(e.message)
       } finally {

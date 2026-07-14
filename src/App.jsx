@@ -29,15 +29,35 @@ const TAB_COLORS = {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('glance')
-  const Page = PAGES[activeTab]
+  // Track every tab that's been opened at least once so we can keep it
+  // mounted (hidden via CSS) instead of unmounting it. Switching tabs would
+  // otherwise re-run every data fetch from scratch against the (slow) GAS
+  // endpoints each time — this way a tab only ever loads its data once per
+  // session, and revisiting it is instant.
+  const [visited, setVisited] = useState(() => new Set(['glance']))
+
+  function handleTabChange(tab) {
+    setActiveTab(tab)
+    if (!visited.has(tab)) {
+      setVisited(prev => new Set(prev).add(tab))
+    }
+  }
 
   return (
     <>
       <TopBar title={TAB_TITLES[activeTab]} titleColor={TAB_COLORS[activeTab]} />
       <main className="main-content">
-        <Page />
+        {Object.keys(PAGES).map(key => {
+          if (!visited.has(key)) return null
+          const Page = PAGES[key]
+          return (
+            <div key={key} className={`page-slot${key === activeTab ? ' active' : ''}`}>
+              <Page />
+            </div>
+          )
+        })}
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </>
   )
 }

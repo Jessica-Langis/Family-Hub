@@ -3,7 +3,15 @@ import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, getNextUSHolidays } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
+import { cacheGet, cacheSet } from '../../utils/cache'
 import './Glance.css'
+
+const NWS_HEADERS = { 'User-Agent': 'FamilyHubApp (family-hub)' }
+// Geocoding and NWS grid lookups are keyed by place name / coordinates that
+// don't change — cache those for a long time. Only the actual forecast
+// icon for a given date needs to stay reasonably fresh.
+const GEO_TTL_MS  = 30 * 24 * 60 * 60 * 1000
+const ICON_TTL_MS = 6 * 60 * 60 * 1000
 
 // ── helpers ───────────────────────────────────────────────────
 function toArr(d) {
@@ -107,28 +115,45 @@ function useWeatherIcon(location, dateStr) {
     const key = `${location}|${dateStr}`
     if (_weatherCache.has(key)) { setIcon(_weatherCache.get(key)); return }
 
+    // Persisted across reloads too, so revisiting the same event doesn't
+    // re-run the geocode → points → forecast chain every time.
+    const iconKey = `nws_icon_${key}`
+    const cachedIcon = cacheGet(iconKey, ICON_TTL_MS)
+    if (cachedIcon) { _weatherCache.set(key, cachedIcon); setIcon(cachedIcon); return }
+
     async function load() {
       try {
-        // Step 1 — geocode via Open-Meteo (still free/keyless, just for lat/lng)
-        const cityName = location.split(',')[0].trim()
-        const geoRes   = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`
-        )
-        const geoData  = await geoRes.json()
-        if (!geoData.results?.length) return
-        const { latitude, longitude } = geoData.results[0]
+        const cityName  = location.split(',')[0].trim()
+        const geoKey    = `geocode_${cityName.toLowerCase()}`
+        let coords = cacheGet(geoKey, GEO_TTL_MS)
+        if (!coords) {
+          // Step 1 — geocode via Open-Meteo (still free/keyless, just for lat/lng)
+          const geoRes  = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`
+          )
+          const geoData = await geoRes.json()
+          if (!geoData.results?.length) return
+          const { latitude, longitude } = geoData.results[0]
+          coords = { latitude, longitude }
+          cacheSet(geoKey, coords)
+        }
 
-        // Step 2 — NWS points endpoint → get forecast office + gridpoint
-        const pointsRes  = await fetch(
-          `https://api.weather.gov/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`,
-          { headers: { 'User-Agent': 'FamilyHubApp (family-hub)' } }
-        )
-        const pointsData = await pointsRes.json()
-        const forecastUrl = pointsData.properties?.forecast
-        if (!forecastUrl) return
+        const pointsKey = `nws_points_${coords.latitude.toFixed(4)},${coords.longitude.toFixed(4)}`
+        let forecastUrl = cacheGet(pointsKey, GEO_TTL_MS)
+        if (!forecastUrl) {
+          // Step 2 — NWS points endpoint → get forecast office + gridpoint
+          const pointsRes = await fetch(
+            `https://api.weather.gov/points/${coords.latitude.toFixed(4)},${coords.longitude.toFixed(4)}`,
+            { headers: NWS_HEADERS }
+          )
+          const pointsData = await pointsRes.json()
+          forecastUrl = pointsData.properties?.forecast
+          if (!forecastUrl) return
+          cacheSet(pointsKey, forecastUrl)
+        }
 
         // Step 3 — fetch the daily forecast periods
-        const fxRes  = await fetch(forecastUrl, { headers: { 'User-Agent': 'FamilyHubApp (family-hub)' } })
+        const fxRes  = await fetch(forecastUrl, { headers: NWS_HEADERS })
         const fxData = await fxRes.json()
         const periods = fxData.properties?.periods
         if (!periods?.length) return
@@ -141,7 +166,11 @@ function useWeatherIcon(location, dateStr) {
 
         if (!match) return
         const emoji = nwsForecastToEmoji(match.shortForecast)
-        if (emoji) { _weatherCache.set(key, emoji); setIcon(emoji) }
+        if (emoji) {
+          _weatherCache.set(key, emoji)
+          cacheSet(iconKey, emoji)
+          setIcon(emoji)
+        }
       } catch { /* silently fall back to pin icon */ }
     }
     load()
@@ -242,7 +271,11 @@ function AutoSizeTitle({ text, color }) {
 
     let lo = 0.4, hi = Math.min(2.0, heightCapRem)
     if (hi <= lo) hi = lo + 0.1
-    for (let i = 0; i < 22; i++) {
+    // 10 iterations over a ~1.6rem range gets within ~0.0016rem (a tiny
+    // fraction of a pixel) — plenty of precision. Each iteration forces a
+    // synchronous layout read (scrollWidth), so fewer iterations means
+    // fewer forced reflows per title with no visible difference in result.
+    for (let i = 0; i < 10; i++) {
       const mid = (lo + hi) / 2
       el.style.fontSize = `${mid}rem`
       if (el.scrollWidth <= el.clientWidth) lo = mid

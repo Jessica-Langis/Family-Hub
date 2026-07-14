@@ -21,8 +21,23 @@ export const WEATHER_CONFIG = {
 }
 
 // ── Shared fetch wrapper ──
+// GAS web apps occasionally hang instead of erroring — without a timeout a
+// stuck request just leaves the UI spinning forever with no way to recover.
+// 20s is generous (GAS cold starts can be slow) but guarantees callers
+// eventually get an error they can show/retry instead of an endless spinner.
+const DEFAULT_TIMEOUT_MS = 20000
+
 export async function apiFetch(url, options = {}) {
-  const res = await fetch(url, options)
-  if (!res.ok) throw new Error(`API error ${res.status}: ${url}`)
-  return res
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, { ...options, signal: options.signal ?? controller.signal })
+    if (!res.ok) throw new Error(`API error ${res.status}: ${url}`)
+    return res
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Request timed out: ${url}`)
+    throw e
+  } finally {
+    clearTimeout(timer)
+  }
 }

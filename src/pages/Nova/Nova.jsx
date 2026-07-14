@@ -147,8 +147,24 @@ function ChoresPanel() {
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm]       = useState({ name: '', dueDate: '', weight: 2 })
   const [saving, setSaving]   = useState(false)
+  // Hides completed chores from the list to cut clutter, without affecting
+  // the points total below (that's always computed from the full list).
+  // Toggling this back off is also how an accidentally-completed chore gets
+  // found again so it can be un-checked.
+  const [hideCompleted, setHideCompleted] = useState(
+    () => localStorage.getItem('nova_chores_hide_completed') !== 'false'
+  )
+
+  function toggleHideCompleted() {
+    setHideCompleted(h => {
+      const next = !h
+      localStorage.setItem('nova_chores_hide_completed', String(next))
+      return next
+    })
+  }
 
   const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
+  const visibleChores = hideCompleted ? chores.filter(c => !c.done) : chores
 
   const load = useCallback(async () => {
     try {
@@ -208,14 +224,25 @@ function ChoresPanel() {
         <PanelHeader
           title="Chores"
           badge={points > 0 ? `🏆 ${points} pts` : null}
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+          actions={
+            <>
+              <button
+                className={`add-btn${hideCompleted ? ' active' : ''}`}
+                onClick={toggleHideCompleted}
+                title={hideCompleted ? 'Completed chores are hidden — click to show them' : 'Hide completed chores'}
+              >
+                👁
+              </button>
+              <button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>
+            </>
+          }
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
-          : chores.length === 0
+          : visibleChores.length === 0
             ? <div className="chore-empty">All done!</div>
             : <div className="chore-list">
-                {chores.map((c, i) => {
+                {visibleChores.map((c, i) => {
                   const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
                   return (
                     <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}

@@ -41,6 +41,22 @@ body {
   min-height: 0;
 }
 
+/* Each visited tab stays mounted (App.jsx keeps it in the tree) so switching
+   tabs doesn't re-fetch its data — only the active one is actually shown. */
+.page-slot {
+  display: none;
+}
+.page-slot.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.page-slot.active > * {
+  flex: 1;
+  min-height: 0;
+}
+
 /* ── SUBTLE SCROLLBARS (global) ── */
 * {
   scrollbar-width: thin;
@@ -73,6 +89,7 @@ button {
   flex-shrink: 0;
 }
 .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+.add-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.05); }
 
 /* ══════════════════════════════════════════
    COUNTDOWN BADGE

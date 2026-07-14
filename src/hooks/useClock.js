@@ -18,8 +18,20 @@ export function useClock() {
   const [time, setTime] = useState(() => formatTime(new Date()))
 
   useEffect(() => {
-    const id = setInterval(() => setTime(formatTime(new Date())), 1000)
-    return () => clearInterval(id)
+    // The display only shows hours:minutes, so there's no need to re-render
+    // every second (that's 60x more work than the UI needs). Instead, tick
+    // once now and then align to the start of each following minute.
+    let id
+    function scheduleNext() {
+      const now = new Date()
+      const msToNextMinute = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds())
+      id = setTimeout(() => {
+        setTime(formatTime(new Date()))
+        scheduleNext()
+      }, msToNextMinute)
+    }
+    scheduleNext()
+    return () => clearTimeout(id)
   }, [])
 
   return time
