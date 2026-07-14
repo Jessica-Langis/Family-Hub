@@ -14,6 +14,12 @@ function toArr(d) {
   return []
 }
 
+// Case/whitespace-insensitive "who" match — chores can have who="Tori",
+// " nova ", etc. depending on where they were added from.
+function whoIs(c, name) {
+  return (c.who || '').trim().toLowerCase() === name
+}
+
 function choreBadgeCls(dateStr) {
   const diff = getDayDiff(dateStr)
   if (isNaN(diff)) return 'upcoming'
@@ -59,7 +65,7 @@ function TodoPanel() {
       const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
       const data = await res.json()
       const filtered = toArr(data)
-        .filter(c => c.who !== 'tori' && c.who !== 'nova')
+        .filter(c => !whoIs(c, 'tori') && !whoIs(c, 'nova'))
         .sort((a, b) => {
           const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
           if (isNaN(da) && isNaN(db)) return 0

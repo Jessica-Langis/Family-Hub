@@ -1,7 +1,7 @@
-/* ── Single row, 3 equal columns: Joke | Today | Countdown ── */
+/* ── Single row, 4 equal columns: Joke | Today | Chores | Countdown ── */
 .nova-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr;
   gap: 8px;
   height: auto;

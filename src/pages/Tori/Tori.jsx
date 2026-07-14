@@ -15,6 +15,13 @@ function toArr(d) {
   return []
 }
 
+// Case/whitespace-insensitive "who" match — chores added from the old
+// legacy dashboard (and the free-text "assigned to" field on And Stuff)
+// can have who="Tori" or " tori " etc.
+function isWho(c, name) {
+  return (c.who || '').trim().toLowerCase() === name
+}
+
 // ── Error boundary ────────────────────────────────────────────
 class ToriErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null } }
@@ -315,7 +322,7 @@ function TodoPanel() {
       const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
       const data = await res.json()
       const filtered = toArr(data)
-        .filter(c => c.who === 'tori')
+        .filter(c => isWho(c, 'tori'))
         .sort((a, b) => {
           const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
           if (isNaN(da) && isNaN(db)) return 0
