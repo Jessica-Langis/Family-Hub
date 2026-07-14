@@ -63,8 +63,10 @@ export default function Nova() {
     <NovaErrorBoundary>
     <div className="nova-content">
       <JokePanel />
-      <div className="na-cell"><TodayPanel /></div>
-      <div className="na-cell"><ChoresPanel /></div>
+      <div className="na-today-col">
+        <div className="na-cell today-cell"><TodayPanel /></div>
+        <div className="na-cell chores-cell"><ChoresPanel /></div>
+      </div>
       <div className="na-countdown-col">
         <div className="na-cell countdown-cell"><CountdownPanel name="Nova" /></div>
         <div className="na-wishlist"><WishlistPanel type="nova_wishlist" /></div>
@@ -263,35 +265,15 @@ function ChoresPanel() {
   )
 }
 
-// ── Today panel (Nova's chores + events, today + next 2 days) ─
+// ── Today panel (Nova's upcoming events — chores now live in the ─
+// dedicated Chores tile, so this only tracks "Coming Up") ────────
 
 function TodayPanel() {
-  const [chores, setChores]       = useState([])
   const [events, setEvents]       = useState([])
   const [loading, setLoading]     = useState(true)
   const [showAdd, setShowAdd]     = useState(false)
-  const [addMode, setAddMode]     = useState('chore') // 'chore' | 'event'
-  const [editChore, setEditChore] = useState(null)
-  const [choreForm, setChoreForm] = useState({ name: '', dueDate: '', weight: 2 })
   const [eventForm, setEventForm] = useState({ name: '', evtType: '', date: '' })
   const [saving, setSaving]       = useState(false)
-
-  const loadChores = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
-      const data = await res.json()
-      const filtered = toArr(data)
-        .filter(c => isWho(c, 'nova'))
-        .sort((a, b) => {
-          const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
-          if (isNaN(da) && isNaN(db)) return 0
-          if (isNaN(da)) return 1
-          if (isNaN(db)) return -1
-          return da - db
-        })
-      setChores(filtered)
-    } catch (e) { console.error('nova chores', e) }
-  }, [])
 
   const loadEvents = useCallback(async () => {
     try {
@@ -303,80 +285,13 @@ function TodayPanel() {
           .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
       )
     } catch (e) { console.error('nova events', e) }
+    finally { setLoading(false) }
   }, [])
 
-  useEffect(() => {
-    setLoading(true)
-    Promise.all([loadChores(), loadEvents()]).finally(() => setLoading(false))
-  }, [loadChores, loadEvents])
+  useEffect(() => { loadEvents() }, [loadEvents])
 
-  const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
-
-  // Chores: overdue / no-date / due within the next 2 days stay visible.
-  // Anything due further out waits until it's actually relevant.
-  const choresToShow = chores.filter(c => {
-    const d = getDayDiff(c.dueDate)
-    return isNaN(d) || d <= 2
-  })
-
-  // Events: just the single next upcoming one, with a countdown.
+  // Just the single next upcoming event, with a countdown.
   const nextEvent = events.find(e => e.date && !isNaN(getDayDiff(e.date))) || null
-
-  async function toggle(id, done) {
-    const updated = chores.map(c => c.id === id ? { ...c, done: !done } : c)
-    setChores(updated)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'toggle')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      fd.append('done', String(!done))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) { console.error('toggle', e); setChores(chores) }
-  }
-
-  async function addChore() {
-    if (!choreForm.name.trim()) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'add')
-      fd.append('type', 'chores')
-      fd.append('name', choreForm.name.trim())
-      fd.append('who', 'nova')
-      fd.append('dueDate', choreForm.dueDate)
-      fd.append('weight', String(choreForm.weight))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setChoreForm({ name: '', dueDate: '', weight: 2 })
-      setShowAdd(false)
-      loadChores()
-    } catch (e) { console.error('add chore', e) }
-    finally { setSaving(false) }
-  }
-
-  async function saveEdit() {
-    if (!choreForm.name.trim()) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'edit')
-      fd.append('type', 'chores')
-      fd.append('idx', String(editChore.id))
-      fd.append('name', choreForm.name.trim())
-      fd.append('dueDate', choreForm.dueDate)
-      fd.append('weight', String(choreForm.weight))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setEditChore(null)
-      loadChores()
-    } catch (e) { console.error('edit chore', e) }
-    finally { setSaving(false) }
-  }
-
-  function openEdit(e, c) {
-    e.stopPropagation()
-    setChoreForm({ name: c.name ?? '', dueDate: c.dueDate ?? '', weight: c.weight || 2 })
-    setEditChore(c)
-  }
 
   async function addEvent() {
     if (!eventForm.name || !eventForm.date) return
@@ -401,33 +316,11 @@ function TodayPanel() {
       <Panel>
         <PanelHeader
           title="Today"
-          badge={points > 0 ? `🏆 ${points} pts` : null}
           actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
           : <>
-              <div className="today-subhead">Chores</div>
-              {choresToShow.length === 0
-                ? <div className="chore-empty">All done!</div>
-                : <div className="chore-list">
-                    {choresToShow.map((c, i) => {
-                      const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
-                      return (
-                        <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
-                          onClick={() => toggle(c.id, !!c.done)}>
-                          <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                          <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
-                            {'★'.repeat(c.weight || 1)}
-                          </span>
-                          {badge && <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>}
-                          <button className="reminder-edit" onClick={e => openEdit(e, c)} title="Edit">✎</button>
-                        </div>
-                      )
-                    })}
-                  </div>
-              }
-
               <div className="today-subhead">Coming Up</div>
               {!nextEvent
                 ? <div className="countdown-empty">No upcoming events.</div>
@@ -454,78 +347,17 @@ function TodayPanel() {
       {showAdd && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
           <div className="overlay-box">
-            <div className="overlay-title">Add To Today</div>
-            <div className="weight-picker">
-              <button type="button" className={`weight-btn${addMode === 'chore' ? ' active' : ''}`}
-                onClick={() => setAddMode('chore')}>Chore</button>
-              <button type="button" className={`weight-btn${addMode === 'event' ? ' active' : ''}`}
-                onClick={() => setAddMode('event')}>Event</button>
-            </div>
-
-            {addMode === 'chore'
-              ? <>
-                  <input className="overlay-input" placeholder="Task" value={choreForm.name}
-                    onChange={e => setChoreForm(f => ({ ...f, name: e.target.value }))} autoFocus
-                    onKeyDown={e => e.key === 'Enter' && addChore()} />
-                  <input className="overlay-input" type="date" value={choreForm.dueDate}
-                    onChange={e => setChoreForm(f => ({ ...f, dueDate: e.target.value }))} />
-                  <div className="weight-picker">
-                    {[1, 2, 3].map(w => (
-                      <button key={w} type="button"
-                        className={`weight-btn${choreForm.weight === w ? ' active' : ''}`}
-                        onClick={() => setChoreForm(f => ({ ...f, weight: w }))}>
-                        {WEIGHT_LABELS[w]}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="overlay-actions">
-                    <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-                    <button className="overlay-btn submit" onClick={addChore} disabled={saving || !choreForm.name.trim()}>
-                      {saving ? 'Saving…' : 'Add'}
-                    </button>
-                  </div>
-                </>
-              : <>
-                  <input className="overlay-input" placeholder="Event name" value={eventForm.name}
-                    onChange={e => setEventForm(f => ({ ...f, name: e.target.value }))} autoFocus />
-                  <input className="overlay-input" placeholder="Type (optional)" value={eventForm.evtType}
-                    onChange={e => setEventForm(f => ({ ...f, evtType: e.target.value }))} />
-                  <input className="overlay-input" type="date" value={eventForm.date}
-                    onChange={e => setEventForm(f => ({ ...f, date: e.target.value }))} />
-                  <div className="overlay-actions">
-                    <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-                    <button className="overlay-btn submit" onClick={addEvent} disabled={saving || !eventForm.name || !eventForm.date}>
-                      {saving ? 'Saving…' : 'Add'}
-                    </button>
-                  </div>
-                </>
-            }
-          </div>
-        </div>
-      )}
-
-      {editChore && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setEditChore(null)}>
-          <div className="overlay-box">
-            <div className="overlay-title">Edit To Do</div>
-            <input className="overlay-input" placeholder="Task" value={choreForm.name}
-              onChange={e => setChoreForm(f => ({ ...f, name: e.target.value }))} autoFocus
-              onKeyDown={e => e.key === 'Enter' && saveEdit()} />
-            <input className="overlay-input" type="date" value={choreForm.dueDate}
-              onChange={e => setChoreForm(f => ({ ...f, dueDate: e.target.value }))} />
-            <div className="weight-picker">
-              {[1, 2, 3].map(w => (
-                <button key={w} type="button"
-                  className={`weight-btn${choreForm.weight === w ? ' active' : ''}`}
-                  onClick={() => setChoreForm(f => ({ ...f, weight: w }))}>
-                  {WEIGHT_LABELS[w]}
-                </button>
-              ))}
-            </div>
+            <div className="overlay-title">Add Event</div>
+            <input className="overlay-input" placeholder="Event name" value={eventForm.name}
+              onChange={e => setEventForm(f => ({ ...f, name: e.target.value }))} autoFocus />
+            <input className="overlay-input" placeholder="Type (optional)" value={eventForm.evtType}
+              onChange={e => setEventForm(f => ({ ...f, evtType: e.target.value }))} />
+            <input className="overlay-input" type="date" value={eventForm.date}
+              onChange={e => setEventForm(f => ({ ...f, date: e.target.value }))} />
             <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setEditChore(null)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={saveEdit} disabled={saving || !choreForm.name.trim()}>
-                {saving ? 'Saving…' : 'Save'}
+              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
+              <button className="overlay-btn submit" onClick={addEvent} disabled={saving || !eventForm.name || !eventForm.date}>
+                {saving ? 'Saving…' : 'Add'}
               </button>
             </div>
           </div>

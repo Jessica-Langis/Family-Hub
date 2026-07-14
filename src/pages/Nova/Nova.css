@@ -1,7 +1,7 @@
-/* ── Single row, 4 equal columns: Joke | Today | Chores | Countdown ── */
+/* ── Single row, 3 equal columns: Joke | Today+Chores | Countdown ── */
 .nova-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr;
   gap: 8px;
   height: auto;
@@ -13,13 +13,18 @@
   min-height: 130px;
 }
 
+/* Middle column stacks Today (compact — just "Coming Up") over Chores (majority) */
+.na-today-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.na-today-col .today-cell  { flex: 0 0 34%; }
+.na-today-col .chores-cell { flex: 1 1 auto; }
+
 /* Last column stacks Countdown (majority of height) over Wishlist (compact) */
 .na-countdown-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .na-countdown-col .countdown-cell { flex: 1 1 auto; }
 .na-wishlist { display: flex; flex-direction: column; min-height: 0; flex: 0 0 34%; }
 .na-wishlist .panel { flex: 1; }
 
-/* ── Today tile — two stacked sections (Chores / Coming Up) ── */
+/* ── Today tile — "Coming Up" section ── */
 .today-subhead {
   font-size: 0.68rem;
   font-weight: 700;
@@ -131,4 +136,9 @@
   .na-countdown-col { min-height: 0; gap: 8px; }
   .na-wishlist { min-height: 140px; overflow: visible; min-width: 0; }
   .na-wishlist .panel { flex: none; min-height: 130px; min-width: 0; max-width: 100%; }
+
+  .na-today-col { min-height: 0; gap: 8px; }
+  .today-cell { min-height: 160px; }
+  .today-cell .panel { min-height: 150px; }
+  .chores-cell { min-height: 280px; }
 }

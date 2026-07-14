@@ -62,8 +62,10 @@ export default function Tori() {
   return (
     <ToriErrorBoundary>
       <div className="tori-content">
-        <div className="ta-nextup"><NextUpPanel /></div>
-        <div className="ta-reminders"><RemindersPanel /></div>
+        <div className="ta-nextup-col">
+          <div className="ta-nextup"><NextUpPanel /></div>
+          <div className="ta-reminders"><RemindersPanel /></div>
+        </div>
         <div className="ta-todo-col">
           <div className="ta-todo"><TodoPanel /></div>
           <div className="ta-wishlist"><WishlistPanel type="tori_wishlist" /></div>

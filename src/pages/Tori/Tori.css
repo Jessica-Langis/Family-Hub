@@ -1,7 +1,7 @@
-/* ── Single row, 3 equal columns: Next Up | Reminders | To Do ── */
+/* ── Single row, 2 equal columns: (Next Up + Reminders) | (To Do + Wishlist) ── */
 .tori-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
   gap: 8px;
   height: auto;
@@ -9,9 +9,10 @@
   overflow: hidden;
 }
 
-/* Named grid-area wrappers — each is a flex container so the Panel fills it */
-.ta-nextup    { display: flex; flex-direction: column; min-height: 0; }
-.ta-reminders { display: flex; flex-direction: column; min-height: 0; }
+/* First column stacks Next Up (top) over Reminders, split evenly */
+.ta-nextup-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ta-nextup     { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
+.ta-reminders  { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
 
 /* Last column stacks To Do (majority of height) over Wishlist (compact) */
 .ta-todo-col  { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
@@ -24,6 +25,17 @@
 /* Accent override */
 .tori-content .section-title { color: var(--accent4); }
 .tori-content .reminder-dot  { background: var(--accent4); }
+
+/* ── Prevent any child from blowing out the grid columns ── */
+.tori-content > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.ta-nextup-col > *,
+.ta-todo-col > * {
+  min-width: 0;
+  max-width: 100%;
+}
 
 /* ── Next Up — two events side by side ── */
 .next-up-split-hero {
@@ -96,6 +108,7 @@
     overflow: visible;
   }
 
+  .ta-nextup-col { min-height: 0; }
   .ta-todo-col { min-height: 0; }
 
   /* panels fill their wrapper so whitespace is inside the border, not outside */
