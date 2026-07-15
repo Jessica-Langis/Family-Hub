@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useRef, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, getNextUSHolidays } from '../Home/homeUtils'
+import { getNextUSHolidays } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import { cacheGet, cacheSet } from '../../utils/cache'
 import './Glance.css'
@@ -14,14 +14,6 @@ const GEO_TTL_MS  = 30 * 24 * 60 * 60 * 1000
 const ICON_TTL_MS = 6 * 60 * 60 * 1000
 
 // ── helpers ───────────────────────────────────────────────────
-function toArr(d) {
-  if (Array.isArray(d)) return d
-  if (d && Array.isArray(d.result)) return d.result
-  if (d && Array.isArray(d.items))  return d.items
-  if (d && Array.isArray(d.data))   return d.data
-  return []
-}
-
 function evSummary(ev) {
   return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
 }
@@ -204,16 +196,13 @@ class GlanceErrorBoundary extends Component {
 
 // ── Main page ─────────────────────────────────────────────────
 export default function Glance() {
-  const [calDays,   setCalDays]   = useState([])
-  const [wrestling, setWrestling] = useState([])
+  const [calDays, setCalDays] = useState([])
 
   const loadAll = useCallback(async () => {
-    const [calRes, wrestleRes] = await Promise.allSettled([
-      apiFetch(SCRIPTS.CHORES + '?type=upcoming&days=60').then(r => r.json()),
-      apiFetch(SCRIPTS.TORI   + '?type=events').then(r => r.json()),
-    ])
-    if (calRes.status     === 'fulfilled') setCalDays(Array.isArray(calRes.value)     ? calRes.value     : [])
-    if (wrestleRes.status === 'fulfilled') setWrestling(toArr(wrestleRes.value))
+    try {
+      const data = await apiFetch(SCRIPTS.CHORES + '?type=upcoming&days=60').then(r => r.json())
+      setCalDays(Array.isArray(data) ? data : [])
+    } catch (e) { console.error('glance calendar load', e) }
   }, [])
 
   useEffect(() => {
@@ -226,7 +215,7 @@ export default function Glance() {
     <GlanceErrorBoundary>
       <div className="glance-content">
         <div className="glance-col-events">
-          <EventsPanel calDays={calDays} wrestling={wrestling} />
+          <EventsPanel calDays={calDays} />
         </div>
         <div className="glance-col-bulletin">
           <BulletinPanel
@@ -291,8 +280,15 @@ function AutoSizeTitle({ text, color }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    // Watch the actual sizing container (the split-half cell), not the
+    // title itself — the title's own box only reflects whatever font size
+    // was last applied to it, so it never shrinks on its own when the pane
+    // around it gets smaller. Watching the cell means any resize of the
+    // pane (window resize, sibling panels growing, layout changes) re-runs
+    // the fit calculation instead of leaving a stale, too-large font.
+    const target = el.closest('.glance-split-half') || el
     const ro = new ResizeObserver(() => measure())
-    ro.observe(el)
+    ro.observe(target)
     return () => ro.disconnect()
   }, [measure])
 
@@ -300,14 +296,21 @@ function AutoSizeTitle({ text, color }) {
 }
 
 // ── 4-row event block ─────────────────────────────────────────
-function EventBlock({ name, dateStr, timeStr, location, accentColor }) {
+// compactTitle skips the JS auto-sizing (AutoSizeTitle) in favor of a fixed
+// CSS clamp sized just above the countdown font — used for holidays, where
+// the title is short and simple enough that it doesn't need per-instance
+// measurement, and a fixed size keeps the tile compact and predictable.
+function EventBlock({ name, dateStr, timeStr, location, accentColor, compactTitle = false }) {
   const ds          = toDateStr(dateStr)
   const cd          = getCountdown(ds, timeStr)
   const weatherIcon = useWeatherIcon(location, ds)
 
   return (
     <div className="glance-ev-block">
-      <AutoSizeTitle text={name} color={accentColor} />
+      {compactTitle
+        ? <div className="glance-ev-title glance-ev-title-compact" style={{ color: accentColor }}>{name}</div>
+        : <AutoSizeTitle text={name} color={accentColor} />
+      }
       <div className="glance-ev-block-date">
         {fmtFull(dateStr)}{timeStr ? ` · ${timeStr}` : ''}
       </div>
@@ -367,19 +370,19 @@ function CalCell({ day, accentColor, secondary }) {
   )
 }
 
-// ── Single-event cell (wrestling, holiday) ────────────────────
+// ── Single-event cell (holidays) — always uses the compact fixed-size title ─
 function SingleCell({ name, dateStr, timeStr, location, accentColor, secondary }) {
   const cls = `glance-split-half${secondary ? ' glance-split-secondary' : ''}`
   if (!name) return <div className={cls}><span className="next-up-empty">None</span></div>
   return (
     <div className={cls}>
-      <EventBlock name={name} dateStr={dateStr} timeStr={timeStr} location={location} accentColor={accentColor} />
+      <EventBlock name={name} dateStr={dateStr} timeStr={timeStr} location={location} accentColor={accentColor} compactTitle />
     </div>
   )
 }
 
 // ── Events panel ──────────────────────────────────────────────
-function EventsPanel({ calDays, wrestling }) {
+function EventsPanel({ calDays }) {
   const today    = new Date(); today.setHours(0,0,0,0)
   const todayStr = dateParts(today)
 
@@ -396,15 +399,6 @@ function EventsPanel({ calDays, wrestling }) {
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 2)
 
-  const wrestleEvents = toArr(wrestling)
-    .filter(e => {
-      if (!e.date || getDayDiff(e.date) < 0) return false
-      const t = e.time || e.startTime || null
-      return !isStale(e.date, t)
-    })
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .slice(0, 2)
-
   const holidays = getNextUSHolidays(2)
 
   return (
@@ -412,8 +406,8 @@ function EventsPanel({ calDays, wrestling }) {
       <PanelHeader title={<span style={{ color: 'var(--accent6)' }}>Events</span>} />
       <div className="glance-events-body">
 
-        <div className="glance-ev-section">
-          <div className="glance-section-label">Calendar</div>
+        <div className="glance-ev-section glance-ev-section-events">
+          <div className="glance-section-label">Upcoming Events</div>
           <div className="glance-card-row">
             <CalCell day={calWithEvents[0] ?? null} accentColor="var(--accent6)" />
             <div className="glance-split-divider" />
@@ -421,30 +415,8 @@ function EventsPanel({ calDays, wrestling }) {
           </div>
         </div>
 
-        <div className="glance-ev-section">
-          <div className="glance-section-label" style={{ color: 'var(--accent4)' }}>Tori's Events</div>
-          <div className="glance-card-row">
-            <SingleCell
-              name={wrestleEvents[0]?.name ?? null}
-              dateStr={wrestleEvents[0]?.date}
-              timeStr={wrestleEvents[0]?.time || wrestleEvents[0]?.startTime || null}
-              location={wrestleEvents[0]?.location ?? null}
-              accentColor="var(--accent4)"
-            />
-            <div className="glance-split-divider" />
-            <SingleCell
-              name={wrestleEvents[1]?.name ?? null}
-              dateStr={wrestleEvents[1]?.date}
-              timeStr={wrestleEvents[1]?.time || wrestleEvents[1]?.startTime || null}
-              location={wrestleEvents[1]?.location ?? null}
-              accentColor="var(--accent4)"
-              secondary
-            />
-          </div>
-        </div>
-
-        <div className="glance-ev-section">
-          <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Holidays</div>
+        <div className="glance-ev-section glance-ev-section-holidays">
+          <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Upcoming Holidays</div>
           <div className="glance-card-row">
             <SingleCell
               name={holidays[0]?.name ?? null}

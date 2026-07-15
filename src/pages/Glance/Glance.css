@@ -5,7 +5,7 @@
 .glance-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 12px;
   height: 100%;
   padding: 0 4px 4px;
@@ -15,7 +15,7 @@
 
 .glance-col-events {
   grid-column: 1;
-  grid-row: 1 / 4;
+  grid-row: 1 / 3;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -31,7 +31,7 @@
 
 .glance-col-agenda {
   grid-column: 2;
-  grid-row: 2 / 4;
+  grid-row: 2;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -57,14 +57,18 @@
   gap: 10px;
 }
 
-/* Each section (label + card row) stretches equally */
+/* Sections don't stretch equally — Upcoming Events has much richer per-cell
+   content (title + date + location + countdown) than Upcoming Holidays
+   (title + date), so it gets a bigger share of the panel's height and
+   Holidays stays compact instead of both fighting over identical space. */
 .glance-ev-section {
-  flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+.glance-ev-section-events   { flex: 2.4; }
+.glance-ev-section-holidays { flex: 1; }
 
 .glance-section-label {
   font-size: 0.68rem;
@@ -133,6 +137,14 @@
   width: 100%;
   line-height: 1.15;
   flex-shrink: 0;
+}
+
+/* Compact variant (holidays) — no JS sizing, just a fixed clamp scaled to
+   sit slightly above the countdown number below it (which tops out at
+   clamp(1rem, 5.5cqi, 1.7rem)), plus an ellipsis fallback for long names. */
+.glance-ev-title-compact {
+  font-size: clamp(1.05rem, 5.8cqi, 1.8rem);
+  text-overflow: ellipsis;
 }
 
 /* Row 2 — date + time: scales with container, smaller ceiling */
@@ -434,7 +446,7 @@
   .glance-col-events {
     grid-column: 1;
     grid-row: 1;
-    min-height: 560px;
+    min-height: 460px;
   }
 
   .glance-col-bulletin {
@@ -455,7 +467,24 @@
   }
   .glance-ev-section {
     flex-shrink: 0;
-    min-height: 140px;
+  }
+
+  /* Upcoming Events cells carry title + date + location + countdown, and
+     stack two of them vertically on mobile — they need real room, or the
+     title's dynamic sizing gets starved and renders tiny. */
+  .glance-ev-section-events {
+    flex: 2.4;
+    min-height: 340px;
+  }
+
+  /* Holiday cells only carry a fixed-size title + date — much lighter, so
+     they don't need nearly as much height (or padding) as events. */
+  .glance-ev-section-holidays {
+    flex: 1;
+    min-height: 100px;
+  }
+  .glance-ev-section-holidays .glance-split-half {
+    padding: clamp(6px, 1vh, 10px) 12px;
   }
 
   /* Stack split halves vertically on mobile */
