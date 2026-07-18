@@ -194,6 +194,90 @@ button {
   font-style: italic;
 }
 
+/* ── Chore row actions: checkmark, edit, delete (in that order) ──
+   Sized for thumbs first — this app runs mostly on phones — so every
+   button gets a real tap target instead of a tiny hover-only icon. */
+.chore-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.chore-check-btn,
+.chore-edit-btn,
+.chore-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.chore-check-btn {
+  color: var(--muted);
+  border-color: var(--border);
+  font-size: 1rem;
+}
+.chore-check-btn:hover { border-color: var(--accent); color: var(--accent); }
+.chore-check-btn.done {
+  background: rgba(126, 200, 160, 0.18);
+  border-color: rgba(126, 200, 160, 0.5);
+  color: #7ec8a0;
+}
+
+.chore-edit-btn {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.chore-edit-btn:hover { color: var(--accent2); border-color: var(--accent2); }
+
+.chore-delete-btn {
+  color: var(--muted);
+  font-size: 1.15rem;
+}
+.chore-delete-btn:hover { color: #e07070; border-color: #e07070; }
+
+/* ── Chore / detail popup rows (name : value pairs) ── */
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.detail-row:last-child { border-bottom: none; }
+
+.detail-label {
+  flex-shrink: 0;
+  width: 72px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-top: 2px;
+}
+
+.detail-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-notes {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
 /* ══════════════════════════════════════════
    REMINDER ITEMS
 ══════════════════════════════════════════ */
@@ -648,6 +732,7 @@ button {
 }
 
 .overlay-box {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -718,8 +803,13 @@ button {
 
 .overlay-close {
   position: absolute;
-  top: 10px;
-  right: 14px;
+  top: 4px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
   background: none;
   border: none;
   color: var(--muted);

@@ -311,11 +311,13 @@ function RemindersPanel() {
 const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
 
 function TodoPanel() {
-  const [chores, setChores]   = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm]       = useState({ name: '', dueDate: '', weight: 2 })
-  const [saving, setSaving]   = useState(false)
+  const [chores, setChores]       = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [showAdd, setShowAdd]     = useState(false)
+  const [editChore, setEditChore] = useState(null)
+  const [detail, setDetail]       = useState(null) // chore being viewed in the read-only popup
+  const [form, setForm]           = useState({ name: '', dueDate: '', weight: 2, notes: '' })
+  const [saving, setSaving]       = useState(false)
 
   const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
 
@@ -352,23 +354,59 @@ function TodoPanel() {
     } catch (e) { console.error('toggle', e); setChores(chores) }
   }
 
-  async function addItem() {
+  function openAdd() {
+    setEditChore(null)
+    setForm({ name: '', dueDate: '', weight: 2, notes: '' })
+    setShowAdd(true)
+  }
+
+  function openEdit(chore) {
+    setDetail(null)
+    setEditChore({ ...chore })
+    setForm({
+      name:     chore.name     || '',
+      dueDate:  chore.dueDate  || '',
+      weight:   chore.weight   || 2,
+      notes:    chore.notes    || '',
+    })
+    setShowAdd(true)
+  }
+
+  async function submitForm() {
     if (!form.name.trim()) return
     setSaving(true)
     try {
       const fd = new FormData()
-      fd.append('action', 'add')
       fd.append('type', 'chores')
       fd.append('name', form.name.trim())
       fd.append('who', 'tori')
       fd.append('dueDate', form.dueDate)
       fd.append('weight', String(form.weight))
+      fd.append('notes', form.notes.trim())
+      if (editChore !== null) {
+        fd.append('action', 'update')
+        fd.append('idx', String(editChore.id))
+      } else {
+        fd.append('action', 'add')
+      }
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setForm({ name: '', dueDate: '', weight: 2 })
       setShowAdd(false)
       load()
-    } catch (e) { console.error('add chore', e) }
+    } catch (e) { console.error('chore submit', e) }
     finally { setSaving(false) }
+  }
+
+  async function deleteChore(id) {
+    const prev = chores
+    setChores(c => c.filter(x => x.id !== id))
+    setDetail(d => (d?.id === id ? null : d))
+    try {
+      const fd = new FormData()
+      fd.append('action', 'delete')
+      fd.append('type', 'chores')
+      fd.append('idx', String(id))
+      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
+    } catch (e) { console.error('delete chore', e); setChores(prev) }
   }
 
   return (
@@ -377,7 +415,7 @@ function TodoPanel() {
         <PanelHeader
           title="To Do"
           badge={points > 0 ? `🏆 ${points} pts` : null}
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+          actions={<button className="add-btn" onClick={openAdd}>+ add</button>}
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
@@ -388,7 +426,7 @@ function TodoPanel() {
                   const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
                   return (
                     <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
-                      onClick={() => toggle(c.id, !!c.done)}>
+                      onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
                       <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
                       <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
                         {'★'.repeat(c.weight || 1)}
@@ -396,6 +434,15 @@ function TodoPanel() {
                       {badge && (
                         <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
                       )}
+                      <div className="chore-item-actions">
+                        <button
+                          className={`chore-check-btn${c.done ? ' done' : ''}`}
+                          title={c.done ? 'Mark not done' : 'Mark done'}
+                          onClick={() => toggle(c.id, !!c.done)}
+                        >✓</button>
+                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
+                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
+                      </div>
                     </div>
                   )
                 })}
@@ -403,13 +450,44 @@ function TodoPanel() {
         }
       </Panel>
 
+      {detail && (
+        <div className="overlay" onClick={e => e.target === e.currentTarget && setDetail(null)}>
+          <div className="overlay-box">
+            <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
+            <div className="overlay-title">{detail.name}</div>
+            <div className="detail-row">
+              <span className="detail-label">Status</span>
+              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Difficulty</span>
+              <span className="detail-value">{WEIGHT_LABELS[detail.weight || 1]}</span>
+            </div>
+            {detail.dueDate && (
+              <div className="detail-row">
+                <span className="detail-label">Due</span>
+                <span className="detail-value">{formatDateShort(detail.dueDate)}</span>
+              </div>
+            )}
+            <div className="detail-row">
+              <span className="detail-label">Notes</span>
+              <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
+            </div>
+            <div className="overlay-actions">
+              <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
+              <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAdd && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
           <div className="overlay-box">
-            <div className="overlay-title">Add To Do</div>
+            <div className="overlay-title">{editChore ? 'Edit To Do' : 'Add To Do'}</div>
             <input className="overlay-input" placeholder="Task" value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus
-              onKeyDown={e => e.key === 'Enter' && addItem()} />
+              onKeyDown={e => e.key === 'Enter' && submitForm()} />
             <input className="overlay-input" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
             <div className="weight-picker">
@@ -421,10 +499,18 @@ function TodoPanel() {
                 </button>
               ))}
             </div>
+            <textarea
+              className="overlay-input"
+              placeholder="Notes (optional)"
+              value={form.notes}
+              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              rows={3}
+              style={{ resize: 'none' }}
+            />
             <div className="overlay-actions">
               <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={addItem} disabled={saving || !form.name.trim()}>
-                {saving ? 'Saving…' : 'Add'}
+              <button className="overlay-btn submit" onClick={submitForm} disabled={saving || !form.name.trim()}>
+                {saving ? 'Saving…' : editChore ? 'Save' : 'Add'}
               </button>
             </div>
           </div>

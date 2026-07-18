@@ -222,24 +222,9 @@
 }
 .fun-overlay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── To Do panel edit/delete icons ── */
-.chore-edit-btn,
-.chore-delete-btn {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0 3px;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.15s, opacity 0.15s;
-  opacity: 0;
-}
-.chore-item:hover .chore-edit-btn,
-.chore-item:hover .chore-delete-btn { opacity: 1; }
-.chore-edit-btn:hover   { color: var(--accent2); }
-.chore-delete-btn:hover { color: #e07070; }
+/* Chore row checkmark/edit/delete icons now live in global.css
+   (.chore-check-btn / .chore-edit-btn / .chore-delete-btn) so the same
+   thumb-sized buttons are shared across And Stuff, Tori, and Nova. */
 
 /* ── What's For Dinner edit/clear icons ── */
 .meal-edit-icon,
@@ -424,9 +409,8 @@
   .fun-list { overflow-y: auto; flex: 1; }
   .grocery-grid { grid-template-columns: 1fr 1fr; }
 
-  /* always show edit/delete icons on mobile (no hover) */
-  .chore-edit-btn,
-  .chore-delete-btn,
+  /* always show meal edit/clear icons on mobile (no hover) —
+     chore check/edit/delete icons are always visible everywhere now */
   .meal-edit-icon,
   .meal-clear-icon { opacity: 0.6; }
 }

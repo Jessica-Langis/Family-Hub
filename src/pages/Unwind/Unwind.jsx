@@ -57,7 +57,8 @@ function TodoPanel() {
   const [loading, setLoading]     = useState(true)
   const [showForm, setShowForm]   = useState(false)
   const [editChore, setEditChore] = useState(null)
-  const [form, setForm]           = useState({ name: '', who: '', frequency: '', dueDate: '' })
+  const [detail, setDetail]       = useState(null) // chore being viewed in the read-only popup
+  const [form, setForm]           = useState({ name: '', who: '', frequency: '', dueDate: '', notes: '' })
   const [saving, setSaving]       = useState(false)
 
   const load = useCallback(async () => {
@@ -101,17 +102,19 @@ function TodoPanel() {
 
   function openAdd() {
     setEditChore(null)
-    setForm({ name: '', who: '', frequency: '', dueDate: '' })
+    setForm({ name: '', who: '', frequency: '', dueDate: '', notes: '' })
     setShowForm(true)
   }
 
   function openEdit(chore) {
+    setDetail(null)
     setEditChore({ ...chore })
     setForm({
       name:      chore.name      || '',
       who:       chore.who       || '',
       frequency: chore.frequency || '',
       dueDate:   chore.dueDate   || '',
+      notes:     chore.notes     || '',
     })
     setShowForm(true)
   }
@@ -126,6 +129,7 @@ function TodoPanel() {
       fd.append('who', form.who.trim())
       fd.append('frequency', form.frequency)
       fd.append('dueDate', form.dueDate)
+      fd.append('notes', form.notes.trim())
       if (editChore !== null) {
         fd.append('action', 'update')
         fd.append('idx', String(editChore.id))
@@ -145,6 +149,7 @@ function TodoPanel() {
   async function deleteChore(id) {
     const prev = chores
     setChores(c => c.filter(x => x.id !== id))
+    setDetail(d => (d?.id === id ? null : d))
     try {
       const fd = new FormData()
       fd.append('action', 'delete')
@@ -174,7 +179,7 @@ function TodoPanel() {
                   const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
                   return (
                     <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
-                      onClick={e => { if (!e.target.closest('.chore-edit-btn,.chore-delete-btn')) toggle(c.id, !!c.done) }}>
+                      onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
                       <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
                       {c.who && <span className="chore-item-who">{c.who}</span>}
                       {badge && (
@@ -182,14 +187,62 @@ function TodoPanel() {
                           {c.dueDate ? formatDateShort(c.dueDate) : ''}
                         </span>
                       )}
-                      <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
-                      <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
+                      <div className="chore-item-actions">
+                        <button
+                          className={`chore-check-btn${c.done ? ' done' : ''}`}
+                          title={c.done ? 'Mark not done' : 'Mark done'}
+                          onClick={() => toggle(c.id, !!c.done)}
+                        >✓</button>
+                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
+                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
+                      </div>
                     </div>
                   )
                 })}
               </div>
         }
       </Panel>
+
+      {detail && (
+        <div className="overlay" onClick={e => e.target === e.currentTarget && setDetail(null)}>
+          <div className="overlay-box">
+            <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
+            <div className="overlay-title">{detail.name}</div>
+            <div className="detail-row">
+              <span className="detail-label">Status</span>
+              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+            </div>
+            {detail.who && (
+              <div className="detail-row">
+                <span className="detail-label">Assigned</span>
+                <span className="detail-value">{detail.who}</span>
+              </div>
+            )}
+            {detail.dueDate && (
+              <div className="detail-row">
+                <span className="detail-label">Due</span>
+                <span className="detail-value">{formatDateShort(detail.dueDate)}</span>
+              </div>
+            )}
+            {detail.frequency && (
+              <div className="detail-row">
+                <span className="detail-label">Repeats</span>
+                <span className="detail-value">
+                  {FREQUENCY_OPTIONS.find(o => o.value === detail.frequency)?.label || detail.frequency}
+                </span>
+              </div>
+            )}
+            <div className="detail-row">
+              <span className="detail-label">Notes</span>
+              <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
+            </div>
+            <div className="overlay-actions">
+              <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
+              <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setShowForm(false)}>
@@ -223,6 +276,14 @@ function TodoPanel() {
               type="date"
               value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
+            />
+            <textarea
+              className="overlay-input"
+              placeholder="Notes (optional)"
+              value={form.notes}
+              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              rows={3}
+              style={{ resize: 'none' }}
             />
             <div className="overlay-actions">
               <button className="overlay-btn cancel" onClick={() => setShowForm(false)}>Cancel</button>
