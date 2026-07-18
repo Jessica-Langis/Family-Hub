@@ -32,6 +32,18 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_SCRIPT_GROCERY:     ${{ secrets.VITE_SCRIPT_GROCERY }}
+          VITE_SCRIPT_CHORES:      ${{ secrets.VITE_SCRIPT_CHORES }}
+          VITE_SCRIPT_MEAL:        ${{ secrets.VITE_SCRIPT_MEAL }}
+          VITE_SCRIPT_TORI:        ${{ secrets.VITE_SCRIPT_TORI }}
+          VITE_SCRIPT_NOVA:        ${{ secrets.VITE_SCRIPT_NOVA }}
+          VITE_CALENDAR_EMBED_URL: ${{ secrets.VITE_CALENDAR_EMBED_URL }}
+          VITE_CALENDAR_ICS_URL:   ${{ secrets.VITE_CALENDAR_ICS_URL }}
+          VITE_WEATHER_LAT:        ${{ secrets.VITE_WEATHER_LAT }}
+          VITE_WEATHER_LON:        ${{ secrets.VITE_WEATHER_LON }}
+          VITE_WEATHER_TZ:         ${{ secrets.VITE_WEATHER_TZ }}
+          VITE_GOOGLE_CLIENT_ID:   ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

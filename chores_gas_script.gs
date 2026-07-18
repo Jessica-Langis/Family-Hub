@@ -1,7 +1,19 @@
 // ═══════════════════════════════════════════════════════════════
 //  FAMILY HUB — SHARED (PARENTALS) GAS SCRIPT
-//  Sheet ID:    1G00GtbuEKDFUc7uD5qbiotTjSnFQ_7KUsVJR7ZkjkLk
-//  Calendar ID: family12041959028375865807@group.calendar.google.com
+//
+//  SS_ID / CALENDAR_ID / ALLOWED_EMAILS are NOT hardcoded here on purpose —
+//  this file lives in a public GitHub repo, so real values live in this
+//  project's Script Properties instead. First-time setup (or after a fresh
+//  copy/paste of this file into a new deployment):
+//    1. Run setupProperties() once from this editor (function dropdown
+//       near the top → select "setupProperties" → Run). It only needs to
+//       run one time — it writes to Script Properties, not to this file.
+//    2. Fill in the real values inside setupProperties() below FIRST,
+//       then delete them from the function body again after running it
+//       once, so they don't linger in source either.
+//    (Alternative to steps 1-2: Project Settings (gear icon) → Script
+//    Properties → Add property, and set SS_ID / CALENDAR_ID /
+//    ALLOWED_EMAILS by hand — same effect, no code editing needed.)
 //
 //  REQUIRED: enable the Calendar advanced service
 //    Apps Script editor → Services → + → Google Calendar API → Add
@@ -19,21 +31,41 @@
 //    NovaWishlist     A=Item
 //    tori_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
 //    nova_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
+//    Sessions         A=Token  B=Email  C=IssuedAt  D=ExpiresAt  (create this
+//                      tab manually — auth sessions live here, see below)
 //
 //  Calendar events (upcoming/weekend) are read via the Calendar advanced
 //  service with singleEvents:true, so recurring events are expanded by
 //  Google before they reach this script. No RRULE parsing required.
+//
+//  AUTH: every request (except verify_token itself) must include a valid
+//  ?session=TOKEN param, checked against the Sessions tab. Tokens are
+//  issued by verify_token after a real Google Sign-In is checked against
+//  ALLOWED_EMAILS, and last SESSION_DAYS days so a kiosk screen doesn't
+//  need to re-login constantly. To force a device to log out, delete its
+//  row from the Sessions tab.
 // ═══════════════════════════════════════════════════════════════
 
-var SS_ID       = '1G00GtbuEKDFUc7uD5qbiotTjSnFQ_7KUsVJR7ZkjkLk';
-var CALENDAR_ID = 'family12041959028375865807@group.calendar.google.com';
+var SESSION_DAYS = 30;
 
-var ALLOWED_EMAILS = [
-  'madison.02129@gmail.com',
-  'n0v4.720@gmail.com',
-  'jesse.black88@gmail.com',
-  'jlynn198@gmail.com'
-];
+var _props      = PropertiesService.getScriptProperties();
+var SS_ID       = _props.getProperty('SS_ID');
+var CALENDAR_ID = _props.getProperty('CALENDAR_ID');
+var ALLOWED_EMAILS = (_props.getProperty('ALLOWED_EMAILS') || '')
+  .split(',')
+  .map(function(s) { return s.trim().toLowerCase(); })
+  .filter(Boolean);
+
+// Run this once from the editor (see header comment), then feel free to
+// blank out the values below again — they're only needed for that one run.
+function setupProperties() {
+  PropertiesService.getScriptProperties().setProperties({
+    SS_ID:          '',  // paste your Sheet ID here, run once, then clear
+    CALENDAR_ID:    '',  // paste your family Calendar ID here, run once, then clear
+    ALLOWED_EMAILS: ''   // comma-separated emails, run once, then clear
+  });
+  Logger.log('Script properties saved. You can blank this function out again now.');
+}
 
 // ─────────────────────────────────────────────
 //  Utility helpers
@@ -94,6 +126,39 @@ function readThisWeek(tabName) {
 }
 
 // ─────────────────────────────────────────────
+//  HELPER: sessions (Google Sign-In gate)
+// ─────────────────────────────────────────────
+// Returns the verified email for a valid, unexpired session token, or null.
+function checkSession(token) {
+  if (!token) return null;
+  var sheet = getSheet('Sessions');
+  if (!sheet) return null; // Sessions tab not created yet — treat as no valid session
+  var rows = sheet.getDataRange().getValues();
+  var now = new Date();
+  for (var i = 0; i < rows.length; i++) {
+    if (String(rows[i][0]) === token) {
+      var expiresAt = new Date(rows[i][3]);
+      if (!isNaN(expiresAt.getTime()) && expiresAt > now) return rows[i][1];
+      return null; // expired (still counts as "found", so stop scanning)
+    }
+  }
+  return null;
+}
+
+// Issues a new session for a verified email. Returns { token, expiresAt }.
+function createSession(email) {
+  var sheet = getSheet('Sessions');
+  if (!sheet) return null;
+  var token   = Utilities.getUuid();
+  var tz      = Session.getScriptTimeZone();
+  var now     = new Date();
+  var expires = new Date(now.getTime() + SESSION_DAYS * 24 * 60 * 60 * 1000);
+  var fmt     = "yyyy-MM-dd'T'HH:mm:ssXXX";
+  sheet.appendRow([token, email, Utilities.formatDate(now, tz, fmt), Utilities.formatDate(expires, tz, fmt)]);
+  return { token: token, expiresAt: Utilities.formatDate(expires, tz, fmt) };
+}
+
+// ─────────────────────────────────────────────
 //  HELPER: set new goal, shift current into history (max 3 past)
 // ─────────────────────────────────────────────
 function setThisWeek(tabName, newValue, previous) {
@@ -125,6 +190,11 @@ function setThisWeek(tabName, newValue, previous) {
 function doGet(e) {
   if (!e || !e.parameter) return jsonOut({ error: 'No parameters' });
   var type = e.parameter.type || '';
+
+  // ── AUTH GATE ── every GET requires a valid, unexpired session token.
+  if (!checkSession(e.parameter.session)) {
+    return jsonOut({ error: 'unauthorized', authRequired: true });
+  }
 
   // ── CHORES ──
   if (type === 'chores') {
@@ -446,7 +516,8 @@ function doPost(e) {
   var type   = p.type   || '';
   var action = p.action || '';
 
-  // ── TOKEN VERIFICATION (auth flow) ──
+  // ── TOKEN VERIFICATION (auth flow) — the one action exempt from the
+  //    session gate below, since this is how a session gets created. ──
   if (type === 'verify_token') {
     var token = p.token || '';
     if (!token) return jsonOut({ authorized: false, error: 'No token' });
@@ -459,10 +530,18 @@ function doPost(e) {
       if (info.error) return jsonOut({ authorized: false, error: info.error });
       var email = (info.email || '').toLowerCase();
       var authorized = info.email_verified === 'true' && ALLOWED_EMAILS.includes(email);
-      return jsonOut({ authorized: authorized, email: email });
+      if (!authorized) return jsonOut({ authorized: false, email: email });
+      var session = createSession(email);
+      if (!session) return jsonOut({ authorized: false, error: 'Sessions tab not found — create it first (see header comment).' });
+      return jsonOut({ authorized: true, email: email, session: session.token, expiresAt: session.expiresAt });
     } catch (err) {
       return jsonOut({ authorized: false, error: err.message });
     }
+  }
+
+  // ── AUTH GATE ── every other POST requires a valid, unexpired session.
+  if (!checkSession(p.session)) {
+    return jsonOut({ error: 'unauthorized', authRequired: true });
   }
 
   // ── CHORES ──
