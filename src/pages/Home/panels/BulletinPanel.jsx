@@ -131,11 +131,42 @@ function AddNoteModal({ onClose, onAdded }) {
   )
 }
 
-export default function BulletinPanel({ bodyClassName, limit = 4, style }) {
+// Compact single-line row — used on At a Glance where the bulletin board
+// is now a condensed strip (top few items + "N more") instead of a full
+// card grid, since a wall of 5-wide sticky notes was the single biggest
+// driver of "cluttered" in the At a Glance redesign.
+function BulletinLine({ item, isDinner, onOpen }) {
+  const who = isDinner ? "Tonight's Dinner" : (item.who || 'Someone')
+  const text = isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')
+  return (
+    <div className="bulletin-line" onClick={() => onOpen({ item, isDinner })}>
+      <span className="bulletin-line-who">{who}</span>
+      <span className="bulletin-line-text">{text}</span>
+    </div>
+  )
+}
+
+function AllNotesModal({ dinner, bulletins, onClose, onOpenNote }) {
+  return (
+    <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
+        <button onClick={onClose} style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize:'1.1rem', cursor:'pointer' }}>✕</button>
+        <div style={{ fontSize:'0.65rem', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:12, fontWeight:700 }}>📌 All Notes</div>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:4 }}>
+          <BulletinLine item={{ text: dinner }} isDinner onOpen={onOpenNote} />
+          {bulletins.map((b, i) => <BulletinLine key={i} item={b} onOpen={onOpenNote} />)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function BulletinPanel({ bodyClassName, limit = 4, style, compact = false }) {
   const [bulletins, setBulletins] = useState([])
   const [dinner,    setDinner]    = useState(null)
   const [showAdd,   setShowAdd]   = useState(false)
   const [opened,    setOpened]    = useState(null) // { item, isDinner } | null
+  const [showAll,   setShowAll]   = useState(false)
 
   async function load() {
     try {
@@ -170,20 +201,47 @@ export default function BulletinPanel({ bodyClassName, limit = 4, style }) {
           <button className="add-btn" onClick={() => setShowAdd(true)}>+ Post</button>
         }
       />
-      <div className={bodyClassName || 'home-bulletin-strip corkboard-body'}>
-        {/* Tonight's dinner always first */}
-        <BulletinNote item={{ text: dinner }} isDinner onOpen={setOpened} />
-        {bulletins.slice(0, limit).map((b, i) => (
-          <BulletinNote key={i} item={b} onDelete={deleteNote} onOpen={setOpened} />
-        ))}
-        {bulletins.length === 0 && (
-          <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '4px 0' }}>
-            Nothing posted yet — be the first!
-          </div>
-        )}
-      </div>
+      {compact ? (
+        <div className={bodyClassName || 'bulletin-strip-compact'}>
+          <BulletinLine item={{ text: dinner }} isDinner onOpen={setOpened} />
+          {bulletins.slice(0, limit).map((b, i) => (
+            <BulletinLine key={i} item={b} onOpen={setOpened} />
+          ))}
+          {bulletins.length === 0 && (
+            <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '4px 0' }}>
+              Nothing posted yet — be the first!
+            </div>
+          )}
+          {bulletins.length > limit && (
+            <div className="bulletin-more-row" onClick={() => setShowAll(true)}>
+              +{bulletins.length - limit} more — tap to see all
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className={bodyClassName || 'home-bulletin-strip corkboard-body'}>
+          {/* Tonight's dinner always first */}
+          <BulletinNote item={{ text: dinner }} isDinner onOpen={setOpened} />
+          {bulletins.slice(0, limit).map((b, i) => (
+            <BulletinNote key={i} item={b} onDelete={deleteNote} onOpen={setOpened} />
+          ))}
+          {bulletins.length === 0 && (
+            <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '4px 0' }}>
+              Nothing posted yet — be the first!
+            </div>
+          )}
+        </div>
+      )}
       {showAdd && (
         <AddNoteModal onClose={() => setShowAdd(false)} onAdded={load} />
+      )}
+      {showAll && (
+        <AllNotesModal
+          dinner={dinner}
+          bulletins={bulletins}
+          onClose={() => setShowAll(false)}
+          onOpenNote={(o) => { setShowAll(false); setOpened(o) }}
+        />
       )}
       {opened && (
         <BulletinNoteModal

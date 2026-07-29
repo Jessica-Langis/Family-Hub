@@ -19,7 +19,7 @@
 //    Apps Script editor → Services → + → Google Calendar API → Add
 //
 //  Tab names (case-sensitive):
-//    Chores           A=Name  B=Who  C=Frequency  D=DueDate  E=Done  F=Weight(1-3, blank=1)
+//    Chores           A=Name  B=Who  C=Frequency  D=DueDate  E=Done  F=Weight(1-3, blank=1)  G=Notes  H=CompletedAt
 //    Reminders        A=Name  B=Date
 //    Movies           A=Title  B=Type(movie/show)  C=Status
 //    Books            A=Title  B=Author  C=Category
@@ -221,7 +221,9 @@ function doGet(e) {
         frequency: r[2] || '',
         dueDate:   dueDateStr,
         done:      r[4] === true || r[4] === 'TRUE' || r[4] === 1,
-        weight:    weightVal
+        weight:    weightVal,
+        notes:     r[6] || '',
+        completedAt: r[7] || ''
       });
     }
     return json(result);
@@ -550,7 +552,7 @@ function doPost(e) {
     if (action === 'add') {
       var addWeight = parseInt(p.weight, 10);
       if (!(addWeight >= 1 && addWeight <= 3)) addWeight = 1;
-      sheet.appendRow([p.name || '', p.who || '', p.frequency || '', p.dueDate || '', false, addWeight]);
+      sheet.appendRow([p.name || '', p.who || '', p.frequency || '', p.dueDate || '', false, addWeight, p.notes || '', '']);
       return json({ status: 'ok' });
     }
     if (action === 'update') {
@@ -565,12 +567,24 @@ function doPost(e) {
           if (!(updWeight >= 1 && updWeight <= 3)) updWeight = 1;
           sheet.getRange(row, 6).setValue(updWeight);
         }
+        if (p.notes !== undefined) sheet.getRange(row, 7).setValue(p.notes || '');
       }
       return json({ status: 'ok' });
     }
     if (action === 'toggle') {
       var row = parseInt(p.idx);
-      if (row > 0) sheet.getRange(row, 5).setValue(p.done === 'true');
+      if (row > 0) {
+        var isNowDone = p.done === 'true';
+        sheet.getRange(row, 5).setValue(isNowDone);
+        // Stamp CompletedAt when marked done, clear it if un-checked — powers
+        // the "recently completed" feed (sorted by this column).
+        // Include the zone offset (XXX) — without it, a browser in a
+        // different timezone than the script would misread "recently
+        // completed" times, same fix already applied to session ExpiresAt.
+        sheet.getRange(row, 8).setValue(
+          isNowDone ? Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm:ssXXX") : ''
+        );
+      }
       return json({ status: 'ok' });
     }
     if (action === 'delete') {

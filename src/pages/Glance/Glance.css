@@ -1,11 +1,14 @@
 /* ══════════════════════════════════════════
    AT A GLANCE — Page Layout
+   2 zones: a dominant "what's happening" hero (left) and a compact
+   bulletin strip (right) — no auto-rotation, no 2-week grid (that
+   moved to And Stuff), single ranked events+holidays list instead of
+   two separate sections.
 ══════════════════════════════════════════ */
 
 .glance-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 12px;
   height: 100%;
   padding: 0 4px 4px;
@@ -15,7 +18,6 @@
 
 .glance-col-events {
   grid-column: 1;
-  grid-row: 1 / 3;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -23,22 +25,13 @@
 
 .glance-col-bulletin {
   grid-column: 2;
-  grid-row: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.glance-col-agenda {
-  grid-column: 2;
-  grid-row: 2;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 /* ══════════════════════════════════════════
-   EVENTS PANEL
+   EVENTS PANEL (hero)
 ══════════════════════════════════════════ */
 
 .glance-events-panel {
@@ -54,29 +47,6 @@
   padding: 6px 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-/* Sections don't stretch equally — Upcoming Events has much richer per-cell
-   content (title + date + location + countdown) than Upcoming Holidays
-   (title + date), so it gets a bigger share of the panel's height and
-   Holidays stays compact instead of both fighting over identical space. */
-.glance-ev-section {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.glance-ev-section-events   { flex: 2.4; }
-.glance-ev-section-holidays { flex: 1; }
-
-.glance-section-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--accent6);
-  flex-shrink: 0;
 }
 
 /* ── Split row — single surface containing both halves ── */
@@ -90,8 +60,6 @@
   overflow: hidden;
 }
 
-/* ── Half cell ── */
-
 .glance-split-half {
   flex: 1;
   container-type: inline-size;
@@ -100,7 +68,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: clamp(10px, 2.2vh, 22px) 12px;
+  padding: clamp(14px, 3.5vh, 32px) 16px;
   min-width: 0;
   overflow: hidden;
   box-sizing: border-box;
@@ -110,7 +78,6 @@
   opacity: 0.65;
 }
 
-/* Vertical divider between halves */
 .glance-split-divider {
   width: 1px;
   background: rgba(255, 255, 255, 0.07);
@@ -125,10 +92,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-/* Row 1 — dynamic title (font set via JS binary search, capped lower) */
 .glance-ev-title {
   white-space: nowrap;
   overflow: hidden;
@@ -139,17 +105,8 @@
   flex-shrink: 0;
 }
 
-/* Compact variant (holidays) — no JS sizing, just a fixed clamp scaled to
-   sit slightly above the countdown number below it (which tops out at
-   clamp(1rem, 5.5cqi, 1.7rem)), plus an ellipsis fallback for long names. */
-.glance-ev-title-compact {
-  font-size: clamp(1.05rem, 5.8cqi, 1.8rem);
-  text-overflow: ellipsis;
-}
-
-/* Row 2 — date + time: scales with container, smaller ceiling */
 .glance-ev-block-date {
-  font-size: clamp(0.68rem, 3.5cqi, 1.05rem);
+  font-size: clamp(0.72rem, 3.8cqi, 1.15rem);
   color: var(--text);
   font-weight: 600;
   text-align: center;
@@ -157,9 +114,8 @@
   flex-shrink: 0;
 }
 
-/* Row 3 — location */
 .glance-ev-block-loc {
-  font-size: clamp(0.58rem, 2.5cqi, 0.82rem);
+  font-size: clamp(0.6rem, 2.8cqi, 0.88rem);
   color: var(--muted);
   text-align: center;
   line-height: 1.2;
@@ -170,29 +126,26 @@
   max-width: 100%;
 }
 
-/* Row 4 — countdown: bigger than date but scales faster so it stays proportional */
 .glance-ev-block-countdown {
   display: flex;
   align-items: baseline;
   gap: 8px;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .glance-ev-cd-days {
-  font-size: clamp(1rem, 5.5cqi, 1.7rem);
+  font-size: clamp(1.1rem, 6.5cqi, 2rem);
   font-weight: 700;
   line-height: 1;
 }
 
 .glance-ev-cd-hours {
-  font-size: clamp(0.78rem, 4cqi, 1.2rem);
+  font-size: clamp(0.8rem, 4.2cqi, 1.3rem);
   font-weight: 500;
   line-height: 1;
 }
-
-/* ── Multi-event divider and overflow titles ── */
 
 .glance-ev-inner-divider {
   width: 80%;
@@ -221,7 +174,6 @@
   max-width: 100%;
 }
 
-/* Empty state */
 .next-up-empty {
   font-size: clamp(0.75rem, 3cqi, 0.95rem);
   color: var(--muted);
@@ -229,215 +181,69 @@
 }
 
 /* ══════════════════════════════════════════
-   THIS WEEK — 7-day calendar panel
+   BULLETIN STRIP — compact, single-line rows
+   (replaces the old 5-wide square-note grid; that grid was the single
+   biggest driver of "cluttered" in the At a Glance redesign)
 ══════════════════════════════════════════ */
 
-.glance-agenda-panel {
-  height: 100% !important;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Desktop: 7-column × 2-row grid for 14-day view */
-.glance-week-grid {
+.bulletin-strip-compact {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: 1fr 1fr;
-  gap: 0;
-  padding: 4px 10px 10px;
-}
-
-/* Each day column */
-.glance-week-day {
+  overflow-y: auto;
+  padding: 4px 14px 10px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 6px 4px 4px;
-  border-right: 1px solid rgba(255,255,255,0.05);
-  min-width: 0;
-  overflow: hidden;
+  gap: 2px;
 }
 
-/* Strip right border on the last column of each week row */
-.glance-week-day:nth-child(7n) {
-  border-right: none;
-}
-
-/* Horizontal divider between week 1 and week 2 */
-.glance-week-day:nth-child(-n+7) {
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-/* Today highlight */
-.glance-week-today {
-  background: rgba(136, 201, 168, 0.07);
-  border-radius: 6px;
-}
-
-/* Desktop stacked header: day name + date */
-.gwk-desktop-header {
+.bulletin-line {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  margin-bottom: 6px;
-  flex-shrink: 0;
-}
-
-.gwk-day-name {
-  font-size: clamp(0.58rem, 1vw, 0.8rem);
-  font-weight: 700;
-  color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.glance-week-today .gwk-day-name {
-  color: var(--accent6);
-}
-
-.gwk-day-date {
-  font-size: clamp(0.55rem, 0.9vw, 0.75rem);
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.glance-week-today .gwk-day-date {
-  color: var(--accent6);
-  opacity: 0.8;
-}
-
-/* Mobile inline label — hidden on desktop */
-.gwk-mobile-label {
-  display: none;
-}
-
-.gwk-day-name-mob {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.glance-week-today .gwk-day-name-mob {
-  color: var(--accent6);
-}
-
-/* Clickable day */
-.gwk-has-events {
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
-}
-.gwk-has-events:hover {
-  background: rgba(255,255,255,0.05);
-  border-radius: 6px;
-}
-
-/* Events area — shared desktop/mobile */
-.gwk-events {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 3px;
-  width: 100%;
   min-width: 0;
-  overflow: hidden;
+}
+.bulletin-line:last-child { border-bottom: none; }
+.bulletin-line:hover { opacity: 0.8; }
+
+.bulletin-line-who {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent5);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-/* Event pill — matches cal-pill on home page */
-.gwk-ev {
-  font-size: clamp(0.5rem, 0.85vw, 0.62rem);
-  font-weight: 600;
-  line-height: 1.25;
-  background: rgba(126, 184, 212, 0.2);
-  color: var(--accent2);
-  border-radius: 3px;
-  padding: 2px 4px;
-  white-space: nowrap;
+.bulletin-line-text {
+  font-size: 0.82rem;
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
 }
 
-/* Weekend pill — gold tint (matches cal-day weekend rule) */
-.gwk-ev-weekend {
-  background: rgba(232, 184, 109, 0.18);
-  color: var(--accent);
+.bulletin-more-row {
+  font-size: 0.72rem;
+  color: var(--accent2);
+  padding: 8px 0 2px;
+  cursor: pointer;
 }
-
-.gwk-no-events {
-  font-size: clamp(0.5rem, 0.85vw, 0.72rem);
-  color: var(--muted);
-  opacity: 0.4;
-  text-align: center;
-}
+.bulletin-more-row:hover { text-decoration: underline; }
 
 /* ══════════════════════════════════════════
-   BULLETIN BOARD — square notes override
-══════════════════════════════════════════ */
-
-/* 5-column grid so notes always fill the panel width exactly */
-.glance-bulletin-body {
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 8px !important;
-  align-content: start !important;
-  overflow: hidden !important;
-}
-
-/* Square via aspect-ratio — height follows width automatically */
-.glance-bulletin-body .bulletin-item {
-  aspect-ratio: 1 / 1 !important;
-  width: 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  flex: none !important;
-  padding: 10px 10px 8px !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  container-type: inline-size !important;
-}
-
-/* Text proportional to note width via container queries */
-.glance-bulletin-body .bulletin-who   { font-size: clamp(0.5rem, 8cqi, 0.85rem) !important; letter-spacing: 0.05em !important; }
-.glance-bulletin-body .bulletin-text  { font-size: clamp(0.7rem, 10cqi, 1.05rem) !important; line-height: 1.35 !important; }
-.glance-bulletin-body .bulletin-date  { font-size: clamp(0.48rem, 7cqi, 0.75rem) !important; }
-
-/* Handwriting fonts also proportional */
-.glance-bulletin-body .bulletin-item[data-font="dancing"]  .bulletin-text { font-size: clamp(0.78rem, 11cqi, 1.15rem) !important; }
-.glance-bulletin-body .bulletin-item[data-font="caveat"]   .bulletin-text { font-size: clamp(0.8rem, 12cqi, 1.2rem) !important; }
-.glance-bulletin-body .bulletin-item[data-font="pacifico"] .bulletin-text { font-size: clamp(0.62rem, 9cqi, 0.92rem) !important; }
-.glance-bulletin-body .bulletin-item[data-font="satisfy"]  .bulletin-text { font-size: clamp(0.68rem, 10cqi, 1rem) !important; }
-.glance-bulletin-body .bulletin-item[data-font="kalam"]    .bulletin-text { font-size: clamp(0.72rem, 10cqi, 1.05rem) !important; }
-.glance-bulletin-body .bulletin-item[data-font="patrick"]  .bulletin-text { font-size: clamp(0.7rem, 10cqi, 1.02rem) !important; }
-
-/* Pushpin — scale proportionally */
-.glance-bulletin-body .bulletin-item::before {
-  width: 9px !important;
-  height: 9px !important;
-  top: -6px !important;
-}
-.glance-bulletin-body .bulletin-item::after {
-  height: 6px !important;
-  top: 1px !important;
-}
-
-/* ══════════════════════════════════════════
-   MOBILE — stack vertically: Events > Bulletin > Agenda
+   MOBILE — stack vertically: Events > Bulletin
 ══════════════════════════════════════════ */
 
 @media (max-width: 640px) {
   .glance-content {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto;
     height: auto;
     overflow: visible;
     padding: 0 4px 8px;
@@ -446,48 +252,19 @@
   .glance-col-events {
     grid-column: 1;
     grid-row: 1;
-    min-height: 460px;
+    min-height: 420px;
   }
 
   .glance-col-bulletin {
     grid-column: 1;
     grid-row: 2;
-    min-height: 360px;
+    min-height: 240px;
   }
 
-  .glance-col-agenda {
-    grid-column: 1;
-    grid-row: 3;
-    min-height: 220px;
-  }
-
-  /* Allow events body to scroll on mobile */
   .glance-events-body {
     overflow-y: auto;
   }
-  .glance-ev-section {
-    flex-shrink: 0;
-  }
 
-  /* Upcoming Events cells carry title + date + location + countdown, and
-     stack two of them vertically on mobile — they need real room, or the
-     title's dynamic sizing gets starved and renders tiny. */
-  .glance-ev-section-events {
-    flex: 2.4;
-    min-height: 340px;
-  }
-
-  /* Holiday cells only carry a fixed-size title + date — much lighter, so
-     they don't need nearly as much height (or padding) as events. */
-  .glance-ev-section-holidays {
-    flex: 1;
-    min-height: 100px;
-  }
-  .glance-ev-section-holidays .glance-split-half {
-    padding: clamp(6px, 1vh, 10px) 12px;
-  }
-
-  /* Stack split halves vertically on mobile */
   .glance-card-row {
     flex-direction: column;
   }
@@ -495,95 +272,5 @@
     width: auto;
     height: 1px;
     margin: 0 10px;
-  }
-
-  /* Notes: 3 columns on mobile */
-  .glance-bulletin-body {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  /* Week: switch to vertical list on mobile */
-  .glance-week-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-    overflow-y: auto;
-    gap: 0;
-    padding: 4px 10px 10px;
-  }
-
-  .glance-week-day {
-    flex-direction: row;
-    align-items: baseline;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding: 5px 4px;
-    gap: 6px;
-  }
-
-  .glance-week-day:last-child {
-    border-bottom: none;
-  }
-
-  /* Hide desktop stacked header on mobile */
-  .gwk-desktop-header {
-    display: none;
-  }
-
-  /* Show inline mobile label */
-  .gwk-mobile-label {
-    display: flex;
-    align-items: baseline;
-    flex-shrink: 0;
-  }
-
-  /* Events inline after label — strip pill style on mobile, show as plain comma-separated text */
-  .gwk-events {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: baseline;
-    justify-content: flex-start;
-    overflow: hidden;
-    flex: 1;
-    min-width: 0;
-    gap: 0;
-  }
-
-  .gwk-ev {
-    font-size: 0.8rem;
-    font-weight: 400;
-    background: none;
-    border-radius: 0;
-    padding: 0;
-    text-align: left;
-    white-space: nowrap;
-    color: rgba(232, 234, 240, 0.75);
-  }
-
-  .gwk-ev-weekend {
-    background: none;
-    color: var(--accent);
-  }
-
-  /* Comma separator between events */
-  .gwk-ev + .gwk-ev::before {
-    content: ", ";
-    color: var(--muted);
-  }
-
-  .gwk-no-events {
-    font-size: 0.78rem;
-    opacity: 0.35;
-    text-align: left;
-  }
-
-  /* Dash between label and events */
-  .gwk-mobile-label::after {
-    content: " —";
-    color: var(--muted);
-    font-size: 0.82rem;
-    margin-right: 5px;
-    flex-shrink: 0;
   }
 }

@@ -12,7 +12,7 @@
 /* First column stacks Next Up (top) over Reminders, split evenly */
 .ta-nextup-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .ta-nextup     { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
-.ta-reminders  { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
+.ta-completed  { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
 
 /* Last column stacks To Do (majority of height) over Wishlist (compact) */
 .ta-todo-col  { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
@@ -24,7 +24,6 @@
 
 /* Accent override */
 .tori-content .section-title { color: var(--accent4); }
-.tori-content .reminder-dot  { background: var(--accent4); }
 
 /* ── Prevent any child from blowing out the grid columns ── */
 .tori-content > * {
@@ -103,7 +102,7 @@
   }
 
   .ta-nextup,
-  .ta-reminders, .ta-todo, .ta-wishlist {
+  .ta-completed, .ta-todo, .ta-wishlist {
     min-height: 140px;
     overflow: visible;
   }

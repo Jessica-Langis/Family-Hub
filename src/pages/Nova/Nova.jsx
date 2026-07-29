@@ -1,26 +1,11 @@
-import { useState, useEffect, useCallback, Component } from 'react'
-import Panel, { PanelHeader } from '../../components/Panel/Panel'
+import { useState, Component } from 'react'
 import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
-import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort, parsePersonEvent } from '../Home/homeUtils'
+import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
+import CompletedFeed from '../../components/CompletedFeed/CompletedFeed'
+import ChoresList from '../../components/ChoresList/ChoresList'
+import { SCRIPTS } from '../../api/scripts'
 import { NOVA_JOKES, pickDailyIndex } from '../../data/hypeContent'
 import './Nova.css'
-
-// ── Normalize API response → array ───────────────────────────
-function toArr(d) {
-  if (Array.isArray(d)) return d
-  if (d && Array.isArray(d.result)) return d.result
-  if (d && Array.isArray(d.items))  return d.items
-  if (d && Array.isArray(d.data))   return d.data
-  return []
-}
-
-// Case/whitespace-insensitive "who" match — chores added from the old
-// legacy dashboard (and the free-text "assigned to" field on And Stuff)
-// can have who="Nova" or " nova " etc.
-function isWho(c, name) {
-  return (c.who || '').trim().toLowerCase() === name
-}
 
 // ── Error boundary ────────────────────────────────────────────
 class NovaErrorBoundary extends Component {
@@ -47,79 +32,41 @@ class NovaErrorBoundary extends Component {
   }
 }
 
-// ── helpers ──────────────────────────────────────────────────
-function choreBadgeCls(dateStr) {
-  const diff = getDayDiff(dateStr)
-  if (isNaN(diff)) return 'upcoming'
-  if (diff < 0)    return 'past'
-  if (diff === 0)  return 'today'
-  if (diff <= 7)   return 'soon'
-  return 'upcoming'
-}
-
 // ── Main tab ──────────────────────────────────────────────────
+// Previously had two overlapping "what's coming up" tiles (a "Today" list
+// from Nova's own events, plus a separate big-number "Countdown" hero from
+// tagged calendar events) — now uses the same shared NextUpPanel Tori's
+// page uses, which merges both sources into one ranked list. Chores moved
+// to the shared ChoresList component too (was a near-duplicate of Tori's
+// and Unwind's copies of the same ~150 lines).
 export default function Nova() {
+  const [refreshTick, setRefreshTick] = useState(0)
   return (
     <NovaErrorBoundary>
     <div className="nova-content">
       <JokePanel />
-      <div className="na-today-col">
-        <div className="na-cell today-cell"><TodayPanel /></div>
-        <div className="na-cell chores-cell"><ChoresPanel /></div>
+      <div className="na-nextup-col">
+        <div className="na-cell na-nextup-cell"><NextUpPanel name="Nova" script={SCRIPTS.NOVA} /></div>
+        <div className="na-cell na-completed-cell"><CompletedFeed matchWho="nova" refreshKey={refreshTick} /></div>
       </div>
-      <div className="na-countdown-col">
-        <div className="na-cell countdown-cell"><CountdownPanel name="Nova" /></div>
+      <div className="na-chores-col">
+        <div className="na-cell na-chores-cell">
+          <ChoresList
+            title="Chores"
+            matchWho="nova"
+            fixedWho="nova"
+            showFrequency={false}
+            showWeight
+            showPoints
+            showHideCompletedToggle
+            hideCompletedStorageKey="nova_chores_hide_completed"
+            onChange={() => setRefreshTick(t => t + 1)}
+          />
+        </div>
         <div className="na-wishlist"><WishlistPanel type="nova_wishlist" /></div>
       </div>
     </div>
     </NovaErrorBoundary>
-  )
-}
-
-// ── Countdown panel — next calendar event tagged "Nova - ..." ─
-function CountdownPanel({ name }) {
-  const [big, setBig]         = useState(null) // { title, date }
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    apiFetch(`${SCRIPTS.CHORES}?type=upcoming&days=365`)
-      .then(r => r.json())
-      .then(data => {
-        const found = toArr(data)
-          .flatMap(d => (d.events || []).map(ev => ({ summary: ev.summary, date: d.date })))
-          .map(ev => {
-            const title = parsePersonEvent(ev.summary, name)
-            return title ? { title, date: ev.date } : null
-          })
-          .filter(Boolean)
-          .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))[0]
-        setBig(found || null)
-      })
-      .catch(e => console.error('countdown load', e))
-      .finally(() => setLoading(false))
-  }, [name])
-
-  const diff = big ? getDayDiff(big.date) : null
-
-  return (
-    <Panel>
-      <PanelHeader title="Countdown" />
-      <div className="countdown-hero">
-        {loading
-          ? <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Loading…</span>
-          : big
-            ? <>
-                <div className="countdown-hero-num">{diff === 0 ? '🎉' : diff}</div>
-                {diff !== 0 && <div className="countdown-hero-unit">days until</div>}
-                <div className="countdown-hero-title">{big.title}</div>
-                <div className="countdown-hero-date">{formatDateShort(big.date)}</div>
-              </>
-            : <div className="next-up-empty">
-                No calendar events tagged "{name} - ..." yet
-              </div>
-        }
-      </div>
-    </Panel>
   )
 }
 
@@ -135,347 +82,5 @@ function JokePanel() {
       </div>
       <div className="fun-fact-text">{NOVA_JOKES[idx]}</div>
     </div>
-  )
-}
-
-// ── Chores panel (all of Nova's chores — full list, not just today) ─
-const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
-
-function ChoresPanel() {
-  const [chores, setChores]       = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [showAdd, setShowAdd]     = useState(false)
-  const [editChore, setEditChore] = useState(null)
-  const [detail, setDetail]       = useState(null) // chore being viewed in the read-only popup
-  const [form, setForm]           = useState({ name: '', dueDate: '', weight: 2, notes: '' })
-  const [saving, setSaving]       = useState(false)
-  // Hides completed chores from the list to cut clutter, without affecting
-  // the points total below (that's always computed from the full list).
-  // Toggling this back off is also how an accidentally-completed chore gets
-  // found again so it can be un-checked.
-  const [hideCompleted, setHideCompleted] = useState(
-    () => localStorage.getItem('nova_chores_hide_completed') !== 'false'
-  )
-
-  function toggleHideCompleted() {
-    setHideCompleted(h => {
-      const next = !h
-      localStorage.setItem('nova_chores_hide_completed', String(next))
-      return next
-    })
-  }
-
-  const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
-  const visibleChores = hideCompleted ? chores.filter(c => !c.done) : chores
-
-  const load = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
-      const data = await res.json()
-      const filtered = toArr(data)
-        .filter(c => isWho(c, 'nova'))
-        .sort((a, b) => {
-          const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
-          if (isNaN(da) && isNaN(db)) return 0
-          if (isNaN(da)) return 1
-          if (isNaN(db)) return -1
-          return da - db
-        })
-      setChores(filtered)
-    } catch (e) { console.error('nova chores', e) }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { load() }, [load])
-
-  async function toggle(id, done) {
-    const updated = chores.map(c => c.id === id ? { ...c, done: !done } : c)
-    setChores(updated)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'toggle')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      fd.append('done', String(!done))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) { console.error('toggle', e); setChores(chores) }
-  }
-
-  function openAdd() {
-    setEditChore(null)
-    setForm({ name: '', dueDate: '', weight: 2, notes: '' })
-    setShowAdd(true)
-  }
-
-  function openEdit(chore) {
-    setDetail(null)
-    setEditChore({ ...chore })
-    setForm({
-      name:    chore.name    || '',
-      dueDate: chore.dueDate || '',
-      weight:  chore.weight  || 2,
-      notes:   chore.notes   || '',
-    })
-    setShowAdd(true)
-  }
-
-  async function submitForm() {
-    if (!form.name.trim()) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('type', 'chores')
-      fd.append('name', form.name.trim())
-      fd.append('who', 'nova')
-      fd.append('dueDate', form.dueDate)
-      fd.append('weight', String(form.weight))
-      fd.append('notes', form.notes.trim())
-      if (editChore !== null) {
-        fd.append('action', 'update')
-        fd.append('idx', String(editChore.id))
-      } else {
-        fd.append('action', 'add')
-      }
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setShowAdd(false)
-      load()
-    } catch (e) { console.error('chore submit', e) }
-    finally { setSaving(false) }
-  }
-
-  async function deleteChore(id) {
-    const prev = chores
-    setChores(c => c.filter(x => x.id !== id))
-    setDetail(d => (d?.id === id ? null : d))
-    try {
-      const fd = new FormData()
-      fd.append('action', 'delete')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) { console.error('delete chore', e); setChores(prev) }
-  }
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="Chores"
-          badge={points > 0 ? `🏆 ${points} pts` : null}
-          actions={
-            <>
-              <button
-                className={`add-btn${hideCompleted ? ' active' : ''}`}
-                onClick={toggleHideCompleted}
-                title={hideCompleted ? 'Completed chores are hidden — click to show them' : 'Hide completed chores'}
-              >
-                👁
-              </button>
-              <button className="add-btn" onClick={openAdd}>+ add</button>
-            </>
-          }
-        />
-        {loading
-          ? <div className="chore-empty">Loading…</div>
-          : visibleChores.length === 0
-            ? <div className="chore-empty">All done!</div>
-            : <div className="chore-list">
-                {visibleChores.map((c, i) => {
-                  const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
-                  return (
-                    <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
-                      onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
-                      <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                      <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
-                        {'★'.repeat(c.weight || 1)}
-                      </span>
-                      {badge && (
-                        <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
-                      )}
-                      <div className="chore-item-actions">
-                        <button
-                          className={`chore-check-btn${c.done ? ' done' : ''}`}
-                          title={c.done ? 'Mark not done' : 'Mark done'}
-                          onClick={() => toggle(c.id, !!c.done)}
-                        >✓</button>
-                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
-                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-        }
-      </Panel>
-
-      {detail && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setDetail(null)}>
-          <div className="overlay-box">
-            <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
-            <div className="overlay-title">{detail.name}</div>
-            <div className="detail-row">
-              <span className="detail-label">Status</span>
-              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Difficulty</span>
-              <span className="detail-value">{WEIGHT_LABELS[detail.weight || 1]}</span>
-            </div>
-            {detail.dueDate && (
-              <div className="detail-row">
-                <span className="detail-label">Due</span>
-                <span className="detail-value">{formatDateShort(detail.dueDate)}</span>
-              </div>
-            )}
-            <div className="detail-row">
-              <span className="detail-label">Notes</span>
-              <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
-            </div>
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
-              <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showAdd && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">{editChore ? 'Edit Chore' : 'Add Chore'}</div>
-            <input className="overlay-input" placeholder="Task" value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus
-              onKeyDown={e => e.key === 'Enter' && submitForm()} />
-            <input className="overlay-input" type="date" value={form.dueDate}
-              onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
-            <div className="weight-picker">
-              {[1, 2, 3].map(w => (
-                <button key={w} type="button"
-                  className={`weight-btn${form.weight === w ? ' active' : ''}`}
-                  onClick={() => setForm(f => ({ ...f, weight: w }))}>
-                  {WEIGHT_LABELS[w]}
-                </button>
-              ))}
-            </div>
-            <textarea
-              className="overlay-input"
-              placeholder="Notes (optional)"
-              value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              rows={3}
-              style={{ resize: 'none' }}
-            />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={submitForm} disabled={saving || !form.name.trim()}>
-                {saving ? 'Saving…' : editChore ? 'Save' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// ── Today panel (Nova's upcoming events — chores now live in the ─
-// dedicated Chores tile, so this only tracks "Coming Up") ────────
-
-function TodayPanel() {
-  const [events, setEvents]       = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [showAdd, setShowAdd]     = useState(false)
-  const [eventForm, setEventForm] = useState({ name: '', evtType: '', date: '' })
-  const [saving, setSaving]       = useState(false)
-
-  const loadEvents = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.NOVA}?type=events`)
-      const data = await res.json()
-      setEvents(
-        toArr(data)
-          .filter(e => !e.date || getDayDiff(e.date) >= 0)
-          .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
-      )
-    } catch (e) { console.error('nova events', e) }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { loadEvents() }, [loadEvents])
-
-  // Just the single next upcoming event, with a countdown.
-  const nextEvent = events.find(e => e.date && !isNaN(getDayDiff(e.date))) || null
-
-  async function addEvent() {
-    if (!eventForm.name || !eventForm.date) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'add')
-      fd.append('type', 'events')
-      fd.append('name', eventForm.name)
-      fd.append('evtType', eventForm.evtType)
-      fd.append('date', eventForm.date)
-      await apiFetch(SCRIPTS.NOVA, { method: 'POST', body: fd })
-      setEventForm({ name: '', evtType: '', date: '' })
-      setShowAdd(false)
-      loadEvents()
-    } catch (e) { console.error('add event', e) }
-    finally { setSaving(false) }
-  }
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="Today"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
-        />
-        {loading
-          ? <div className="chore-empty">Loading…</div>
-          : <>
-              <div className="today-subhead">Coming Up</div>
-              {!nextEvent
-                ? <div className="countdown-empty">No upcoming events.</div>
-                : <div className="countdown-list">
-                    <div className="countdown-item">
-                      <span className="countdown-item-dot" style={{ background: 'var(--accent3)' }} />
-                      <div className="countdown-item-body">
-                        <div className="countdown-item-name">{nextEvent.name}</div>
-                        <div className="countdown-item-sub">{nextEvent.type && `${nextEvent.type} · `}{formatDateShort(nextEvent.date)}</div>
-                      </div>
-                      <span className={`countdown-badge ${choreBadgeCls(nextEvent.date)}`}>
-                        {(() => {
-                          const d = getDayDiff(nextEvent.date)
-                          return d === 0 ? 'TODAY' : `${d}d away`
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-              }
-            </>
-        }
-      </Panel>
-
-      {showAdd && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">Add Event</div>
-            <input className="overlay-input" placeholder="Event name" value={eventForm.name}
-              onChange={e => setEventForm(f => ({ ...f, name: e.target.value }))} autoFocus />
-            <input className="overlay-input" placeholder="Type (optional)" value={eventForm.evtType}
-              onChange={e => setEventForm(f => ({ ...f, evtType: e.target.value }))} />
-            <input className="overlay-input" type="date" value={eventForm.date}
-              onChange={e => setEventForm(f => ({ ...f, date: e.target.value }))} />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={addEvent} disabled={saving || !eventForm.name || !eventForm.date}>
-                {saving ? 'Saving…' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
   )
 }

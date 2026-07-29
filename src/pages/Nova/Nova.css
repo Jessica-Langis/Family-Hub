@@ -9,18 +9,15 @@
   overflow: hidden;
 }
 
-.countdown-cell {
-  min-height: 130px;
-}
+/* First column stacks Next Up (top) over Recently Completed, split evenly —
+   mirrors Tori's ta-nextup-col now that Nova uses the same shared NextUpPanel */
+.na-nextup-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.na-nextup-cell    { flex: 1 1 0; }
+.na-completed-cell { flex: 1 1 0; }
 
-/* Middle column stacks Today (compact — just "Coming Up") over Chores (majority) */
-.na-today-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.na-today-col .today-cell  { flex: 0 0 34%; }
-.na-today-col .chores-cell { flex: 1 1 auto; }
-
-/* Last column stacks Countdown (majority of height) over Wishlist (compact) */
-.na-countdown-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.na-countdown-col .countdown-cell { flex: 1 1 auto; }
+/* Last column stacks Chores (majority of height) over Wishlist (compact) */
+.na-chores-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.na-chores-cell { flex: 1 1 auto; }
 .na-wishlist { display: flex; flex-direction: column; min-height: 0; flex: 0 0 34%; }
 .na-wishlist .panel { flex: 1; }
 
@@ -130,15 +127,15 @@
   .fun-fact-panel { min-height: 140px; min-width: 0; overflow: hidden; }
   .na-cell { min-height: 320px; overflow: visible; min-width: 0; }
   .na-cell .panel { flex: none; min-height: 300px; min-width: 0; max-width: 100%; }
-  .countdown-cell { min-height: 160px; }
-  .countdown-cell .panel { min-height: 150px; }
+  .na-nextup-cell { min-height: 160px; }
+  .na-nextup-cell .panel { min-height: 150px; }
+  .na-completed-cell { min-height: 160px; }
+  .na-completed-cell .panel { min-height: 150px; }
 
-  .na-countdown-col { min-height: 0; gap: 8px; }
+  .na-nextup-col { min-height: 0; gap: 8px; }
   .na-wishlist { min-height: 140px; overflow: visible; min-width: 0; }
   .na-wishlist .panel { flex: none; min-height: 130px; min-width: 0; max-width: 100%; }
 
-  .na-today-col { min-height: 0; gap: 8px; }
-  .today-cell { min-height: 160px; }
-  .today-cell .panel { min-height: 150px; }
-  .chores-cell { min-height: 280px; }
+  .na-chores-col { min-height: 0; gap: 8px; }
+  .na-chores-cell { min-height: 280px; }
 }

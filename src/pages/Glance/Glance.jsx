@@ -6,10 +6,16 @@ import BulletinPanel from '../Home/panels/BulletinPanel'
 import { cacheGet, cacheSet } from '../../utils/cache'
 import './Glance.css'
 
+// ── At a Glance — redesigned as 3 static zones instead of 5 stacked
+// modules (clock/weather header via TopBar, this page's Events hero, and
+// a compact Bulletin strip). No auto-rotation — this is a walk-by kiosk
+// screen near the front door, so everything needs to be visible at once,
+// just prioritized instead of all competing equally. The old 2-week
+// calendar grid moved to And Stuff (that's "sit and plan" content, not
+// "glance" content); holidays now fold into the same ranked list as real
+// events instead of getting their own separate section.
+
 const NWS_HEADERS = { 'User-Agent': 'FamilyHubApp (family-hub)' }
-// Geocoding and NWS grid lookups are keyed by place name / coordinates that
-// don't change — cache those for a long time. Only the actual forecast
-// icon for a given date needs to stay reasonably fresh.
 const GEO_TTL_MS  = 30 * 24 * 60 * 60 * 1000
 const ICON_TTL_MS = 6 * 60 * 60 * 1000
 
@@ -26,14 +32,8 @@ function toDateStr(di) {
   return di instanceof Date ? dateParts(di) : String(di)
 }
 
-const MONTHS      = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
-const DAYS_FULL   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
-function ordinal(n) {
-  const v = n % 100
-  return n + (['th','st','nd','rd'][(v - 20) % 10] || ['th','st','nd','rd'][v] || 'th')
-}
 function fmtFull(dateInput) {
   const str = toDateStr(dateInput)
   const d = new Date(str + 'T00:00:00')
@@ -62,14 +62,13 @@ function getCountdown(dateStr, timeStr) {
 
 // Returns true if a timed event ended 2+ hours ago (triggers removal from the tile)
 function isStale(dateStr, timeStr) {
-  if (!timeStr) return false  // all-day events stay visible all day
+  if (!timeStr) return false
   const t = new Date(dateStr + ' ' + timeStr)
   if (isNaN(t.getTime())) return false
   return (new Date() - t) >= 2 * 60 * 60 * 1000
 }
 
 // ── Weather icon (NWS api.weather.gov — no API key, same data as Google) ──
-// Maps NWS shortForecast text to an emoji
 function nwsForecastToEmoji(shortForecast) {
   if (!shortForecast) return null
   const f = shortForecast.toLowerCase()
@@ -90,7 +89,6 @@ function nwsForecastToEmoji(shortForecast) {
   return null
 }
 
-// Module-level cache so we don't re-fetch across re-renders
 const _weatherCache = new Map()
 
 function useWeatherIcon(location, dateStr) {
@@ -98,7 +96,6 @@ function useWeatherIcon(location, dateStr) {
 
   useEffect(() => {
     if (!location || !dateStr) return
-    // NWS forecast window is ~7 days; fall back gracefully outside that
     const target  = new Date(dateStr + 'T00:00:00')
     const todayMs = (() => { const t = new Date(); t.setHours(0,0,0,0); return t })()
     const diff    = Math.round((target - todayMs) / 86400000)
@@ -107,8 +104,6 @@ function useWeatherIcon(location, dateStr) {
     const key = `${location}|${dateStr}`
     if (_weatherCache.has(key)) { setIcon(_weatherCache.get(key)); return }
 
-    // Persisted across reloads too, so revisiting the same event doesn't
-    // re-run the geocode → points → forecast chain every time.
     const iconKey = `nws_icon_${key}`
     const cachedIcon = cacheGet(iconKey, ICON_TTL_MS)
     if (cachedIcon) { _weatherCache.set(key, cachedIcon); setIcon(cachedIcon); return }
@@ -119,7 +114,6 @@ function useWeatherIcon(location, dateStr) {
         const geoKey    = `geocode_${cityName.toLowerCase()}`
         let coords = cacheGet(geoKey, GEO_TTL_MS)
         if (!coords) {
-          // Step 1 — geocode via Open-Meteo (still free/keyless, just for lat/lng)
           const geoRes  = await fetch(
             `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`
           )
@@ -133,7 +127,6 @@ function useWeatherIcon(location, dateStr) {
         const pointsKey = `nws_points_${coords.latitude.toFixed(4)},${coords.longitude.toFixed(4)}`
         let forecastUrl = cacheGet(pointsKey, GEO_TTL_MS)
         if (!forecastUrl) {
-          // Step 2 — NWS points endpoint → get forecast office + gridpoint
           const pointsRes = await fetch(
             `https://api.weather.gov/points/${coords.latitude.toFixed(4)},${coords.longitude.toFixed(4)}`,
             { headers: NWS_HEADERS }
@@ -144,13 +137,11 @@ function useWeatherIcon(location, dateStr) {
           cacheSet(pointsKey, forecastUrl)
         }
 
-        // Step 3 — fetch the daily forecast periods
         const fxRes  = await fetch(forecastUrl, { headers: NWS_HEADERS })
         const fxData = await fxRes.json()
         const periods = fxData.properties?.periods
         if (!periods?.length) return
 
-        // Find the daytime period matching our target date
         const match = periods.find(p => {
           const pDate = p.startTime?.slice(0, 10)
           return pDate === dateStr && p.isDaytime !== false
@@ -168,7 +159,7 @@ function useWeatherIcon(location, dateStr) {
     load()
   }, [location, dateStr])
 
-  return icon   // null until resolved
+  return icon
 }
 
 // ── Error Boundary ────────────────────────────────────────────
@@ -207,7 +198,7 @@ export default function Glance() {
 
   useEffect(() => {
     loadAll()
-    const id = setInterval(loadAll, 60 * 60 * 1000) // refresh every hour
+    const id = setInterval(loadAll, 60 * 60 * 1000)
     return () => clearInterval(id)
   }, [loadAll])
 
@@ -219,13 +210,11 @@ export default function Glance() {
         </div>
         <div className="glance-col-bulletin">
           <BulletinPanel
-            bodyClassName="home-bulletin-strip corkboard-body glance-bulletin-body"
-            limit={14}
+            compact
+            bodyClassName="bulletin-strip-compact"
+            limit={3}
             style={{ height: '100%' }}
           />
-        </div>
-        <div className="glance-col-agenda">
-          <GlanceAgendaPanel calDays={calDays} />
         </div>
       </div>
     </GlanceErrorBoundary>
@@ -233,8 +222,6 @@ export default function Glance() {
 }
 
 // ── Auto-sizing title — binary-searches for largest fitting font ──
-// Uses ResizeObserver so it re-measures on any container width change
-// (e.g., different screen sizes, flex layout settling after data loads)
 function AutoSizeTitle({ text, color }) {
   const ref = useRef(null)
 
@@ -242,9 +229,6 @@ function AutoSizeTitle({ text, color }) {
     const el = ref.current
     if (!el || el.clientWidth === 0) return
 
-    // Height ceiling: the title shouldn't claim more room than its tile can
-    // spare once date/location/countdown rows and padding take their share —
-    // keeps big titles from crowding the tile's top/bottom padding.
     const block  = el.closest('.glance-ev-block')
     const cell   = el.closest('.glance-split-half')
     let heightCapRem = 2.0
@@ -254,16 +238,11 @@ function AutoSizeTitle({ text, color }) {
         .reduce((sum, c) => sum + c.getBoundingClientRect().height, 0)
       const available = cell.clientHeight - siblingsH
       const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-      // line-height 1.15 on the title, leave a little slack
       heightCapRem = Math.max(0.6, (available / 1.15 / rootPx) * 0.85)
     }
 
-    let lo = 0.4, hi = Math.min(2.0, heightCapRem)
+    let lo = 0.4, hi = Math.min(2.4, heightCapRem)
     if (hi <= lo) hi = lo + 0.1
-    // 10 iterations over a ~1.6rem range gets within ~0.0016rem (a tiny
-    // fraction of a pixel) — plenty of precision. Each iteration forces a
-    // synchronous layout read (scrollWidth), so fewer iterations means
-    // fewer forced reflows per title with no visible difference in result.
     for (let i = 0; i < 10; i++) {
       const mid = (lo + hi) / 2
       el.style.fontSize = `${mid}rem`
@@ -280,12 +259,6 @@ function AutoSizeTitle({ text, color }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    // Watch the actual sizing container (the split-half cell), not the
-    // title itself — the title's own box only reflects whatever font size
-    // was last applied to it, so it never shrinks on its own when the pane
-    // around it gets smaller. Watching the cell means any resize of the
-    // pane (window resize, sibling panels growing, layout changes) re-runs
-    // the fit calculation instead of leaving a stale, too-large font.
     const target = el.closest('.glance-split-half') || el
     const ro = new ResizeObserver(() => measure())
     ro.observe(target)
@@ -296,21 +269,14 @@ function AutoSizeTitle({ text, color }) {
 }
 
 // ── 4-row event block ─────────────────────────────────────────
-// compactTitle skips the JS auto-sizing (AutoSizeTitle) in favor of a fixed
-// CSS clamp sized just above the countdown font — used for holidays, where
-// the title is short and simple enough that it doesn't need per-instance
-// measurement, and a fixed size keeps the tile compact and predictable.
-function EventBlock({ name, dateStr, timeStr, location, accentColor, compactTitle = false }) {
+function EventBlock({ name, dateStr, timeStr, location, accentColor }) {
   const ds          = toDateStr(dateStr)
   const cd          = getCountdown(ds, timeStr)
   const weatherIcon = useWeatherIcon(location, ds)
 
   return (
     <div className="glance-ev-block">
-      {compactTitle
-        ? <div className="glance-ev-title glance-ev-title-compact" style={{ color: accentColor }}>{name}</div>
-        : <AutoSizeTitle text={name} color={accentColor} />
-      }
+      <AutoSizeTitle text={name} color={accentColor} />
       <div className="glance-ev-block-date">
         {fmtFull(dateStr)}{timeStr ? ` · ${timeStr}` : ''}
       </div>
@@ -321,7 +287,6 @@ function EventBlock({ name, dateStr, timeStr, location, accentColor, compactTitl
       )}
       {!cd.past && (
         <div className="glance-ev-block-countdown">
-          {/* < 24 h away with a known time → show hours only, never "TODAY Xh" */}
           {cd.hasTime && cd.days === 0
             ? <span className="glance-ev-cd-days" style={{ color: accentColor }}>
                 {cd.hours === 0 ? 'NOW' : `${cd.hours}h`}
@@ -345,7 +310,7 @@ function EventBlock({ name, dateStr, timeStr, location, accentColor, compactTitl
 function CalCell({ day, accentColor, secondary }) {
   const cls = `glance-split-half${secondary ? ' glance-split-secondary' : ''}`
   if (!day?.events?.length) {
-    return <div className={cls}><span className="next-up-empty">None</span></div>
+    return <div className={cls}><span className="next-up-empty">Nothing else on the horizon</span></div>
   }
   const evts   = day.events
   const getTime     = ev => (ev.isAllDay === false && ev.startTime) ? ev.startTime : null
@@ -370,18 +335,9 @@ function CalCell({ day, accentColor, secondary }) {
   )
 }
 
-// ── Single-event cell (holidays) — always uses the compact fixed-size title ─
-function SingleCell({ name, dateStr, timeStr, location, accentColor, secondary }) {
-  const cls = `glance-split-half${secondary ? ' glance-split-secondary' : ''}`
-  if (!name) return <div className={cls}><span className="next-up-empty">None</span></div>
-  return (
-    <div className={cls}>
-      <EventBlock name={name} dateStr={dateStr} timeStr={timeStr} location={location} accentColor={accentColor} compactTitle />
-    </div>
-  )
-}
-
-// ── Events panel ──────────────────────────────────────────────
+// ── Events panel — merges real calendar events and holidays into ONE
+// ranked list (by date), showing the top 2. Holidays no longer get a
+// separate section; they're "just another entry" when they're soon. ──
 function EventsPanel({ calDays }) {
   const today    = new Date(); today.setHours(0,0,0,0)
   const todayStr = dateParts(today)
@@ -390,157 +346,34 @@ function EventsPanel({ calDays }) {
     .filter(d => d.date >= todayStr && d.events?.length > 0)
     .map(d => ({
       ...d,
+      accentColor: 'var(--accent6)',
       events: d.events.filter(ev => {
         const t = ev.isAllDay === false && ev.startTime ? ev.startTime : null
         return !isStale(d.date, t)
       })
     }))
-    .filter(d => d.events.length > 0)   // drop days where every event has gone stale
+    .filter(d => d.events.length > 0)
+
+  const holidayEntries = getNextUSHolidays(3).map(h => ({
+    date: dateParts(h.date),
+    accentColor: 'var(--accent2)',
+    events: [{ summary: h.name }],
+  }))
+
+  const merged = [...calWithEvents, ...holidayEntries]
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 2)
 
-  const holidays = getNextUSHolidays(2)
-
   return (
     <Panel className="glance-events-panel">
-      <PanelHeader title={<span style={{ color: 'var(--accent6)' }}>Events</span>} />
+      <PanelHeader title={<span style={{ color: 'var(--accent6)' }}>What's Happening</span>} />
       <div className="glance-events-body">
-
-        <div className="glance-ev-section glance-ev-section-events">
-          <div className="glance-section-label">Upcoming Events</div>
-          <div className="glance-card-row">
-            <CalCell day={calWithEvents[0] ?? null} accentColor="var(--accent6)" />
-            <div className="glance-split-divider" />
-            <CalCell day={calWithEvents[1] ?? null} accentColor="var(--accent6)" secondary />
-          </div>
-        </div>
-
-        <div className="glance-ev-section glance-ev-section-holidays">
-          <div className="glance-section-label" style={{ color: 'var(--accent2)' }}>Upcoming Holidays</div>
-          <div className="glance-card-row">
-            <SingleCell
-              name={holidays[0]?.name ?? null}
-              dateStr={holidays[0]?.date ?? null}
-              accentColor="var(--accent2)"
-            />
-            <div className="glance-split-divider" />
-            <SingleCell
-              name={holidays[1]?.name ?? null}
-              dateStr={holidays[1]?.date ?? null}
-              accentColor="var(--accent2)"
-              secondary
-            />
-          </div>
-        </div>
-
-      </div>
-    </Panel>
-  )
-}
-
-// ── 7-day week view panel ─────────────────────────────────────
-// ── Day detail popup (matches CalendarPanel modal style) ──────────
-function WeekDayModal({ dateStr, events, onClose }) {
-  const d       = new Date(dateStr + 'T00:00:00')
-  const fmtFull = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-  const diff    = Math.round((d - (() => { const t = new Date(); t.setHours(0,0,0,0); return t })()) / 86400000)
-  const diffStr   = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`
-  const diffColor = diff === 0 ? 'var(--accent3)' : diff === 1 ? 'var(--accent2)' : 'var(--accent4)'
-
-  return (
-    <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
-        <button onClick={onClose} style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize:'1.1rem', cursor:'pointer' }}>✕</button>
-        <div style={{ fontSize:'0.65rem', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent2)', marginBottom:6, fontWeight:700 }}>📅 Family Events</div>
-        <div style={{ fontSize:'1.05rem', fontWeight:700, color:'var(--text)', marginBottom:4 }}>{fmtFull}</div>
-        <div style={{ fontSize:'0.78rem', color:diffColor, fontWeight:600, marginBottom:16 }}>{diffStr}</div>
-        <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:4 }}>
-          {events.map((ev, i) => {
-            const name = evSummary(ev)
-            const time = typeof ev === 'string' ? null : (ev.startTime || ev.time || null)
-            return (
-              <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'8px 0', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--accent2)', flexShrink:0, marginTop:5 }} />
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:'0.88rem', fontWeight:500, color:'var(--text)', lineHeight:1.4 }}>{name}</div>
-                  <div style={{ fontSize:'0.7rem', color: time ? 'var(--accent)' : 'var(--muted)', marginTop:2 }}>{time || 'All day'}</div>
-                </div>
-              </div>
-            )
-          })}
+        <div className="glance-card-row">
+          <CalCell day={merged[0] ?? null} accentColor={merged[0]?.accentColor ?? 'var(--accent6)'} />
+          <div className="glance-split-divider" />
+          <CalCell day={merged[1] ?? null} accentColor={merged[1]?.accentColor ?? 'var(--accent6)'} secondary />
         </div>
       </div>
-    </div>
-  )
-}
-
-function GlanceAgendaPanel({ calDays }) {
-  const [selected, setSelected] = useState(null) // { dateStr, events }
-  const today = new Date(); today.setHours(0,0,0,0)
-
-  const week = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(today)
-    d.setDate(d.getDate() + i)
-    const dateStr = dateParts(d)
-    const calDay  = calDays.find(cd => cd.date === dateStr)
-    return { date: d, dateStr, events: calDay?.events || [] }
-  })
-
-  return (
-    <Panel className="glance-agenda-panel">
-      <PanelHeader title="Next 2 Weeks" />
-      <div className="glance-week-grid">
-        {week.map(({ date, dateStr, events }, i) => {
-          const dayName   = DAYS_FULL[date.getDay()]
-          const dateShort = `${MONTHS[date.getMonth()]} ${date.getDate()}`
-          const dateOrd   = `${MONTHS[date.getMonth()]} ${ordinal(date.getDate())}`
-          const isToday   = i === 0
-          const isWeekend = date.getDay() === 0 || date.getDay() === 6
-          const hasEvents = events.length > 0
-
-          let cls = 'glance-week-day'
-          if (isToday)   cls += ' glance-week-today'
-          if (isWeekend) cls += ' gwk-weekend'
-          if (hasEvents) cls += ' gwk-has-events'
-
-          return (
-            <div
-              key={dateStr}
-              className={cls}
-              onClick={hasEvents ? () => setSelected({ dateStr, events }) : undefined}
-            >
-              {/* Desktop: stacked header */}
-              <div className="gwk-desktop-header">
-                <span className="gwk-day-name">{dayName}</span>
-                <span className="gwk-day-date">{dateShort}</span>
-              </div>
-
-              {/* Mobile: inline label "Monday Apr 3rd" */}
-              <div className="gwk-mobile-label">
-                <span className="gwk-day-name-mob">{dayName} {dateOrd}</span>
-              </div>
-
-              {/* Events — shared between both layouts */}
-              <div className="gwk-events">
-                {events.length === 0
-                  ? <span className="gwk-no-events">—</span>
-                  : events.map((ev, j) => (
-                    <span key={j} className={`gwk-ev${isWeekend ? ' gwk-ev-weekend' : ''}`}>{evSummary(ev)}</span>
-                  ))
-                }
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {selected && (
-        <WeekDayModal
-          dateStr={selected.dateStr}
-          events={selected.events}
-          onClose={() => setSelected(null)}
-        />
-      )}
     </Panel>
   )
 }

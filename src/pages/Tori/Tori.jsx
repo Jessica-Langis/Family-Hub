@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
+import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
+import CompletedFeed from '../../components/CompletedFeed/CompletedFeed'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort, formatReminderDate, parsePersonEvent } from '../Home/homeUtils'
-import './Tori.css'
+import { getDayDiff, formatDateShort, formatReminderDate } from '../Home/homeUtils'
 
 // ── Normalize API response → array ───────────────────────────
-// GAS can return bare arrays, or wrapped like {result:[...]}, {items:[...]}, etc.
 function toArr(d) {
   if (Array.isArray(d)) return d
   if (d && Array.isArray(d.result)) return d.result
@@ -15,9 +15,6 @@ function toArr(d) {
   return []
 }
 
-// Case/whitespace-insensitive "who" match — chores added from the old
-// legacy dashboard (and the free-text "assigned to" field on And Stuff)
-// can have who="Tori" or " tori " etc.
 function isWho(c, name) {
   return (c.who || '').trim().toLowerCase() === name
 }
@@ -57,17 +54,20 @@ function choreBadgeCls(dateStr) {
   return 'upcoming'
 }
 
+const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
+
 // ── Main tab ──────────────────────────────────────────────────
 export default function Tori() {
+  const [refreshTick, setRefreshTick] = useState(0)
   return (
     <ToriErrorBoundary>
       <div className="tori-content">
         <div className="ta-nextup-col">
-          <div className="ta-nextup"><NextUpPanel /></div>
-          <div className="ta-reminders"><RemindersPanel /></div>
+          <div className="ta-nextup"><NextUpPanel name="Tori" script={SCRIPTS.TORI} /></div>
+          <div className="ta-completed"><CompletedFeed matchWho="tori" refreshKey={refreshTick} /></div>
         </div>
         <div className="ta-todo-col">
-          <div className="ta-todo"><TodoPanel /></div>
+          <div className="ta-todo"><TodoPanel onChange={() => setRefreshTick(t => t + 1)} /></div>
           <div className="ta-wishlist"><WishlistPanel type="tori_wishlist" /></div>
         </div>
       </div>
@@ -75,299 +75,84 @@ export default function Tori() {
   )
 }
 
-// ── Next Up panel — merges Tori's manual events with any family- ─
-// calendar event tagged "Tori - ..."; shows whichever is soonest.
-function NextUpPanel() {
-  const [manualEvents, setManualEvents] = useState([])
-  const [calEvents, setCalEvents]       = useState([])
-  const [loading, setLoading]           = useState(true)
-  const [showAdd, setShowAdd]           = useState(false)
-  const [form, setForm]                 = useState({ name: '', evtType: '', date: '', location: '' })
-  const [saving, setSaving]             = useState(false)
-
-  const loadManual = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.TORI}?type=events`)
-      const data = await res.json()
-      setManualEvents(toArr(data))
-    } catch (e) { console.error('tori events', e) }
-  }, [])
-
-  const loadCalendar = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.CHORES}?type=upcoming&days=365`)
-      const data = await res.json()
-      const found = toArr(data)
-        .flatMap(d => (d.events || []).map(ev => ({ summary: ev.summary, date: d.date, location: ev.location })))
-        .map(ev => {
-          const title = parsePersonEvent(ev.summary, 'Tori')
-          return title ? { id: `cal-${ev.date}-${title}`, name: title, date: ev.date, location: ev.location, type: '' } : null
-        })
-        .filter(Boolean)
-      setCalEvents(found)
-    } catch (e) { console.error('tori calendar countdown', e) }
-  }, [])
-
-  useEffect(() => {
-    setLoading(true)
-    Promise.all([loadManual(), loadCalendar()]).finally(() => setLoading(false))
-  }, [loadManual, loadCalendar])
-
-  const upcoming = [...toArr(manualEvents), ...calEvents]
-    .filter(e => getDayDiff(e.date) >= 0)
-    .sort((a, b) => getDayDiff(a.date) - getDayDiff(b.date))
-
-  const next  = upcoming[0] || null
-  const next2 = upcoming[1] || null
-
-  async function addEvent() {
-    if (!form.name || !form.date) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'add')
-      fd.append('type', 'events')
-      fd.append('name', form.name)
-      fd.append('evtType', form.evtType)
-      fd.append('date', form.date)
-      fd.append('location', form.location)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-      setForm({ name: '', evtType: '', date: '', location: '' })
-      setShowAdd(false)
-      loadManual()
-    } catch (e) { console.error('add event', e) }
-    finally { setSaving(false) }
-  }
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="Next Up"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
-        />
-        {loading
-          ? <div className="next-up-hero"><span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Loading…</span></div>
-          : next
-            ? <div className="next-up-split-hero">
-                {/* Primary event — left */}
-                <div className="next-up-primary">
-                  <div className="next-up-name">{next.name}</div>
-                  {next.type && <div className="next-up-type">{next.type}</div>}
-                  <div className="next-up-date">{formatDateShort(next.date)}</div>
-                  {next.location && <div className="next-up-loc">📍 {next.location}</div>}
-                  <span className={`countdown-badge ${choreBadgeCls(next.date)}`}>
-                    {(() => {
-                      const d = getDayDiff(next.date)
-                      if (d === 0) return 'TODAY'
-                      if (d < 0)  return `${Math.abs(d)}d ago`
-                      return `${d}d away`
-                    })()}
-                  </span>
-                </div>
-
-                {/* Second event — right, slightly smaller */}
-                {next2 && <>
-                  <div className="next-up-divider" />
-                  <div className="next-up-secondary">
-                    <div className="next-up-name next-up-name-sm">{next2.name}</div>
-                    {next2.type && <div className="next-up-type">{next2.type}</div>}
-                    <div className="next-up-date">{formatDateShort(next2.date)}</div>
-                    {next2.location && <div className="next-up-loc">📍 {next2.location}</div>}
-                    <span className={`countdown-badge ${choreBadgeCls(next2.date)}`}>
-                      {(() => {
-                        const d = getDayDiff(next2.date)
-                        if (d === 0) return 'TODAY'
-                        if (d < 0)  return `${Math.abs(d)}d ago`
-                        return `${d}d away`
-                      })()}
-                    </span>
-                  </div>
-                </>}
-              </div>
-            : <div className="next-up-hero"><div className="next-up-empty">No upcoming events</div></div>
-        }
-      </Panel>
-
-      {showAdd && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">Add Event</div>
-            <input className="overlay-input" placeholder="Event name" value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <input className="overlay-input" placeholder="Type (e.g. Meet, Tournament)" value={form.evtType}
-              onChange={e => setForm(f => ({ ...f, evtType: e.target.value }))} />
-            <input className="overlay-input" type="date" value={form.date}
-              onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-            <input className="overlay-input" placeholder="Location (optional)" value={form.location}
-              onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={addEvent} disabled={saving || !form.name || !form.date}>
-                {saving ? 'Saving…' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// ── Reminders panel ───────────────────────────────────────────
-function RemindersPanel() {
+// ── Merged To Do panel — combines Tori's weighted/points chores with her
+// plain freeform reminders into one list. These were two redundant tiles
+// (confirmed with Jessica); rather than migrating Reminders' data into the
+// Chores sheet (real data-loss risk for a "just tidy this up" ask), both
+// backends stay intact and this panel merges them client-side into one
+// sorted view with a single Add flow (a Task/Reminder toggle switches which
+// fields show — reminders have no difficulty/points, since they never did).
+function TodoPanel({ onChange }) {
+  const [chores, setChores]       = useState([])
   const [reminders, setReminders] = useState([])
   const [loading, setLoading]     = useState(true)
   const [showAdd, setShowAdd]     = useState(false)
-  const [form, setForm]           = useState({ text: '', date: '' })
-  const [saving, setSaving]       = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.TORI}?type=reminders`)
-      const data = await res.json()
-      setReminders(toArr(data))
-    } catch (e) { console.error('reminders load', e) }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { load() }, [load])
-
-  async function addReminder() {
-    if (!form.text) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'add')
-      fd.append('type', 'reminders')
-      fd.append('text', form.text)
-      fd.append('date', form.date)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-      setForm({ text: '', date: '' })
-      setShowAdd(false)
-      load()
-    } catch (e) { console.error('add reminder', e) }
-    finally { setSaving(false) }
-  }
-
-  async function deleteReminder(id) {
-    setReminders(r => r.filter(x => x.id !== id))
-    try {
-      const fd = new FormData()
-      fd.append('action', 'delete')
-      fd.append('type', 'reminders')
-      fd.append('idx', id)
-      await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
-    } catch (e) { console.error('delete reminder', e); load() }
-  }
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="Reminders"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
-        />
-        {loading
-          ? <div className="reminder-empty">Loading…</div>
-          : reminders.length === 0
-            ? <div className="reminder-empty">Nothing to remember right now!</div>
-            : <div className="reminder-list">
-                {reminders.map((r, i) => (
-                  <div key={r.id ?? i} className="reminder-item">
-                    <span className="reminder-dot" />
-                    <span className="reminder-text">{r.text}</span>
-                    {r.date && <span className="reminder-date">{formatReminderDate(r.date)}</span>}
-                    <button className="reminder-delete" onClick={() => deleteReminder(r.id)}>×</button>
-                  </div>
-                ))}
-              </div>
-        }
-      </Panel>
-
-      {showAdd && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">Add Reminder</div>
-            <input className="overlay-input" placeholder="What to remember?" value={form.text}
-              onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
-              onKeyDown={e => e.key === 'Enter' && addReminder()} autoFocus />
-            <input className="overlay-input" type="date" value={form.date}
-              onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="overlay-btn submit" onClick={addReminder} disabled={saving || !form.text}>
-                {saving ? 'Saving…' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// ── To Do panel (Tori's chores) ───────────────────────────────
-const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
-
-function TodoPanel() {
-  const [chores, setChores]       = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [showAdd, setShowAdd]     = useState(false)
-  const [editChore, setEditChore] = useState(null)
-  const [detail, setDetail]       = useState(null) // chore being viewed in the read-only popup
-  const [form, setForm]           = useState({ name: '', dueDate: '', weight: 2, notes: '' })
+  const [editItem, setEditItem]   = useState(null) // { kind, id, ... } | null
+  const [detail, setDetail]       = useState(null)
+  const [form, setForm] = useState({ kind: 'chore', name: '', dueDate: '', weight: 2, notes: '' })
   const [saving, setSaving]       = useState(false)
 
   const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
 
-  const load = useCallback(async () => {
+  const loadChores = useCallback(async () => {
     try {
       const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
       const data = await res.json()
-      const filtered = toArr(data)
-        .filter(c => isWho(c, 'tori'))
-        .sort((a, b) => {
-          const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
-          if (isNaN(da) && isNaN(db)) return 0
-          if (isNaN(da)) return 1
-          if (isNaN(db)) return -1
-          return da - db
-        })
-      setChores(filtered)
+      setChores(toArr(data).filter(c => isWho(c, 'tori')))
     } catch (e) { console.error('tori chores', e) }
-    finally { setLoading(false) }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  const loadReminders = useCallback(async () => {
+    try {
+      const res  = await apiFetch(`${SCRIPTS.TORI}?type=reminders`)
+      const data = await res.json()
+      setReminders(toArr(data))
+    } catch (e) { console.error('tori reminders', e) }
+  }, [])
 
-  async function toggle(id, done) {
-    const updated = chores.map(c => c.id === id ? { ...c, done: !done } : c)
-    setChores(updated)
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([loadChores(), loadReminders()]).finally(() => setLoading(false))
+  }, [loadChores, loadReminders])
+
+  // Merge into one shape: { kind, id, name, dueDate, weight, notes, done }
+  const merged = [
+    ...chores.map(c => ({ kind: 'chore', id: c.id, name: c.name, dueDate: c.dueDate, weight: c.weight, notes: c.notes, done: !!c.done })),
+    ...reminders.map(r => ({ kind: 'reminder', id: r.id, name: r.text, dueDate: r.date, weight: null, notes: null, done: false })),
+  ].sort((a, b) => {
+    const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
+    if (isNaN(da) && isNaN(db)) return 0
+    if (isNaN(da)) return 1
+    if (isNaN(db)) return -1
+    return da - db
+  })
+
+  async function toggleChore(id, done) {
+    setChores(cs => cs.map(c => c.id === id ? { ...c, done: !done } : c))
     try {
       const fd = new FormData()
-      fd.append('action', 'toggle')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      fd.append('done', String(!done))
+      fd.append('action', 'toggle'); fd.append('type', 'chores')
+      fd.append('idx', String(id)); fd.append('done', String(!done))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) { console.error('toggle', e); setChores(chores) }
+      onChange?.()
+    } catch (e) { console.error('toggle chore', e); loadChores() }
   }
 
   function openAdd() {
-    setEditChore(null)
-    setForm({ name: '', dueDate: '', weight: 2, notes: '' })
+    setEditItem(null)
+    setForm({ kind: 'chore', name: '', dueDate: '', weight: 2, notes: '' })
     setShowAdd(true)
   }
 
-  function openEdit(chore) {
+  function openEdit(item) {
     setDetail(null)
-    setEditChore({ ...chore })
+    setEditItem(item)
     setForm({
-      name:     chore.name     || '',
-      dueDate:  chore.dueDate  || '',
-      weight:   chore.weight   || 2,
-      notes:    chore.notes    || '',
+      kind:    item.kind,
+      name:    item.name    || '',
+      dueDate: item.dueDate || '',
+      weight:  item.weight  || 2,
+      notes:   item.notes   || '',
     })
     setShowAdd(true)
   }
@@ -376,37 +161,55 @@ function TodoPanel() {
     if (!form.name.trim()) return
     setSaving(true)
     try {
-      const fd = new FormData()
-      fd.append('type', 'chores')
-      fd.append('name', form.name.trim())
-      fd.append('who', 'tori')
-      fd.append('dueDate', form.dueDate)
-      fd.append('weight', String(form.weight))
-      fd.append('notes', form.notes.trim())
-      if (editChore !== null) {
-        fd.append('action', 'update')
-        fd.append('idx', String(editChore.id))
+      if (form.kind === 'chore') {
+        const fd = new FormData()
+        fd.append('type', 'chores')
+        fd.append('name', form.name.trim())
+        fd.append('who', 'tori')
+        fd.append('dueDate', form.dueDate)
+        fd.append('weight', String(form.weight))
+        fd.append('notes', form.notes.trim())
+        if (editItem?.kind === 'chore') {
+          fd.append('action', 'update'); fd.append('idx', String(editItem.id))
+        } else {
+          fd.append('action', 'add')
+        }
+        await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
+        loadChores()
       } else {
-        fd.append('action', 'add')
+        const fd = new FormData()
+        fd.append('type', 'reminders')
+        fd.append('text', form.name.trim())
+        fd.append('date', form.dueDate)
+        if (editItem?.kind === 'reminder') {
+          fd.append('action', 'update'); fd.append('idx', String(editItem.id))
+        } else {
+          fd.append('action', 'add')
+        }
+        await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
+        loadReminders()
       }
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
       setShowAdd(false)
-      load()
-    } catch (e) { console.error('chore submit', e) }
+      onChange?.()
+    } catch (e) { console.error('todo submit', e) }
     finally { setSaving(false) }
   }
 
-  async function deleteChore(id) {
-    const prev = chores
-    setChores(c => c.filter(x => x.id !== id))
-    setDetail(d => (d?.id === id ? null : d))
+  async function deleteItem(item) {
+    setDetail(null)
     try {
       const fd = new FormData()
-      fd.append('action', 'delete')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) { console.error('delete chore', e); setChores(prev) }
+      if (item.kind === 'chore') {
+        fd.append('action', 'delete'); fd.append('type', 'chores'); fd.append('idx', String(item.id))
+        await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
+        setChores(cs => cs.filter(c => c.id !== item.id))
+      } else {
+        fd.append('action', 'delete'); fd.append('type', 'reminders'); fd.append('idx', String(item.id))
+        await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
+        setReminders(rs => rs.filter(r => r.id !== item.id))
+      }
+      onChange?.()
+    } catch (e) { console.error('delete item', e) }
   }
 
   return (
@@ -419,29 +222,36 @@ function TodoPanel() {
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
-          : chores.length === 0
+          : merged.length === 0
             ? <div className="chore-empty">All done!</div>
             : <div className="chore-list">
-                {chores.map((c, i) => {
-                  const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
+                {merged.map((item, i) => {
+                  const badge = item.dueDate ? choreBadgeCls(item.dueDate) : null
                   return (
-                    <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
-                      onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
-                      <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                      <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
-                        {'★'.repeat(c.weight || 1)}
-                      </span>
+                    <div key={`${item.kind}-${item.id ?? i}`} className="chore-item" style={{ cursor: 'pointer' }}
+                      onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(item) }}>
+                      <span className={`chore-item-name${item.done ? ' done' : ''}`}>{item.name}</span>
+                      {item.kind === 'chore'
+                        ? <span className="chore-item-weight" title={WEIGHT_LABELS[item.weight || 1]}>
+                            {'★'.repeat(item.weight || 1)}
+                          </span>
+                        : <span className="chore-item-weight" title="Reminder">🔔</span>
+                      }
                       {badge && (
-                        <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
+                        <span className={`countdown-badge ${badge}`}>
+                          {item.kind === 'reminder' ? formatReminderDate(item.dueDate) : formatDateShort(item.dueDate)}
+                        </span>
                       )}
                       <div className="chore-item-actions">
-                        <button
-                          className={`chore-check-btn${c.done ? ' done' : ''}`}
-                          title={c.done ? 'Mark not done' : 'Mark done'}
-                          onClick={() => toggle(c.id, !!c.done)}
-                        >✓</button>
-                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
-                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
+                        {item.kind === 'chore' && (
+                          <button
+                            className={`chore-check-btn${item.done ? ' done' : ''}`}
+                            title={item.done ? 'Mark not done' : 'Mark done'}
+                            onClick={() => toggleChore(item.id, item.done)}
+                          >✓</button>
+                        )}
+                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(item)}>✏</button>
+                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteItem(item)}>×</button>
                       </div>
                     </div>
                   )
@@ -456,23 +266,33 @@ function TodoPanel() {
             <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
             <div className="overlay-title">{detail.name}</div>
             <div className="detail-row">
-              <span className="detail-label">Status</span>
-              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+              <span className="detail-label">Type</span>
+              <span className="detail-value">{detail.kind === 'chore' ? 'Task' : 'Reminder'}</span>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">Difficulty</span>
-              <span className="detail-value">{WEIGHT_LABELS[detail.weight || 1]}</span>
-            </div>
+            {detail.kind === 'chore' && (
+              <>
+                <div className="detail-row">
+                  <span className="detail-label">Status</span>
+                  <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Difficulty</span>
+                  <span className="detail-value">{WEIGHT_LABELS[detail.weight || 1]}</span>
+                </div>
+              </>
+            )}
             {detail.dueDate && (
               <div className="detail-row">
                 <span className="detail-label">Due</span>
                 <span className="detail-value">{formatDateShort(detail.dueDate)}</span>
               </div>
             )}
-            <div className="detail-row">
-              <span className="detail-label">Notes</span>
-              <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
-            </div>
+            {detail.kind === 'chore' && (
+              <div className="detail-row">
+                <span className="detail-label">Notes</span>
+                <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
+              </div>
+            )}
             <div className="overlay-actions">
               <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
               <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
@@ -484,33 +304,45 @@ function TodoPanel() {
       {showAdd && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
           <div className="overlay-box">
-            <div className="overlay-title">{editChore ? 'Edit To Do' : 'Add To Do'}</div>
-            <input className="overlay-input" placeholder="Task" value={form.name}
+            <div className="overlay-title">{editItem ? 'Edit' : 'Add'} To Do</div>
+            {!editItem && (
+              <div className="weight-picker">
+                <button type="button" className={`weight-btn${form.kind === 'chore' ? ' active' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, kind: 'chore' }))}>Task</button>
+                <button type="button" className={`weight-btn${form.kind === 'reminder' ? ' active' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, kind: 'reminder' }))}>Reminder</button>
+              </div>
+            )}
+            <input className="overlay-input" placeholder={form.kind === 'chore' ? 'Task' : 'What to remember?'} value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus
               onKeyDown={e => e.key === 'Enter' && submitForm()} />
             <input className="overlay-input" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
-            <div className="weight-picker">
-              {[1, 2, 3].map(w => (
-                <button key={w} type="button"
-                  className={`weight-btn${form.weight === w ? ' active' : ''}`}
-                  onClick={() => setForm(f => ({ ...f, weight: w }))}>
-                  {WEIGHT_LABELS[w]}
-                </button>
-              ))}
-            </div>
-            <textarea
-              className="overlay-input"
-              placeholder="Notes (optional)"
-              value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              rows={3}
-              style={{ resize: 'none' }}
-            />
+            {form.kind === 'chore' && (
+              <>
+                <div className="weight-picker">
+                  {[1, 2, 3].map(w => (
+                    <button key={w} type="button"
+                      className={`weight-btn${form.weight === w ? ' active' : ''}`}
+                      onClick={() => setForm(f => ({ ...f, weight: w }))}>
+                      {WEIGHT_LABELS[w]}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  className="overlay-input"
+                  placeholder="Notes (optional)"
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  rows={3}
+                  style={{ resize: 'none' }}
+                />
+              </>
+            )}
             <div className="overlay-actions">
               <button className="overlay-btn cancel" onClick={() => setShowAdd(false)}>Cancel</button>
               <button className="overlay-btn submit" onClick={submitForm} disabled={saving || !form.name.trim()}>
-                {saving ? 'Saving…' : editChore ? 'Save' : 'Add'}
+                {saving ? 'Saving…' : editItem ? 'Save' : 'Add'}
               </button>
             </div>
           </div>

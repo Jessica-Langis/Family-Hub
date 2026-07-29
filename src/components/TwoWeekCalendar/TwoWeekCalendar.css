@@ -1,0 +1,189 @@
+/* ══════════════════════════════════════════
+   TWO-WEEK CALENDAR — supplementary tile (And Stuff)
+══════════════════════════════════════════ */
+
+.twowk-panel {
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.twowk-grid {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 0;
+  padding: 4px 10px 8px;
+}
+
+.twowk-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 4px 3px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.twowk-day:nth-child(7n) { border-right: none; }
+.twowk-day:nth-child(-n+7) { border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+.twowk-today {
+  background: rgba(136, 201, 168, 0.07);
+  border-radius: 6px;
+}
+
+.twowk-desktop-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.twowk-day-name {
+  font-size: clamp(0.55rem, 1vw, 0.75rem);
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.twowk-today .twowk-day-name { color: var(--accent5); }
+
+.twowk-day-date {
+  font-size: clamp(0.5rem, 0.85vw, 0.7rem);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.twowk-today .twowk-day-date { color: var(--accent5); opacity: 0.8; }
+
+.twowk-mobile-label { display: none; }
+.twowk-day-name-mob {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.twowk-today .twowk-day-name-mob { color: var(--accent5); }
+
+.twowk-has-events { cursor: pointer; }
+.twowk-has-events:hover {
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+}
+
+.twowk-events {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.twowk-ev {
+  font-size: clamp(0.48rem, 0.8vw, 0.6rem);
+  font-weight: 600;
+  line-height: 1.2;
+  background: rgba(126, 184, 212, 0.2);
+  color: var(--accent2);
+  border-radius: 3px;
+  padding: 1px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.twowk-ev-weekend {
+  background: rgba(232, 184, 109, 0.18);
+  color: var(--accent);
+}
+
+.twowk-more {
+  font-size: clamp(0.46rem, 0.75vw, 0.58rem);
+  color: var(--muted);
+  text-align: center;
+}
+
+.twowk-no-events {
+  font-size: clamp(0.48rem, 0.8vw, 0.68rem);
+  color: var(--muted);
+  opacity: 0.4;
+  text-align: center;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .twowk-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    overflow-y: auto;
+    gap: 0;
+    padding: 4px 10px 10px;
+  }
+
+  .twowk-day {
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 5px 4px;
+    gap: 6px;
+  }
+  .twowk-day:last-child { border-bottom: none; }
+
+  .twowk-desktop-header { display: none; }
+  .twowk-mobile-label {
+    display: flex;
+    align-items: baseline;
+    flex-shrink: 0;
+  }
+
+  .twowk-events {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    gap: 0;
+  }
+
+  .twowk-ev {
+    font-size: 0.78rem;
+    font-weight: 400;
+    background: none;
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
+    white-space: nowrap;
+    color: rgba(232, 234, 240, 0.75);
+  }
+  .twowk-ev-weekend { background: none; color: var(--accent); }
+  .twowk-ev + .twowk-ev::before { content: ", "; color: var(--muted); }
+  .twowk-more { font-size: 0.72rem; margin-left: 4px; }
+
+  .twowk-no-events { font-size: 0.76rem; opacity: 0.35; text-align: left; }
+
+  .twowk-mobile-label::after {
+    content: " —";
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+}

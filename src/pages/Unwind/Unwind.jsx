@@ -1,33 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort } from '../Home/homeUtils'
-import GroceryPanel  from '../Home/panels/GroceryPanel'
+import GroceryPanel     from '../Home/panels/GroceryPanel'
+import WhereAmIPanel    from '../Home/panels/WhereAmIPanel'
+import ChoresList       from '../../components/ChoresList/ChoresList'
+import TwoWeekCalendar  from '../../components/TwoWeekCalendar/TwoWeekCalendar'
 import './Unwind.css'
-
-// ── Helpers (from Parentals) ──────────────────────────────────
-function toArr(d) {
-  if (Array.isArray(d)) return d
-  if (d && Array.isArray(d.result)) return d.result
-  if (d && Array.isArray(d.items))  return d.items
-  if (d && Array.isArray(d.data))   return d.data
-  return []
-}
-
-// Case/whitespace-insensitive "who" match — chores can have who="Tori",
-// " nova ", etc. depending on where they were added from.
-function whoIs(c, name) {
-  return (c.who || '').trim().toLowerCase() === name
-}
-
-function choreBadgeCls(dateStr) {
-  const diff = getDayDiff(dateStr)
-  if (isNaN(diff)) return 'upcoming'
-  if (diff < 0)    return 'past'
-  if (diff === 0)  return 'today'
-  if (diff <= 7)   return 'soon'
-  return 'upcoming'
-}
 
 const MEAL_DAYS_LEFT  = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
 const MEAL_DAYS_RIGHT = ['Friday', 'Saturday', 'Sunday', 'Meal Prep']
@@ -36,6 +14,13 @@ const DAY_ABBR = {
   Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu',
   Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun', 'Meal Prep': 'Prep',
 }
+
+// Module-level so it's a stable reference across renders — passing a fresh
+// array literal as a prop on every render would make ChoresList's internal
+// useCallback identity change every time, triggering an unnecessary refetch
+// whenever this page re-renders for any unrelated reason (e.g. opening the
+// movies/books modal).
+const EXCLUDE_KIDS = ['tori', 'nova']
 
 const FREQUENCY_OPTIONS = [
   { value: '',          label: 'No schedule (always show)' },
@@ -50,257 +35,6 @@ const FREQUENCY_OPTIONS = [
   { value: 'Saturday',  label: 'Every Saturday' },
   { value: 'Sunday',    label: 'Every Sunday' },
 ]
-
-// ── To Do panel (family/shared chores — Tori & Nova have their own) ──
-function TodoPanel() {
-  const [chores, setChores]       = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [showForm, setShowForm]   = useState(false)
-  const [editChore, setEditChore] = useState(null)
-  const [detail, setDetail]       = useState(null) // chore being viewed in the read-only popup
-  const [form, setForm]           = useState({ name: '', who: '', frequency: '', dueDate: '', notes: '' })
-  const [saving, setSaving]       = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
-      const data = await res.json()
-      const filtered = toArr(data)
-        .filter(c => !whoIs(c, 'tori') && !whoIs(c, 'nova'))
-        .sort((a, b) => {
-          const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
-          if (isNaN(da) && isNaN(db)) return 0
-          if (isNaN(da)) return 1
-          if (isNaN(db)) return -1
-          return da - db
-        })
-      setChores(filtered)
-    } catch (e) {
-      console.error('chores load', e)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { load() }, [load])
-
-  async function toggle(id, done) {
-    const updated = chores.map(c => c.id === id ? { ...c, done: !done } : c)
-    setChores(updated)
-    try {
-      const fd = new FormData()
-      fd.append('action', 'toggle')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      fd.append('done', String(!done))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) {
-      console.error('toggle chore', e)
-      setChores(chores)
-    }
-  }
-
-  function openAdd() {
-    setEditChore(null)
-    setForm({ name: '', who: '', frequency: '', dueDate: '', notes: '' })
-    setShowForm(true)
-  }
-
-  function openEdit(chore) {
-    setDetail(null)
-    setEditChore({ ...chore })
-    setForm({
-      name:      chore.name      || '',
-      who:       chore.who       || '',
-      frequency: chore.frequency || '',
-      dueDate:   chore.dueDate   || '',
-      notes:     chore.notes     || '',
-    })
-    setShowForm(true)
-  }
-
-  async function submitForm() {
-    if (!form.name.trim()) return
-    setSaving(true)
-    try {
-      const fd = new FormData()
-      fd.append('type', 'chores')
-      fd.append('name', form.name.trim())
-      fd.append('who', form.who.trim())
-      fd.append('frequency', form.frequency)
-      fd.append('dueDate', form.dueDate)
-      fd.append('notes', form.notes.trim())
-      if (editChore !== null) {
-        fd.append('action', 'update')
-        fd.append('idx', String(editChore.id))
-      } else {
-        fd.append('action', 'add')
-      }
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      setShowForm(false)
-      load()
-    } catch (e) {
-      console.error('chore submit', e)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function deleteChore(id) {
-    const prev = chores
-    setChores(c => c.filter(x => x.id !== id))
-    setDetail(d => (d?.id === id ? null : d))
-    try {
-      const fd = new FormData()
-      fd.append('action', 'delete')
-      fd.append('type', 'chores')
-      fd.append('idx', String(id))
-      await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-    } catch (e) {
-      console.error('delete chore', e)
-      setChores(prev)
-    }
-  }
-
-  return (
-    <>
-      <Panel>
-        <PanelHeader
-          title="To Do"
-          badge="family"
-          actions={<button className="add-btn" onClick={openAdd}>+ add</button>}
-        />
-        {loading
-          ? <div className="chore-empty">Loading…</div>
-          : chores.length === 0
-            ? <div className="chore-empty">All caught up!</div>
-            : <div className="chore-list">
-                {chores.map((c, i) => {
-                  const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
-                  return (
-                    <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
-                      onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
-                      <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                      {c.who && <span className="chore-item-who">{c.who}</span>}
-                      {badge && (
-                        <span className={`countdown-badge ${badge}`}>
-                          {c.dueDate ? formatDateShort(c.dueDate) : ''}
-                        </span>
-                      )}
-                      <div className="chore-item-actions">
-                        <button
-                          className={`chore-check-btn${c.done ? ' done' : ''}`}
-                          title={c.done ? 'Mark not done' : 'Mark done'}
-                          onClick={() => toggle(c.id, !!c.done)}
-                        >✓</button>
-                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
-                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-        }
-      </Panel>
-
-      {detail && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setDetail(null)}>
-          <div className="overlay-box">
-            <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
-            <div className="overlay-title">{detail.name}</div>
-            <div className="detail-row">
-              <span className="detail-label">Status</span>
-              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
-            </div>
-            {detail.who && (
-              <div className="detail-row">
-                <span className="detail-label">Assigned</span>
-                <span className="detail-value">{detail.who}</span>
-              </div>
-            )}
-            {detail.dueDate && (
-              <div className="detail-row">
-                <span className="detail-label">Due</span>
-                <span className="detail-value">{formatDateShort(detail.dueDate)}</span>
-              </div>
-            )}
-            {detail.frequency && (
-              <div className="detail-row">
-                <span className="detail-label">Repeats</span>
-                <span className="detail-value">
-                  {FREQUENCY_OPTIONS.find(o => o.value === detail.frequency)?.label || detail.frequency}
-                </span>
-              </div>
-            )}
-            <div className="detail-row">
-              <span className="detail-label">Notes</span>
-              <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
-            </div>
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
-              <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowForm(false)}>
-          <div className="overlay-box">
-            <div className="overlay-title">{editChore ? 'Edit Chore' : 'Add Chore'}</div>
-            <input
-              className="overlay-input"
-              placeholder="e.g. Vacuum living room"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              onKeyDown={e => e.key === 'Enter' && submitForm()}
-              autoFocus
-            />
-            <input
-              className="overlay-input"
-              placeholder="Assigned to (optional)"
-              value={form.who}
-              onChange={e => setForm(f => ({ ...f, who: e.target.value }))}
-            />
-            <select
-              className="overlay-input"
-              value={form.frequency}
-              onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}
-            >
-              {FREQUENCY_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-            <input
-              className="overlay-input"
-              type="date"
-              value={form.dueDate}
-              onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
-            />
-            <textarea
-              className="overlay-input"
-              placeholder="Notes (optional)"
-              value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              rows={3}
-              style={{ resize: 'none' }}
-            />
-            <div className="overlay-actions">
-              <button className="overlay-btn cancel" onClick={() => setShowForm(false)}>Cancel</button>
-              <button
-                className="overlay-btn submit"
-                onClick={submitForm}
-                disabled={saving || !form.name.trim()}
-              >
-                {saving ? 'Saving…' : editChore ? 'Save' : 'Add'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
 
 // ── What's For Dinner panel (from Parentals) ──────────────────
 function WhatForDinnerPanel() {
@@ -572,8 +306,22 @@ export default function Unwind() {
     <div className="unwind-content">
 
       <div className="un-grocery"><GroceryPanel /></div>
+      <div className="un-whereami"><WhereAmIPanel /></div>
 
-      <div className="un-todo"><TodoPanel /></div>
+      <div className="un-todo">
+        <ChoresList
+          title="To Do"
+          excludeWho={EXCLUDE_KIDS}
+          whoInputMode="freeform"
+          namePlaceholder="e.g. Vacuum living room"
+          whoPlaceholder="Assigned to (optional)"
+          whoLabel="Assigned"
+          showFrequency
+          frequencyOptions={FREQUENCY_OPTIONS}
+          showWeight={false}
+          showPoints={false}
+        />
+      </div>
       <div className="un-readwatch">
         <ReadWatchPanel
           movies={data.movies}
@@ -584,6 +332,8 @@ export default function Unwind() {
         />
       </div>
       <div className="un-dinner"><WhatForDinnerPanel /></div>
+
+      <div className="un-calendar"><TwoWeekCalendar /></div>
 
       {modal && (
         <AddModal

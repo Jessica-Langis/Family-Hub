@@ -45,7 +45,7 @@ export default function App() {
 
   return (
     <>
-      <TopBar title={TAB_TITLES[activeTab]} titleColor={TAB_COLORS[activeTab]} />
+      <TopBar title={TAB_TITLES[activeTab]} titleColor={TAB_COLORS[activeTab]} compact={activeTab === 'glance'} />
       <main className="main-content">
         {Object.keys(PAGES).map(key => {
           if (!visited.has(key)) return null
