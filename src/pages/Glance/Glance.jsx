@@ -336,8 +336,11 @@ function CalCell({ day, accentColor, secondary }) {
 }
 
 // ── Events panel — merges real calendar events and holidays into ONE
-// ranked list (by date), showing the top 2. Holidays no longer get a
-// separate section; they're "just another entry" when they're soon. ──
+// list, but real events always win the two slots first; a holiday only
+// fills a slot if there's nothing else to show there. Holidays no longer
+// get a guaranteed separate section, but they also can't crowd out real
+// events just by happening to fall sooner on the calendar — a holiday
+// 5 days out no longer bumps a real event 3 weeks out off the screen.
 function EventsPanel({ calDays }) {
   const today    = new Date(); today.setHours(0,0,0,0)
   const todayStr = dateParts(today)
@@ -353,16 +356,19 @@ function EventsPanel({ calDays }) {
       })
     }))
     .filter(d => d.events.length > 0)
-
-  const holidayEntries = getNextUSHolidays(3).map(h => ({
-    date: dateParts(h.date),
-    accentColor: 'var(--accent2)',
-    events: [{ summary: h.name }],
-  }))
-
-  const merged = [...calWithEvents, ...holidayEntries]
     .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 2)
+
+  const holidayEntries = getNextUSHolidays(3)
+    .map(h => ({
+      date: dateParts(h.date),
+      accentColor: 'var(--accent2)',
+      events: [{ summary: h.name }],
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  const merged = calWithEvents.slice(0, 2)
+  if (merged.length < 2) merged.push(...holidayEntries.slice(0, 2 - merged.length))
+  merged.sort((a, b) => a.date.localeCompare(b.date))
 
   return (
     <Panel className="glance-events-panel">
