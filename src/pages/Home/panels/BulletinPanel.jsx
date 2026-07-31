@@ -140,7 +140,7 @@ function BulletinLine({ item, isDinner, onOpen }) {
   const text = isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')
   return (
     <div className="bulletin-line" onClick={() => onOpen({ item, isDinner })}>
-      <span className="bulletin-line-who">{who}</span>
+      <span className={`bulletin-line-who${isDinner ? ' dinner' : ''}`}>{who}</span>
       <span className="bulletin-line-text">{text}</span>
     </div>
   )

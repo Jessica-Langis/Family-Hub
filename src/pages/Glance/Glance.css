@@ -1,189 +1,178 @@
 /* ══════════════════════════════════════════
    AT A GLANCE — Page Layout
-   2 zones: a dominant "what's happening" hero (left) and a compact
-   bulletin strip (right) — no auto-rotation, no 2-week grid (that
-   moved to And Stuff), single ranked events+holidays list instead of
-   two separate sections.
+   3 cards: a TODAY hero (left, full height), a secondary "what's next" +
+   weather stack (middle), and the Bulletin Board (right, full height).
+   No auto-rotation, no 2-week grid (that lives on And Stuff), a single
+   ranked events+holidays list instead of separate sections.
 ══════════════════════════════════════════ */
 
 .glance-content {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-rows: 6fr 5fr;
+  grid-template-areas:
+    "hero secondary bulletin"
+    "hero weather   bulletin";
+  gap: 14px;
   height: 100%;
   padding: 0 4px 4px;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.glance-col-events {
-  grid-column: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
+/* Wrapper div in JSX groups Secondary+Weather for readability only —
+   it doesn't participate in layout, so each child can sit in its own
+   named grid area. */
+.glance-col-secondary { display: contents; }
 
 .glance-col-bulletin {
-  grid-column: 2;
+  grid-area: bulletin;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 /* ══════════════════════════════════════════
-   EVENTS PANEL (hero)
+   SHARED CARD BASE
 ══════════════════════════════════════════ */
 
-.glance-events-panel {
-  height: 100% !important;
-  display: flex;
-  flex-direction: column;
-}
-
-.glance-events-body {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  padding: 6px 12px 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Split row — single surface containing both halves ── */
-
-.glance-card-row {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  background: var(--surface2);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.glance-split-half {
-  flex: 1;
-  container-type: inline-size;
+.glance-hero-card,
+.glance-secondary-card,
+.glance-weather-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: clamp(14px, 3.5vh, 32px) 16px;
-  min-width: 0;
+  text-align: center;
+  min-height: 0;
   overflow: hidden;
   box-sizing: border-box;
 }
 
-.glance-split-secondary {
-  opacity: 0.65;
+.glance-card-empty {
+  padding: 20px;
 }
 
-.glance-split-divider {
-  width: 1px;
-  background: rgba(255, 255, 255, 0.07);
-  flex-shrink: 0;
-  margin: 10px 0;
+.glance-empty-msg {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.85rem;
 }
 
-/* ── 4-row event block ── */
+/* ══════════════════════════════════════════
+   HERO CARD — today's (or the very next) headline event
+══════════════════════════════════════════ */
 
-.glance-ev-block {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.glance-hero-card {
+  grid-area: hero;
+  position: relative;
+  background: linear-gradient(165deg, var(--surface) 0%, var(--surface2) 100%);
+  padding: clamp(16px, 4vh, 40px) 20px;
+  gap: 10px;
+}
+
+.glance-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 12px 12px 0 0;
+  background: var(--accent6);
+}
+
+.glance-hero-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.glance-hero-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.6rem);
+  line-height: 1.15;
+  color: var(--text);
+  max-width: 100%;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.glance-hero-date {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════
+   SECONDARY CARD — what's coming up after that
+══════════════════════════════════════════ */
+
+.glance-secondary-card {
+  grid-area: secondary;
+  padding: 12px 16px;
   gap: 6px;
 }
 
-.glance-ev-title {
-  white-space: nowrap;
-  overflow: hidden;
+.glance-secondary-title {
   font-weight: 700;
-  text-align: center;
-  width: 100%;
-  line-height: 1.15;
-  flex-shrink: 0;
-}
-
-.glance-ev-block-date {
-  font-size: clamp(0.72rem, 3.8cqi, 1.15rem);
+  font-size: 1rem;
   color: var(--text);
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-  flex-shrink: 0;
-}
-
-.glance-ev-block-loc {
-  font-size: clamp(0.6rem, 2.8cqi, 0.88rem);
-  color: var(--muted);
-  text-align: center;
-  line-height: 1.2;
-  flex-shrink: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   max-width: 100%;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.glance-ev-block-countdown {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  justify-content: center;
-  flex-shrink: 0;
+.glance-secondary-date {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.glance-secondary-countdown {
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--accent2);
+  margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════
+   WEATHER CARD — today's forecast, large
+══════════════════════════════════════════ */
+
+.glance-weather-card {
+  grid-area: weather;
+  padding: 10px 16px;
+  gap: 2px;
+}
+
+.glance-weather-icon {
+  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+  line-height: 1;
+}
+
+.glance-weather-temp {
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  font-weight: 600;
+  color: var(--accent2);
   margin-top: 4px;
 }
 
-.glance-ev-cd-days {
-  font-size: clamp(1.1rem, 6.5cqi, 2rem);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.glance-ev-cd-hours {
-  font-size: clamp(0.8rem, 4.2cqi, 1.3rem);
-  font-weight: 500;
-  line-height: 1;
-}
-
-.glance-ev-inner-divider {
-  width: 80%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.07);
-  flex-shrink: 0;
-  margin: 8px 0;
-  align-self: center;
-}
-
-.glance-ev-rest {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-
-.glance-ev-rest-item {
-  font-size: clamp(0.6rem, 2.5cqi, 0.82rem);
+.glance-weather-cond {
+  font-size: 0.72rem;
   color: var(--muted);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-.next-up-empty {
-  font-size: clamp(0.75rem, 3cqi, 0.95rem);
-  color: var(--muted);
-  font-style: italic;
 }
 
 /* ══════════════════════════════════════════
    BULLETIN STRIP — compact, single-line rows
-   (replaces the old 5-wide square-note grid; that grid was the single
-   biggest driver of "cluttered" in the At a Glance redesign)
 ══════════════════════════════════════════ */
 
 .bulletin-strip-compact {
@@ -213,9 +202,13 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--accent5);
+  color: var(--accent);
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.bulletin-line-who.dinner {
+  color: var(--accent5);
 }
 
 .bulletin-line-text {
@@ -237,40 +230,25 @@
 .bulletin-more-row:hover { text-decoration: underline; }
 
 /* ══════════════════════════════════════════
-   MOBILE — stack vertically: Events > Bulletin
+   MOBILE — hero on top, secondary+weather side by side, bulletin below
 ══════════════════════════════════════════ */
 
 @media (max-width: 640px) {
   .glance-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "hero hero"
+      "secondary weather"
+      "bulletin bulletin";
     height: auto;
     overflow: visible;
+    gap: 10px;
     padding: 0 4px 8px;
   }
 
-  .glance-col-events {
-    grid-column: 1;
-    grid-row: 1;
-    min-height: 420px;
-  }
-
-  .glance-col-bulletin {
-    grid-column: 1;
-    grid-row: 2;
-    min-height: 240px;
-  }
-
-  .glance-events-body {
-    overflow-y: auto;
-  }
-
-  .glance-card-row {
-    flex-direction: column;
-  }
-  .glance-split-divider {
-    width: auto;
-    height: 1px;
-    margin: 0 10px;
-  }
+  .glance-hero-card { min-height: 200px; }
+  .glance-secondary-card,
+  .glance-weather-card { min-height: 150px; }
+  .glance-col-bulletin { min-height: 260px; }
 }

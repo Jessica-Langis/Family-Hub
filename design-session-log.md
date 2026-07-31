@@ -32,6 +32,7 @@ All items below are built and verified (clean production build). Two manual step
 ## Planned for next session
 
 - Whole-app visual theme update, based on the At a Glance screenshot you shared — apply that look/palette consistently across all pages (currently only loosely shared via CSS tokens). Design details still to be worked out.
+- 2026-07-30: after the functional fixes landed, feedback was that the app is "looking pretty sparse" — worth revisiting density/visual weight (not just palette) alongside the theme pass. Candidates: panel backgrounds/borders, spacing, accent color usage, whether the simplified layouts (3-zone Glance, merged panels) read as empty vs. clean.
 
 ## Backlog (later, not this session)
 
