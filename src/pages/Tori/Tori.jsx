@@ -5,6 +5,7 @@ import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
 import CompletedFeed from '../../components/CompletedFeed/CompletedFeed'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, formatReminderDate } from '../Home/homeUtils'
+import './Tori.css'
 
 // ── Normalize API response → array ───────────────────────────
 function toArr(d) {

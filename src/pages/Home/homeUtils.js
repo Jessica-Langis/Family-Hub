@@ -42,6 +42,65 @@ export function parsePersonEvent(summary, name) {
   return m ? m[1].trim() : null
 }
 
+// ── Shared calendar-event shape helpers ────────────────────────
+// Calendar payloads come back either as bare strings or as objects, so
+// every consumer needs these two. They used to be redefined in Glance,
+// TwoWeekCalendar and Unwind independently.
+export function evSummary(ev) {
+  return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
+}
+
+export function dateParts(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// ── Sports event detection ─────────────────────────────────────
+// Frontend-only, so the Google Calendar needs no special tagging.
+//
+// An event counts as "sports" only when it is BOTH tagged to a kid
+// ("Tori - ..." / "Nova - ...") AND its title mentions a sports keyword.
+// Requiring both keeps ordinary kid events (dentist, birthday, haircut)
+// out of the sports tile. The trade-off: a bare, unprefixed family entry
+// like "Wrestling Tournament" will NOT be treated as sports. If that
+// starts biting, change the `&&` in classifyEvent to `||`.
+export const SPORTS_KEYWORDS = [
+  'tournament', 'meet', 'match', 'practice', 'wrestling', 'game',
+  'scrimmage', 'tryout', 'competition', 'qualifier', 'regional',
+  'championship', 'dual',
+]
+
+// Word-boundary matched with an optional plural suffix, so "meet" hits
+// "meet"/"meets" but not "meeting", and "match" also catches "matches".
+const SPORTS_RE = new RegExp(`\\b(?:${SPORTS_KEYWORDS.join('|')})(?:e?s)?\\b`, 'i')
+
+export function hasSportsKeyword(text) {
+  return SPORTS_RE.test(String(text || ''))
+}
+
+export const KID_NAMES = ['Tori', 'Nova']
+
+// Returns { isSports, person, title } for a raw calendar summary.
+// `title` has the "Tori - " prefix stripped when one was present.
+export function classifyEvent(summary) {
+  for (const person of KID_NAMES) {
+    const stripped = parsePersonEvent(summary, person)
+    if (stripped) {
+      return { isSports: hasSportsKeyword(stripped), person, title: stripped }
+    }
+  }
+  return { isSports: false, person: null, title: String(summary || '').trim() }
+}
+
+// ── Urgency ────────────────────────────────────────────────────
+// today = warm amber, tomorrow = blue, 2+ days out = muted.
+export function urgencyClass(dateStr) {
+  const d = getDayDiff(dateStr)
+  if (isNaN(d)) return 'later'
+  if (d <= 0)   return 'today'
+  if (d === 1)  return 'tomorrow'
+  return 'later'
+}
+
 export function formatReminderDate(dateStr) {
   if (!dateStr?.trim()) return ''
   const today = new Date(); today.setHours(0,0,0,0)

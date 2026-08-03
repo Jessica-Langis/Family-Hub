@@ -46,7 +46,14 @@ function BulletinNote({ item, isDinner, onDelete, onOpen }) {
 }
 
 // ── Note detail popup (matches the calendar day-detail modal style) ──
-function BulletinNoteModal({ item, isDinner, onClose }) {
+// Also the only place a note can be deleted. Delete lives here rather than
+// as an × on each row because At a Glance is a walk-by kiosk screen — an
+// always-visible delete target invites accidental taps. Opening the note
+// first makes removal deliberate, and it works in both compact and card
+// modes instead of only the card one.
+function BulletinNoteModal({ item, isDinner, onClose, onDelete }) {
+  const [confirming, setConfirming] = useState(false)
+
   let dateStr = ''
   if (item.date) {
     const d = new Date(item.date)
@@ -56,6 +63,10 @@ function BulletinNoteModal({ item, isDinner, onClose }) {
   }
   const who  = isDinner ? "Tonight's Dinner" : (item.who || 'Someone')
   const text = isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')
+
+  // "Tonight's Dinner" is synthesised from the meal planner, not a row on
+  // the Bulletin sheet — there's nothing to delete, so don't offer it.
+  const canDelete = !isDinner && onDelete && item.row != null
 
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -67,6 +78,27 @@ function BulletinNoteModal({ item, isDinner, onClose }) {
         <div style={{ fontSize:'1.05rem', fontWeight:700, color:'var(--text)', marginBottom:12 }}>{who}</div>
         <div style={{ fontSize:'0.9rem', color:'var(--text)', lineHeight:1.55, whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{text}</div>
         {dateStr && <div style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:16 }}>{dateStr}</div>}
+
+        {canDelete && (
+          <div className="fun-overlay-actions">
+            {confirming ? (
+              <>
+                <button className="fun-overlay-btn cancel" onClick={() => setConfirming(false)}>Keep</button>
+                <button
+                  className="fun-overlay-btn submit"
+                  style={{ background: '#e07070' }}
+                  onClick={() => { onDelete(item.row); onClose() }}
+                >Delete for good</button>
+              </>
+            ) : (
+              <button
+                className="fun-overlay-btn cancel"
+                style={{ color: '#e07070' }}
+                onClick={() => setConfirming(true)}
+              >Delete note</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -248,6 +280,7 @@ export default function BulletinPanel({ bodyClassName, limit = 4, style, compact
           item={opened.item}
           isDinner={opened.isDinner}
           onClose={() => setOpened(null)}
+          onDelete={deleteNote}
         />
       )}
     </Panel>

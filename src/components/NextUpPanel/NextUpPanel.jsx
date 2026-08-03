@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, parsePersonEvent } from '../../pages/Home/homeUtils'
+import './NextUpPanel.css'
 
 // ── Shared "Next Up" panel ──────────────────────────────────────────
 // Merges a kid's own manually-added events with any family-calendar event

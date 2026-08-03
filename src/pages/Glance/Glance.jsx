@@ -1,61 +1,37 @@
 import { useState, useEffect, useCallback, useMemo, Component } from 'react'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
-import { getNextUSHolidays } from '../Home/homeUtils'
+import {
+  getNextUSHolidays, getDayDiff, evSummary, dateParts,
+  classifyEvent, urgencyClass,
+} from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
 
-// ── At a Glance — 3-card layout matching the design mockup:
-// a TODAY hero (biggest, left), a secondary "what's next" + weather
-// stack (middle), and the Bulletin Board (right, full height). No
-// auto-rotation — this is a walk-by kiosk screen near the front door,
-// so everything needs to be visible at once. The 2-week calendar grid
-// lives on And Stuff; holidays fold into the same ranked list as real
-// events instead of getting their own section.
+// ── At a Glance — walk-by kiosk screen near the front door ──────────
+// Four tiles, nothing rotating, everything visible at once:
+//   • Hero (left)        next non-sports family event, countdown as the
+//                        headline, tinted by urgency
+//   • Sports (top right) every upcoming Tori/Nova sports event, equal
+//                        visual weight to the hero
+//   • Lookahead (bottom) compact 5-7 day strip of everything, sports
+//                        visually distinct, with today's weather inline
+//   • Bulletin (right)   unchanged, compact strip
+//
+// Sports vs. non-sports routing is pure frontend keyword matching —
+// see classifyEvent in homeUtils. The calendar needs no special tags.
 
-// ── helpers ───────────────────────────────────────────────────
-function evSummary(ev) {
-  return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
-}
-
-function dateParts(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-}
-
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const LOOKAHEAD_DAYS = 7
+const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
 function fmtFull(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
   if (isNaN(d.getTime())) return ''
-  return `${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')} ${d.getFullYear()}`
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function daysFromToday(dateStr) {
-  const today  = new Date(); today.setHours(0,0,0,0)
-  const target = new Date(dateStr + 'T00:00:00')
-  return Math.round((target - today) / 86400000)
-}
-
-// Returns { days, hours, hasTime, past } — hours only available when a time is provided
-function getCountdown(dateStr, timeStr) {
-  const now        = new Date()
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0)
-  const targetDay  = new Date(dateStr + 'T00:00:00')
-  const days       = Math.round((targetDay - todayStart) / 86400000)
-
-  if (timeStr) {
-    const full = new Date(dateStr + ' ' + timeStr)
-    if (!isNaN(full.getTime())) {
-      const ms = full - now
-      if (ms <= 0) return { days: 0, hours: 0, hasTime: true, past: true }
-      const totalH = Math.floor(ms / 3600000)
-      return { days: Math.floor(totalH / 24), hours: totalH % 24, hasTime: true }
-    }
-  }
-  return { days: Math.max(0, days), hours: null, hasTime: false }
-}
-
-// Returns true if a timed event ended 2+ hours ago (triggers removal from the tile)
+// A timed event drops off the board 2h after it started; all-day events
+// stay up for the whole day.
 function isStale(dateStr, timeStr) {
   if (!timeStr) return false
   const t = new Date(dateStr + ' ' + timeStr)
@@ -63,36 +39,61 @@ function isStale(dateStr, timeStr) {
   return (new Date() - t) >= 2 * 60 * 60 * 1000
 }
 
-// Flattens calendar days into individual events, sorted chronologically,
-// and picks the top 2 — real events always win those two slots; a holiday
-// only fills a slot when there's nothing else to show there.
-function useTopEvents(calDays) {
+function countdownLabel(dateStr) {
+  const d = getDayDiff(dateStr)
+  if (isNaN(d)) return ''
+  if (d <= 0)  return 'TODAY'
+  if (d === 1) return 'TOMORROW'
+  return `${d} DAYS`
+}
+
+// ── Flatten calendar days → one sorted, classified event list ───────
+function useGlanceEvents(calDays) {
   return useMemo(() => {
-    const today    = new Date(); today.setHours(0,0,0,0)
+    const today    = new Date(); today.setHours(0, 0, 0, 0)
     const todayStr = dateParts(today)
 
-    const real = []
+    const all = []
     calDays.filter(d => d.date >= todayStr).forEach(d => {
       ;(d.events || []).forEach(ev => {
-        const t = ev.isAllDay === false && ev.startTime ? ev.startTime : null
-        if (isStale(d.date, t)) return
-        real.push({ date: d.date, time: t, name: evSummary(ev) })
+        const time = ev.isAllDay === false && ev.startTime ? ev.startTime : null
+        if (isStale(d.date, time)) return
+        const { isSports, person, title } = classifyEvent(evSummary(ev))
+        all.push({ date: d.date, time, title, person, isSports })
       })
     })
 
-    const byDateTime = (a, b) =>
-      a.date === b.date ? (a.time || '').localeCompare(b.time || '') : a.date.localeCompare(b.date)
-    real.sort(byDateTime)
+    all.sort((a, b) =>
+      a.date === b.date
+        ? (a.time || '').localeCompare(b.time || '')
+        : a.date.localeCompare(b.date)
+    )
 
-    let merged = real.slice(0, 2)
-    if (merged.length < 2) {
-      const holidays = getNextUSHolidays(3).map(h => ({
-        date: dateParts(h.date), time: null, name: h.name,
-      }))
-      merged = merged.concat(holidays.slice(0, 2 - merged.length)).sort(byDateTime)
+    const sports = all.filter(e => e.isSports)
+
+    // The hero is the next thing that isn't a sports event — those get
+    // their own tile, so repeating one here would waste the biggest slot.
+    let hero = all.find(e => !e.isSports) || null
+    if (!hero) {
+      const h = getNextUSHolidays(1)[0]
+      if (h) hero = { date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false }
     }
 
-    return { hero: merged[0] ?? null, secondary: merged[1] ?? null }
+    // 7-day strip — every day gets a column whether or not it has events.
+    const lookahead = Array.from({ length: LOOKAHEAD_DAYS }, (_, i) => {
+      const d = new Date(today)
+      d.setDate(d.getDate() + i)
+      const ds = dateParts(d)
+      return {
+        dateStr: ds,
+        label:   i === 0 ? 'Today' : DAY_ABBR[d.getDay()],
+        dayNum:  d.getDate(),
+        isToday: i === 0,
+        events:  all.filter(e => e.date === ds),
+      }
+    })
+
+    return { hero, sports, lookahead }
   }, [calDays])
 }
 
@@ -119,7 +120,7 @@ class GlanceErrorBoundary extends Component {
   }
 }
 
-// ── Hero card — today's (or the very next) headline event ──────
+// ── Hero card — next non-sports event, countdown as the headline ────
 function HeroCard({ event }) {
   if (!event) {
     return (
@@ -128,13 +129,16 @@ function HeroCard({ event }) {
       </div>
     )
   }
-  const days    = daysFromToday(event.date)
-  const eyebrow = days <= 0 ? 'TODAY' : days === 1 ? 'TOMORROW' : `IN ${days} DAYS`
+  const diff = getDayDiff(event.date)
+  const soon = diff <= 1   // TODAY / TOMORROW read as words, not a number
 
   return (
-    <div className="glance-hero-card">
-      <div className="glance-hero-eyebrow">{eyebrow}</div>
-      <div className="glance-hero-title">{event.name}</div>
+    <div className={`glance-hero-card urgency-${urgencyClass(event.date)}`}>
+      <div className={`glance-hero-countdown${soon ? ' is-word' : ''}`}>
+        {soon ? countdownLabel(event.date) : diff}
+      </div>
+      {!soon && <div className="glance-hero-unit">days away</div>}
+      <div className="glance-hero-title">{event.title}</div>
       <div className="glance-hero-date">
         {fmtFull(event.date)}{event.time ? ` · ${event.time}` : ''}
       </div>
@@ -142,52 +146,78 @@ function HeroCard({ event }) {
   )
 }
 
-// ── Secondary card — what's coming up after that ────────────────
-function SecondaryCard({ event }) {
-  if (!event) {
-    return (
-      <div className="glance-secondary-card glance-card-empty">
-        <span className="glance-empty-msg">Nothing else coming up</span>
-      </div>
-    )
-  }
-  const cd = getCountdown(event.date, event.time)
-
+// ── Sports card — every upcoming Tori/Nova sports event ─────────────
+function SportsCard({ events }) {
   return (
-    <div className="glance-secondary-card">
-      <div className="glance-secondary-title">{event.name}</div>
-      <div className="glance-secondary-date">
-        {fmtFull(event.date)}{event.time ? ` · ${event.time}` : ''}
-      </div>
-      {!cd.past && (
-        <div className="glance-secondary-countdown">
-          {cd.hasTime && cd.days === 0
-            ? (cd.hours === 0 ? 'NOW' : `${cd.hours}h`)
-            : (cd.days === 0 ? 'TODAY' : `${cd.days} ${cd.days === 1 ? 'day' : 'days'}`)}
+    <div className="glance-sports-card">
+      <div className="glance-card-label">🏅 Sports</div>
+      {events.length === 0 ? (
+        <div className="glance-card-empty">
+          <span className="glance-empty-msg">No sports scheduled</span>
+        </div>
+      ) : (
+        <div className="glance-sports-list">
+          {events.map((ev, i) => (
+            <div key={`${ev.date}-${ev.title}-${i}`} className={`glance-sports-row urgency-${urgencyClass(ev.date)}`}>
+              <span className="glance-sports-person" data-person={(ev.person || '').toLowerCase()}>
+                {ev.person}
+              </span>
+              <span className="glance-sports-title">{ev.title}</span>
+              <span className="glance-sports-when">
+                {countdownLabel(ev.date)}
+                {ev.time ? ` · ${ev.time}` : ''}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
   )
 }
 
-// ── Weather card — today's forecast, large ──────────────────────
-function WeatherCard() {
+// ── Weather strip — compact, lives in the lookahead header ──────────
+function WeatherStrip() {
   const { days, loading } = useWeather()
   const today = days[0]
-
+  if (loading || !today) return null
   return (
-    <div className="glance-weather-card">
-      {loading ? (
-        <span className="glance-empty-msg">Loading…</span>
-      ) : today ? (
-        <>
-          <div className="glance-weather-icon">{today.icon}</div>
-          <div className="glance-weather-temp">{today.temp}</div>
-          <div className="glance-weather-cond">{today.condition}</div>
-        </>
-      ) : (
-        <span className="glance-empty-msg">Weather unavailable</span>
-      )}
+    <span className="glance-weather-strip" title={today.condition}>
+      <span className="gws-icon">{today.icon}</span>
+      <span className="gws-temp">{today.temp}</span>
+    </span>
+  )
+}
+
+// ── Lookahead card — 7-day strip of everything ──────────────────────
+function LookaheadCard({ days }) {
+  return (
+    <div className="glance-lookahead-card">
+      <div className="glance-lookahead-head">
+        <span className="glance-card-label">Next {LOOKAHEAD_DAYS} Days</span>
+        <WeatherStrip />
+      </div>
+      <div className="glance-lookahead-grid">
+        {days.map(d => (
+          <div key={d.dateStr} className={`glance-look-day${d.isToday ? ' is-today' : ''}`}>
+            <div className="glance-look-dayname">
+              {d.label} <span className="glance-look-daynum">{d.dayNum}</span>
+            </div>
+            <div className="glance-look-events">
+              {d.events.length === 0
+                ? <span className="glance-look-none">—</span>
+                : d.events.map((ev, i) => (
+                    <span key={i} className={`glance-look-ev${ev.isSports ? ' is-sport' : ''}`}>
+                      {ev.isSports && ev.person && (
+                        <span className="glance-look-ev-who">{ev.person}</span>
+                      )}
+                      {ev.title}
+                    </span>
+                  ))
+              }
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -209,16 +239,14 @@ export default function Glance() {
     return () => clearInterval(id)
   }, [loadAll])
 
-  const { hero, secondary } = useTopEvents(calDays)
+  const { hero, sports, lookahead } = useGlanceEvents(calDays)
 
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
         <HeroCard event={hero} />
-        <div className="glance-col-secondary">
-          <SecondaryCard event={secondary} />
-          <WeatherCard />
-        </div>
+        <SportsCard events={sports} />
+        <LookaheadCard days={lookahead} />
         <div className="glance-col-bulletin">
           <BulletinPanel
             compact
