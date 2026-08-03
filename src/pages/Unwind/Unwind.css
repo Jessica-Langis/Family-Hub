@@ -1,26 +1,29 @@
-/* ── Grid layout: priority order, most → least important ──
-   1. To Do        — the actionable, time-sensitive tile (overdue items live
-                      here), so it leads instead of Grocery.
-   2. Grocery       — high-utility, no due dates, so it's a step down from To Do.
-   3. Upcoming Events — planning-ahead content, same tier as Grocery but less
-                      immediate.
-   4. Dinner + Watch/Read — daily-glance and pure-leisure content, lowest
-                      urgency, sharing the last row (Dinner gets more width —
-                      it has its own 2-column Mon–Thu/Fri–Prep split inside).
+/* ── Grid layout: 2 columns × 3 equal rows, square-ish tiles ──
+   To Do and Grocery each span rows 1–2 (2/3 of the height) since they're
+   the two most-used tiles; Upcoming Events and Watch List share row 3
+   (1/3 height each). What's for Dinner was removed — see the note by
+   .un-events below.
+
+       ┌────────┬─────────┐
+       │        │         │
+       │  todo  │ grocery │
+       │        │         │
+       ├────────┼─────────┤
+       │ events │  watch  │
+       └────────┴─────────┘
 
    Named grid-areas (not DOM order) drive this, specifically so the mobile
    breakpoint below can keep its own — unrelated — visual order (Grocery,
-   To Do, Watch, Dinner, Events) without the two layouts fighting over the
-   JSX's actual element order. */
+   To Do, Watch, Events) without the two layouts fighting over the JSX's
+   actual element order. */
 .unwind-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 0.7fr 0.85fr 0.75fr;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
   grid-template-areas:
-    "todo    todo    todo"
-    "grocery grocery grocery"
-    "events  events  events"
-    "dinner  dinner  watch";
+    "todo   grocery"
+    "todo   grocery"
+    "events watch";
   gap: 8px;
   height: 100%;
   min-height: 0;
@@ -28,30 +31,34 @@
 }
 
 .un-grocery,
-.un-todo, .un-readwatch, .un-dinner, .un-events {
+.un-todo, .un-readwatch, .un-events {
   min-height: 0;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-/* Prevent any child's intrinsic content width (long chore/grocery/meal
-   text, etc.) from blowing out the grid track — same fix as Nova.css */
+/* Prevent any child's intrinsic content width (long chore/grocery text,
+   etc.) from blowing out the grid track — same fix as Nova.css */
 .unwind-content > * {
   min-width: 0;
   max-width: 100%;
 }
 
 .un-grocery > .panel,
-.un-todo > .panel, .un-readwatch > .panel, .un-dinner > .panel, .un-events > .panel {
+.un-todo > .panel, .un-readwatch > .panel, .un-events > .panel {
   flex: 1;
   height: 100%;
 }
 
 .un-todo      { grid-area: todo; }
 .un-grocery   { grid-area: grocery; }
+/* What's for Dinner (was here) is removed for now — the Bulletin Board's
+   existing "Tonight's Dinner" line is the placeholder until a proper
+   replacement (possibly gamified — a fun way to pick/reveal dinner) gets
+   designed. Nothing currently writes to that field going forward; see
+   the note in global.css where the old meal-plan CSS was removed. */
 .un-events    { grid-area: events; }
-.un-dinner    { grid-area: dinner; }
 .un-readwatch { grid-area: watch; }
 
 /* ── Read/Watch toggle ── */
@@ -247,25 +254,6 @@
    (.chore-check-btn / .chore-edit-btn / .chore-delete-btn) so the same
    thumb-sized buttons are shared across And Stuff, Tori, and Nova. */
 
-/* ── What's For Dinner edit/clear icons ── */
-.meal-edit-icon,
-.meal-clear-icon {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.8rem;
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.15s;
-  opacity: 0.5;
-}
-.meal-item:hover .meal-edit-icon,
-.meal-item:hover .meal-clear-icon { opacity: 1; }
-.meal-edit-icon:hover  { color: var(--accent2); }
-.meal-clear-icon:hover { color: #e07070; }
-
 /* ── Grocery (moved from Home) ── */
 .quick-add-spinner {
   font-size: 0.75rem; color: var(--muted);
@@ -413,32 +401,26 @@
 .note-color-swatch[data-color="lavender"] { background: rgba(170,130,220,0.7); }
 .note-color-swatch.selected { border-color: var(--text); }
 
-/* ── Mobile — unchanged from before the desktop reorder: Grocery, To Do,
-   Watch, Dinner, Events. Kept independent of the desktop priority order
-   above via its own grid-template-areas. ── */
+/* ── Mobile — stacked order: Grocery, To Do, Watch, Events. Kept
+   independent of the desktop 2×3 grid above via its own
+   grid-template-areas. ── */
 @media (max-width: 640px) {
   .unwind-content {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(5, auto);
+    grid-template-rows: repeat(4, auto);
     grid-template-areas:
       "grocery"
       "todo"
       "watch"
-      "dinner"
       "events";
     height: auto;
     overflow: visible;
   }
   .un-grocery,
-  .un-todo, .un-readwatch, .un-dinner, .un-events {
+  .un-todo, .un-readwatch, .un-events {
     min-height: 220px;
     overflow: visible;
   }
   .fun-list { overflow-y: auto; flex: 1; }
   .grocery-grid { grid-template-columns: 1fr 1fr; }
-
-  /* always show meal edit/clear icons on mobile (no hover) —
-     chore check/edit/delete icons are always visible everywhere now */
-  .meal-edit-icon,
-  .meal-clear-icon { opacity: 0.6; }
 }
