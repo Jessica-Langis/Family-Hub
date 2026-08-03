@@ -1,13 +1,26 @@
-/* ── Grid layout: 3 columns, 3 rows ──
-   Row 1: Grocery (full width) — kept prominent per earlier request
-   Row 2: To Do | Read/Watch | Dinner — the main 3-column content row
-   Row 3: Upcoming Events (full width) — supplementary, "sit and plan" content.
-   The Where I'll Be row was removed — kids weren't using it, and it duplicated
-   ground the calendar already covers once check-ins go stale. */
+/* ── Grid layout: priority order, most → least important ──
+   1. To Do        — the actionable, time-sensitive tile (overdue items live
+                      here), so it leads instead of Grocery.
+   2. Grocery       — high-utility, no due dates, so it's a step down from To Do.
+   3. Upcoming Events — planning-ahead content, same tier as Grocery but less
+                      immediate.
+   4. Dinner + Watch/Read — daily-glance and pure-leisure content, lowest
+                      urgency, sharing the last row (Dinner gets more width —
+                      it has its own 2-column Mon–Thu/Fri–Prep split inside).
+
+   Named grid-areas (not DOM order) drive this, specifically so the mobile
+   breakpoint below can keep its own — unrelated — visual order (Grocery,
+   To Do, Watch, Dinner, Events) without the two layouts fighting over the
+   JSX's actual element order. */
 .unwind-content {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 0.85fr 1.7fr 0.75fr;
+  grid-template-rows: 1fr 0.7fr 0.85fr 0.75fr;
+  grid-template-areas:
+    "todo    todo    todo"
+    "grocery grocery grocery"
+    "events  events  events"
+    "dinner  dinner  watch";
   gap: 8px;
   height: 100%;
   min-height: 0;
@@ -35,8 +48,11 @@
   height: 100%;
 }
 
-.un-grocery  { grid-column: 1 / 4; grid-row: 1; }
-.un-events   { grid-column: 1 / 4; grid-row: 3; }
+.un-todo      { grid-area: todo; }
+.un-grocery   { grid-area: grocery; }
+.un-events    { grid-area: events; }
+.un-dinner    { grid-area: dinner; }
+.un-readwatch { grid-area: watch; }
 
 /* ── Read/Watch toggle ── */
 .fun-toggle {
@@ -397,11 +413,19 @@
 .note-color-swatch[data-color="lavender"] { background: rgba(170,130,220,0.7); }
 .note-color-swatch.selected { border-color: var(--text); }
 
-/* ── Mobile ── */
+/* ── Mobile — unchanged from before the desktop reorder: Grocery, To Do,
+   Watch, Dinner, Events. Kept independent of the desktop priority order
+   above via its own grid-template-areas. ── */
 @media (max-width: 640px) {
   .unwind-content {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(5, auto);
+    grid-template-areas:
+      "grocery"
+      "todo"
+      "watch"
+      "dinner"
+      "events";
     height: auto;
     overflow: visible;
   }
@@ -410,7 +434,6 @@
     min-height: 220px;
     overflow: visible;
   }
-  .un-grocery, .un-events { grid-column: auto; }
   .fun-list { overflow-y: auto; flex: 1; }
   .grocery-grid { grid-template-columns: 1fr 1fr; }
 
