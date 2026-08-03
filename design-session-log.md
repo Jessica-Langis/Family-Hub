@@ -8,26 +8,39 @@ All items below are built and verified (clean production build). Two manual step
 1. In the shared spreadsheet's Chores tab, column H is now `CompletedAt` (auto-filled by the app going forward — no need to backfill existing rows).
 2. Paste the updated `chores_gas_script.gs` into the Apps Script editor and redeploy (same manual step as always).
 
-## Decided
+## Built — 2026-08-03
 
-**At a Glance**
-- Rebuild as 3 zones instead of 5 stacked modules: thin header (clock/date + single-day weather, not 5-day forecast), a dominant "what's happening" hero (next 1-2 events, today's event visually largest, holidays folded in as just another entry), and a compact bulletin strip (top ~3 items as single lines, tap to expand the rest).
-- No auto-rotation/cycling — everything stays static on one screen (it's a walk-by kiosk near the front door).
-- Remove the two-week calendar grid from this page entirely — moves to And Stuff.
+**Backend (`chores_gas_script.gs`)**
+- Added Notes (G) and CompletedAt (H) columns to Chores sheet; toggle now stamps/clears CompletedAt with correct timezone offset.
+- Root-caused and fixed blank calendar/spreadsheet data: `SS_ID` and `CALENDAR_ID` Script Properties had been silently blanked — restored both, re-added `ALLOWED_EMAILS`.
 
-**And Stuff (Unwind)**
-- Fold in the "Where I'll Be" panel (currently built but orphaned/unrendered in the code) — placed near the top since it's time-sensitive (sleepovers, who's away).
-- Add the two-week calendar as a lower supplementary tile — compact/glanceable (short event title + "+N more" per day), click any day to open a popup with full event details.
+**New shared components**
+- `ChoresList` — replaces 3x duplicated CRUD logic across Unwind/Tori/Nova (root cause of the original notes-save bug).
+- `CompletedFeed` — recently-completed chores feed (Tori, Nova).
+- `NextUpPanel` — merged manual + calendar-tagged events (Tori, Nova).
+- `TwoWeekCalendar` — moved off Glance, now lives on And Stuff.
 
-**Tori page**
-- Merge "To Do" and "Reminders" into a single panel — confirmed redundant.
+**Page rebuilds**
+- Unwind: wired in `WhereAmIPanel` (built but never rendered) + its missing CSS; added `TwoWeekCalendar`.
+- Tori: merged To Do + Reminders into one panel with a Task/Reminder toggle.
+- Nova: merged Today + Countdown into `NextUpPanel`; chores via shared `ChoresList`.
 
-**Nova page**
-- Consolidate "Today" and "Countdown" panels into one merged "Next Up" panel, matching the pattern already used on Tori's page (merges manual events + calendar-tagged events, shows top 1-2).
+**Glance ("At A Glance") — iterated twice**
+- v1: 2-zone layout (events hero + compact bulletin strip), no auto-rotation, dropped the 2-week grid.
+- v2 (current): 4-tile layout — Hero (next event, countdown headline, urgency-tinted), Upcoming (combined list, sports flagged, kid badges), Lookahead (7-day strip, inline weather), Bulletin; new shared helpers in `homeUtils.js` (`getDayDiff`, `classifyEvent`, `urgencyClass`).
+- Bulletin dinner note now color-distinct from regular notes.
 
-**App-wide**
-- Refactor the chores add/edit/delete logic — currently copy-pasted nearly identically across Unwind, Tori, and Nova — into one shared component. This is *why* the notes-saving bug happened; fixing the duplication prevents that class of bug going forward.
-- Add a lightweight "completed" feed so finished chores/points don't just vanish — visible completion is part of what makes the points system motivating.
+**Bug fixes (sanity-check pass)**
+- `ChoresList` was refetching on every unrelated re-render (inline array-literal dependency) — fixed.
+- `CompletedAt` missing timezone offset — fixed to match session `ExpiresAt` format.
+- Holidays were crowding real events out of the ranked events list — fixed to prioritize real events.
+- Removed dead CSS (Tori reminder-dot).
+
+**Security**
+- Full `git log -p --all` audit confirmed `SS_ID`, `CALENDAR_ID`, family emails, GAS URLs, and ICS token are exposed in public repo history (pre-existing, not from this week) — flagged with confidence levels, no history rewrite performed. See Backlog.
+
+**Research**
+- Whole-app usefulness assessment vs. Cozi/FamilyWall/Skylight/OurHome — informed the design decisions above.
 
 ## Planned for next session
 
@@ -37,6 +50,7 @@ All items below are built and verified (clean production build). Two manual step
 ## Backlog (later, not this session)
 
 - Session "sign out this device" control — right now revoking a session means manually deleting a row in the Sessions sheet.
+- 2026-08-03: `SS_ID`, `CALENDAR_ID`, family emails, GAS URLs, and ICS token are exposed in public repo git history (pre-existing, not from this week's changes). Flagged, not acted on — decide whether to rewrite history / rotate the exposed values, or accept the risk given the repo's audience.
 
 ## Declined / no action needed
 
