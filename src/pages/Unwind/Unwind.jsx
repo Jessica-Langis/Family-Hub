@@ -6,14 +6,6 @@ import ChoresList          from '../../components/ChoresList/ChoresList'
 import UpcomingEventsList  from '../../components/UpcomingEventsList/UpcomingEventsList'
 import './Unwind.css'
 
-const MEAL_DAYS_LEFT  = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
-const MEAL_DAYS_RIGHT = ['Friday', 'Saturday', 'Sunday', 'Meal Prep']
-
-const DAY_ABBR = {
-  Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu',
-  Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun', 'Meal Prep': 'Prep',
-}
-
 // Module-level so it's a stable reference across renders — passing a fresh
 // array literal as a prop on every render would make ChoresList's internal
 // useCallback identity change every time, triggering an unnecessary refetch
@@ -34,106 +26,6 @@ const FREQUENCY_OPTIONS = [
   { value: 'Saturday',  label: 'Every Saturday' },
   { value: 'Sunday',    label: 'Every Sunday' },
 ]
-
-// ── What's For Dinner panel (from Parentals) ──────────────────
-function WhatForDinnerPanel() {
-  const [meals, setMeals]     = useState({})
-  const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null)
-  const [draft, setDraft]     = useState('')
-
-  useEffect(() => {
-    apiFetch(SCRIPTS.MEAL)
-      .then(r => r.json())
-      .then(data => setMeals(data))
-      .catch(e => console.error('meals load', e))
-      .finally(() => setLoading(false))
-  }, [])
-
-  function startEdit(day) {
-    setEditing(day)
-    setDraft(meals[day] || '')
-  }
-
-  async function saveMeal(day, value) {
-    const prev = meals
-    setMeals(m => ({ ...m, [day]: value || '' }))
-    setEditing(null)
-    try {
-      const fd = new FormData()
-      fd.append('day', day)
-      fd.append('meal', value || '__CLEAR__')
-      await apiFetch(SCRIPTS.MEAL, { method: 'POST', body: fd })
-    } catch (e) {
-      console.error('save meal', e)
-      setMeals(prev)
-    }
-  }
-
-  function renderDay(day) {
-    const val = meals[day] || ''
-    if (editing === day) {
-      return (
-        <div key={day} className="meal-item editing">
-          <span className="meal-item-day">{DAY_ABBR[day] ?? day}</span>
-          <div className="meal-edit-row">
-            <input
-              className="meal-input"
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter')  saveMeal(day, draft)
-                if (e.key === 'Escape') setEditing(null)
-              }}
-              autoFocus
-            />
-            <button className="meal-save-btn"  onClick={() => saveMeal(day, draft)} title="Save">✓</button>
-            <button className="meal-clear-btn" onClick={() => saveMeal(day, '')}    title="Clear">✕</button>
-          </div>
-        </div>
-      )
-    }
-    return (
-      <div key={day} className="meal-item">
-        <span className="meal-item-day">{DAY_ABBR[day] ?? day}</span>
-        <span className={`meal-item-name${!val ? ' empty' : ''}`}>
-          {val || 'not set'}
-        </span>
-        <button
-          className="meal-edit-icon"
-          title={val ? 'Edit meal' : 'Set meal'}
-          onClick={() => startEdit(day)}
-        >✏</button>
-        {val && (
-          <button
-            className="meal-clear-icon"
-            onClick={() => saveMeal(day, '')}
-            title="Clear"
-          >×</button>
-        )}
-      </div>
-    )
-  }
-
-  return (
-    <Panel>
-      <PanelHeader title="What's for Dinner" />
-      {loading
-        ? <div className="chore-empty">Loading…</div>
-        : <div className="meal-grid-2col">
-            <div>
-              <div className="meal-col-label">Mon – Thu</div>
-              {MEAL_DAYS_LEFT.map(renderDay)}
-            </div>
-            <div>
-              <div className="meal-col-label">Fri – Prep</div>
-              {MEAL_DAYS_RIGHT.map(renderDay)}
-            </div>
-          </div>
-      }
-    </Panel>
-  )
-}
 
 // ── Read / Watch list items ────────────────────────────────────
 function FunItem({ item, titleKey, subKey, onDelete }) {
@@ -329,8 +221,6 @@ export default function Unwind() {
           onAdd={setModal}
         />
       </div>
-      <div className="un-dinner"><WhatForDinnerPanel /></div>
-
       <div className="un-events"><UpcomingEventsList /></div>
 
       {modal && (

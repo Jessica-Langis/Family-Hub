@@ -399,94 +399,10 @@ button {
   font-style: italic;
 }
 
-/* ══════════════════════════════════════════
-   MEAL PLAN
-══════════════════════════════════════════ */
-.meal-grid-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 8px;
-  padding: 8px 14px 10px;
-  overflow-y: auto;
-}
-
-.meal-col-label {
-  font-size: 0.65rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
-}
-
-.meal-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--border);
-  min-width: 0;
-}
-.meal-item:last-child { border-bottom: none; }
-
-.meal-item-day {
-  font-size: 0.62rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: 700;
-  flex-shrink: 0;
-  width: 42px;         /* fixed width — fits Mon–Sun + Prep */
-}
-
-.meal-item-name {
-  flex: 1;
-  font-size: 0.82rem;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  cursor: pointer;
-}
-.meal-item-name:hover { color: var(--accent2); }
-.meal-item-name.empty { color: var(--muted); font-style: italic; }
-
-.meal-edit-row {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  padding: 3px 0;
-}
-
-.meal-input {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 4px 8px;
-  font-size: 0.8rem;
-  color: var(--text);
-  font-family: inherit;
-}
-.meal-input:focus { outline: none; border-color: var(--accent); }
-
-.meal-save-btn, .meal-clear-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  font-size: 0.7rem;
-  cursor: pointer;
-  padding: 3px 7px;
-  transition: border-color 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-.meal-save-btn { color: var(--accent); }
-.meal-save-btn:hover { border-color: var(--accent); }
-.meal-clear-btn { color: var(--muted); }
-.meal-clear-btn:hover { border-color: var(--accent5); color: var(--accent5); }
+/* Meal-plan grid/editor CSS removed along with WhatForDinnerPanel — see
+   Unwind.jsx. Tonight's dinner display still lives in the Bulletin Board
+   (.bulletin-line-who.dinner in Glance.css), but nothing writes to it
+   until a replacement "what's for dinner" feature is built. */
 
 /* ══════════════════════════════════════════
    HOMEWORK
