@@ -820,6 +820,14 @@ button {
 .overlay-close:hover { color: var(--text); }
 
 /* ══════════════════════════════════════════
+   URGENCY TINTS — shared by At a Glance's Hero tile and And Stuff's
+   Upcoming Events list. today = warm amber · tomorrow = blue · 2+ days = muted
+   ══════════════════════════════════════════ */
+.urgency-today    { --urgency: var(--accent);  }
+.urgency-tomorrow { --urgency: var(--accent2); }
+.urgency-later    { --urgency: var(--muted);   }
+
+/* ══════════════════════════════════════════
    MOBILE — stack everything vertically
    ══════════════════════════════════════════ */
 @media (max-width: 640px) {

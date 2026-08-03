@@ -94,6 +94,27 @@ export function urgencyClass(dateStr) {
   return 'later'
 }
 
+// "TODAY" / "TOMORROW" / "N DAYS" — shared between At a Glance's Hero tile
+// and And Stuff's Upcoming Events list so the two can't drift out of sync
+// on wording.
+export function countdownLabel(dateStr) {
+  const d = getDayDiff(dateStr)
+  if (isNaN(d)) return ''
+  if (d <= 0)  return 'TODAY'
+  if (d === 1) return 'TOMORROW'
+  return `${d} DAYS`
+}
+
+// A timed event drops off a "what's happening" board 2h after it started;
+// all-day events stay up for the whole day. Shared for the same reason as
+// countdownLabel above.
+export function isStale(dateStr, timeStr) {
+  if (!timeStr) return false
+  const t = new Date(dateStr + ' ' + timeStr)
+  if (isNaN(t.getTime())) return false
+  return (new Date() - t) >= 2 * 60 * 60 * 1000
+}
+
 export function formatReminderDate(dateStr) {
   if (!dateStr?.trim()) return ''
   const today = new Date(); today.setHours(0,0,0,0)
