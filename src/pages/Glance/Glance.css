@@ -1,13 +1,12 @@
 /* ══════════════════════════════════════════
    AT A GLANCE — Page Layout
-   Four tiles. Hero (next non-sports event) and Sports sit side by side
-   at equal visual weight on the top row — during a sports season those
-   two compete for attention, so neither gets to dominate. The 7-day
+   Four tiles. Hero (the very next event) and Upcoming (everything after
+   it) sit side by side at equal visual weight on the top row. The 7-day
    lookahead spans the bottom of both, and the bulletin board holds the
    full-height right column.
 
        ┌──────────┬──────────┬─────────┐
-       │   hero   │  sports  │         │
+       │   hero   │ upcoming │         │
        ├──────────┴──────────┤ bulletin│
        │      lookahead      │         │
        └─────────────────────┴─────────┘
@@ -18,7 +17,7 @@
   grid-template-columns: 1fr 1fr 0.85fr;
   grid-template-rows: 1.15fr 1fr;
   grid-template-areas:
-    "hero      sports    bulletin"
+    "hero      upcoming  bulletin"
     "lookahead lookahead bulletin";
   gap: 14px;
   height: 100%;
@@ -39,7 +38,7 @@
 ══════════════════════════════════════════ */
 
 .glance-hero-card,
-.glance-sports-card,
+.glance-upcoming-card,
 .glance-lookahead-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -86,7 +85,7 @@
 .urgency-later    { --urgency: var(--muted);   }
 
 /* ══════════════════════════════════════════
-   HERO CARD — next non-sports event, countdown is the headline
+   HERO CARD — the very next event, countdown is the headline
 ══════════════════════════════════════════ */
 
 .glance-hero-card {
@@ -157,20 +156,20 @@
 }
 
 /* ══════════════════════════════════════════
-   SPORTS CARD — every upcoming Tori/Nova sports event
+   UPCOMING CARD — every event after the hero, in one list
 ══════════════════════════════════════════ */
 
-.glance-sports-card {
-  grid-area: sports;
+.glance-upcoming-card {
+  grid-area: upcoming;
   padding: 12px 0 4px;
   gap: 6px;
 }
 
-.glance-sports-card > .glance-card-label {
+.glance-upcoming-card > .glance-card-label {
   padding: 0 16px;
 }
 
-.glance-sports-list {
+.glance-upcoming-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -179,18 +178,31 @@
   padding: 0 16px 8px;
 }
 
-.glance-sports-row {
+.glance-upcoming-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 9px 0;
+  padding: 9px 0 9px 0;
   border-bottom: 1px solid var(--border);
   min-width: 0;
 }
-.glance-sports-row:last-child { border-bottom: none; }
+.glance-upcoming-row:last-child { border-bottom: none; }
 
-/* Kid name badge — Tori and Nova keep their existing page accents */
-.glance-sports-person {
+/* Sports get a green edge so they're pickable out of a mixed list */
+.glance-upcoming-row.is-sport {
+  border-left: 2px solid var(--accent6);
+  padding-left: 8px;
+  margin-left: -10px;
+}
+
+.glance-upcoming-medal {
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Kid name badge — only rendered when the title actually carries a name */
+.glance-upcoming-person {
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -201,10 +213,10 @@
   background: var(--surface2);
   color: var(--muted);
 }
-.glance-sports-person[data-person="tori"] { color: var(--accent4); }
-.glance-sports-person[data-person="nova"] { color: var(--accent3); }
+.glance-upcoming-person[data-person="tori"] { color: var(--accent4); }
+.glance-upcoming-person[data-person="nova"] { color: var(--accent3); }
 
-.glance-sports-title {
+.glance-upcoming-title {
   flex: 1;
   min-width: 0;
   font-size: 0.88rem;
@@ -214,7 +226,7 @@
   white-space: nowrap;
 }
 
-.glance-sports-when {
+.glance-upcoming-when {
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -419,7 +431,7 @@
     grid-template-rows: auto auto auto auto;
     grid-template-areas:
       "hero"
-      "sports"
+      "upcoming"
       "lookahead"
       "bulletin";
     height: auto;
@@ -434,7 +446,7 @@
   }
 
   .glance-hero-card     { min-height: 190px; }
-  .glance-sports-card   { min-height: 170px; }
+  .glance-upcoming-card { min-height: 200px; }
   .glance-lookahead-card{ min-height: 240px; }
   .glance-col-bulletin  { min-height: 240px; }
 

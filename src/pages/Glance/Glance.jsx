@@ -10,16 +10,18 @@ import './Glance.css'
 
 // ── At a Glance — walk-by kiosk screen near the front door ──────────
 // Four tiles, nothing rotating, everything visible at once:
-//   • Hero (left)        next non-sports family event, countdown as the
-//                        headline, tinted by urgency
-//   • Sports (top right) every upcoming Tori/Nova sports event, equal
-//                        visual weight to the hero
-//   • Lookahead (bottom) compact 5-7 day strip of everything, sports
-//                        visually distinct, with today's weather inline
-//   • Bulletin (right)   unchanged, compact strip
+//   • Hero (left)         the very next event, countdown as the headline,
+//                         tinted by urgency
+//   • Upcoming (top right) every other upcoming event in one combined
+//                         list — family, Tori and Nova alike — with
+//                         sports flagged rather than split into their own
+//                         tile. Equal visual weight to the hero.
+//   • Lookahead (bottom)  compact 7-day strip of everything, sports
+//                         visually distinct, with today's weather inline
+//   • Bulletin (right)    unchanged, compact strip
 //
-// Sports vs. non-sports routing is pure frontend keyword matching —
-// see classifyEvent in homeUtils. The calendar needs no special tags.
+// Nothing is filtered out of this screen — the hero is simply the first
+// item of the same list the Upcoming tile continues.
 
 const LOOKAHEAD_DAYS = 7
 const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
@@ -69,11 +71,10 @@ function useGlanceEvents(calDays) {
         : a.date.localeCompare(b.date)
     )
 
-    const sports = all.filter(e => e.isSports)
-
-    // The hero is the next thing that isn't a sports event — those get
-    // their own tile, so repeating one here would waste the biggest slot.
-    let hero = all.find(e => !e.isSports) || null
+    // Hero is simply the next event of any kind; the Upcoming tile picks
+    // up from the one after it, so between the two nothing is hidden.
+    let hero = all[0] || null
+    const upcoming = all.slice(1)
     if (!hero) {
       const h = getNextUSHolidays(1)[0]
       if (h) hero = { date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false }
@@ -93,7 +94,7 @@ function useGlanceEvents(calDays) {
       }
     })
 
-    return { hero, sports, lookahead }
+    return { hero, upcoming, lookahead }
   }, [calDays])
 }
 
@@ -120,7 +121,7 @@ class GlanceErrorBoundary extends Component {
   }
 }
 
-// ── Hero card — next non-sports event, countdown as the headline ────
+// ── Hero card — the very next event, countdown as the headline ──────
 function HeroCard({ event }) {
   if (!event) {
     return (
@@ -146,24 +147,33 @@ function HeroCard({ event }) {
   )
 }
 
-// ── Sports card — every upcoming Tori/Nova sports event ─────────────
-function SportsCard({ events }) {
+// ── Upcoming card — everything after the hero, one combined list ────
+// Family, Tori and Nova events all land here together. Sports get a
+// medal marker and a green edge rather than a separate tile, since the
+// calendar gives us no reliable way to tell whose event a given entry is.
+function UpcomingCard({ events }) {
   return (
-    <div className="glance-sports-card">
-      <div className="glance-card-label">🏅 Sports</div>
+    <div className="glance-upcoming-card">
+      <div className="glance-card-label">Upcoming</div>
       {events.length === 0 ? (
         <div className="glance-card-empty">
-          <span className="glance-empty-msg">No sports scheduled</span>
+          <span className="glance-empty-msg">Nothing else on the calendar</span>
         </div>
       ) : (
-        <div className="glance-sports-list">
+        <div className="glance-upcoming-list">
           {events.map((ev, i) => (
-            <div key={`${ev.date}-${ev.title}-${i}`} className={`glance-sports-row urgency-${urgencyClass(ev.date)}`}>
-              <span className="glance-sports-person" data-person={(ev.person || '').toLowerCase()}>
-                {ev.person}
-              </span>
-              <span className="glance-sports-title">{ev.title}</span>
-              <span className="glance-sports-when">
+            <div
+              key={`${ev.date}-${ev.title}-${i}`}
+              className={`glance-upcoming-row urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
+            >
+              {ev.isSports && <span className="glance-upcoming-medal">🏅</span>}
+              {ev.person && (
+                <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>
+                  {ev.person}
+                </span>
+              )}
+              <span className="glance-upcoming-title">{ev.title}</span>
+              <span className="glance-upcoming-when">
                 {countdownLabel(ev.date)}
                 {ev.time ? ` · ${ev.time}` : ''}
               </span>
@@ -207,7 +217,9 @@ function LookaheadCard({ days }) {
                 ? <span className="glance-look-none">—</span>
                 : d.events.map((ev, i) => (
                     <span key={i} className={`glance-look-ev${ev.isSports ? ' is-sport' : ''}`}>
-                      {ev.isSports && ev.person && (
+                      {/* Show the name whenever we have one, sports or not —
+                          a "Tori - Dentist" shouldn't render as just "Dentist". */}
+                      {ev.person && (
                         <span className="glance-look-ev-who">{ev.person}</span>
                       )}
                       {ev.title}
@@ -239,13 +251,13 @@ export default function Glance() {
     return () => clearInterval(id)
   }, [loadAll])
 
-  const { hero, sports, lookahead } = useGlanceEvents(calDays)
+  const { hero, upcoming, lookahead } = useGlanceEvents(calDays)
 
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
         <HeroCard event={hero} />
-        <SportsCard events={sports} />
+        <UpcomingCard events={upcoming} />
         <LookaheadCard days={lookahead} />
         <div className="glance-col-bulletin">
           <BulletinPanel

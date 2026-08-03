@@ -57,12 +57,11 @@ export function dateParts(d) {
 // ── Sports event detection ─────────────────────────────────────
 // Frontend-only, so the Google Calendar needs no special tagging.
 //
-// An event counts as "sports" only when it is BOTH tagged to a kid
-// ("Tori - ..." / "Nova - ...") AND its title mentions a sports keyword.
-// Requiring both keeps ordinary kid events (dentist, birthday, haircut)
-// out of the sports tile. The trade-off: a bare, unprefixed family entry
-// like "Wrestling Tournament" will NOT be treated as sports. If that
-// starts biting, change the `&&` in classifyEvent to `||`.
+// Detection is keyword-only: the real calendar entries are titled things
+// like "Wrestling Meet" or "Districts" with no kid name in them, so an
+// earlier version that also required a "Tori - " prefix matched nothing
+// at all. If a prefix happens to be present we still use it to attribute
+// the event, but it is never required.
 export const SPORTS_KEYWORDS = [
   'tournament', 'meet', 'match', 'practice', 'wrestling', 'game',
   'scrimmage', 'tryout', 'competition', 'qualifier', 'regional',
@@ -80,15 +79,17 @@ export function hasSportsKeyword(text) {
 export const KID_NAMES = ['Tori', 'Nova']
 
 // Returns { isSports, person, title } for a raw calendar summary.
-// `title` has the "Tori - " prefix stripped when one was present.
+// `person` is only non-null when the title actually carries a kid's name;
+// most family-calendar entries don't, so expect null and render around it.
 export function classifyEvent(summary) {
+  const raw = String(summary || '').trim()
   for (const person of KID_NAMES) {
-    const stripped = parsePersonEvent(summary, person)
+    const stripped = parsePersonEvent(raw, person)
     if (stripped) {
       return { isSports: hasSportsKeyword(stripped), person, title: stripped }
     }
   }
-  return { isSports: false, person: null, title: String(summary || '').trim() }
+  return { isSports: hasSportsKeyword(raw), person: null, title: raw }
 }
 
 // ── Urgency ────────────────────────────────────────────────────
