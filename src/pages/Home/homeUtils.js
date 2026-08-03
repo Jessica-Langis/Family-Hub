@@ -18,14 +18,6 @@ export function getDayDiff(dateStr) {
   return Math.round((target - today) / 86400000)
 }
 
-export function countdownBadge(diff) {
-  if (isNaN(diff)) return { text: '', cls: 'upcoming' }
-  if (diff < 0)    return { text: `${Math.abs(diff)}d ago`, cls: 'past' }
-  if (diff === 0)  return { text: 'TODAY', cls: 'today' }
-  if (diff <= 7)   return { text: `${diff}d away`, cls: 'soon' }
-  return { text: `${diff} days`, cls: 'upcoming' }
-}
-
 export function formatDateShort(dateStr) {
   const d = normalizeDate(dateStr)
   if (!d) return ''
@@ -142,23 +134,6 @@ function getLastWeekday(year, month, weekday) {
   const d = new Date(year, month, 0)
   while (d.getDay() !== weekday) d.setDate(d.getDate() - 1)
   return new Date(d)
-}
-
-export function getNextUSHoliday() {
-  const today = new Date(); today.setHours(0,0,0,0)
-  const year = today.getFullYear()
-  const candidates = []
-  ;[year, year + 1].forEach(y => {
-    US_HOLIDAYS.forEach(h => {
-      let d
-      if (h.day)       d = new Date(y, h.month - 1, h.day)
-      else if (h.last) d = getLastWeekday(y, h.month, h.weekday)
-      else             d = getNthWeekday(y, h.month, h.nth, h.weekday)
-      if (d >= today) candidates.push({ name: h.name, date: d })
-    })
-  })
-  candidates.sort((a, b) => a.date - b.date)
-  return candidates[0] || null
 }
 
 export function getNextUSHolidays(n = 2) {
