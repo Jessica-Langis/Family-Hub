@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import GroceryPanel     from '../Home/panels/GroceryPanel'
-import WhereAmIPanel    from '../Home/panels/WhereAmIPanel'
-import ChoresList       from '../../components/ChoresList/ChoresList'
-import TwoWeekCalendar  from '../../components/TwoWeekCalendar/TwoWeekCalendar'
+import GroceryPanel        from '../Home/panels/GroceryPanel'
+import ChoresList          from '../../components/ChoresList/ChoresList'
+import UpcomingEventsList  from '../../components/UpcomingEventsList/UpcomingEventsList'
 import './Unwind.css'
 
 const MEAL_DAYS_LEFT  = ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
@@ -306,7 +305,6 @@ export default function Unwind() {
     <div className="unwind-content">
 
       <div className="un-grocery"><GroceryPanel /></div>
-      <div className="un-whereami"><WhereAmIPanel /></div>
 
       <div className="un-todo">
         <ChoresList
@@ -333,7 +331,7 @@ export default function Unwind() {
       </div>
       <div className="un-dinner"><WhatForDinnerPanel /></div>
 
-      <div className="un-calendar"><TwoWeekCalendar /></div>
+      <div className="un-events"><UpcomingEventsList /></div>
 
       {modal && (
         <AddModal

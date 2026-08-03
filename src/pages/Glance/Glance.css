@@ -80,14 +80,8 @@
   flex-shrink: 0;
 }
 
-/* ══════════════════════════════════════════
-   URGENCY TINTS
-   today = warm amber · tomorrow = blue · 2+ days = muted
-══════════════════════════════════════════ */
-
-.urgency-today    { --urgency: var(--accent);  }
-.urgency-tomorrow { --urgency: var(--accent2); }
-.urgency-later    { --urgency: var(--muted);   }
+/* Urgency tint classes (.urgency-today/-tomorrow/-later) now live in
+   global.css — And Stuff's Upcoming Events list uses them too. */
 
 /* ══════════════════════════════════════════
    HERO CARD — the very next event, countdown is the headline

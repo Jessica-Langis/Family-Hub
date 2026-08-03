@@ -3,7 +3,7 @@ import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
 import {
   getNextUSHolidays, getDayDiff, evSummary, dateParts,
-  classifyEvent, urgencyClass,
+  classifyEvent, urgencyClass, countdownLabel, isStale,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -32,23 +32,6 @@ function fmtFull(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
   if (isNaN(d.getTime())) return ''
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-// A timed event drops off the board 2h after it started; all-day events
-// stay up for the whole day.
-function isStale(dateStr, timeStr) {
-  if (!timeStr) return false
-  const t = new Date(dateStr + ' ' + timeStr)
-  if (isNaN(t.getTime())) return false
-  return (new Date() - t) >= 2 * 60 * 60 * 1000
-}
-
-function countdownLabel(dateStr) {
-  const d = getDayDiff(dateStr)
-  if (isNaN(d)) return ''
-  if (d <= 0)  return 'TODAY'
-  if (d === 1) return 'TOMORROW'
-  return `${d} DAYS`
 }
 
 // ── Flatten calendar days → one sorted, classified event list ───────
