@@ -1,24 +1,30 @@
 /* ══════════════════════════════════════════
    AT A GLANCE — Page Layout
-   Four tiles. Hero (the very next event) and Upcoming (everything after
-   it) sit side by side at equal visual weight on the top row. The 7-day
-   lookahead spans the bottom of both, and the bulletin board holds the
-   full-height right column.
+   Three tiles. This screen is visible to guests, not just the family, so
+   it stays purely calendar + bulletin — no chores, no who's-home. Hero
+   and the 7-day lookahead share the full-width left column; the bulletin
+   board holds the full-height right column.
 
-       ┌──────────┬──────────┬─────────┐
-       │   hero   │ upcoming │         │
-       ├──────────┴──────────┤ bulletin│
+   A 4th "Upcoming" tile used to sit next to Hero (everything after it,
+   as a flat list) but it just duplicated the Lookahead grid in a worse
+   shape — a recurring event like weekly trash pickup shows up once per
+   grid day but once per LIST ROW, so it drowned out everything else.
+   Removed rather than replaced.
+
+       ┌─────────────────────┬─────────┐
+       │        hero         │         │
+       ├──────────────────── ┤ bulletin│
        │      lookahead      │         │
        └─────────────────────┴─────────┘
 ══════════════════════════════════════════ */
 
 .glance-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.85fr;
+  grid-template-columns: 1fr 0.43fr;
   grid-template-rows: 1.15fr 1fr;
   grid-template-areas:
-    "hero      upcoming  bulletin"
-    "lookahead lookahead bulletin";
+    "hero      bulletin"
+    "lookahead bulletin";
   gap: 14px;
   height: 100%;
   padding: 0 4px 4px;
@@ -38,7 +44,6 @@
 ══════════════════════════════════════════ */
 
 .glance-hero-card,
-.glance-upcoming-card,
 .glance-lookahead-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -153,86 +158,6 @@
   font-size: 0.85rem;
   color: var(--muted);
   margin-top: 2px;
-}
-
-/* ══════════════════════════════════════════
-   UPCOMING CARD — every event after the hero, in one list
-══════════════════════════════════════════ */
-
-.glance-upcoming-card {
-  grid-area: upcoming;
-  padding: 12px 0 4px;
-  gap: 6px;
-}
-
-.glance-upcoming-card > .glance-card-label {
-  padding: 0 16px;
-}
-
-.glance-upcoming-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  padding: 0 16px 8px;
-}
-
-.glance-upcoming-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 9px 0 9px 0;
-  border-bottom: 1px solid var(--border);
-  min-width: 0;
-}
-.glance-upcoming-row:last-child { border-bottom: none; }
-
-/* Sports get a green edge so they're pickable out of a mixed list */
-.glance-upcoming-row.is-sport {
-  border-left: 2px solid var(--accent6);
-  padding-left: 8px;
-  margin-left: -10px;
-}
-
-.glance-upcoming-medal {
-  font-size: 0.72rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-/* Kid name badge — only rendered when the title actually carries a name */
-.glance-upcoming-person {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 20px;
-  flex-shrink: 0;
-  background: var(--surface2);
-  color: var(--muted);
-}
-.glance-upcoming-person[data-person="tori"] { color: var(--accent4); }
-.glance-upcoming-person[data-person="nova"] { color: var(--accent3); }
-
-.glance-upcoming-title {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.88rem;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.glance-upcoming-when {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--urgency, var(--muted));
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 /* ══════════════════════════════════════════
@@ -428,10 +353,9 @@
 @media (max-width: 640px) {
   .glance-content {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto auto auto;
     grid-template-areas:
       "hero"
-      "upcoming"
       "lookahead"
       "bulletin";
     height: auto;
@@ -446,7 +370,6 @@
   }
 
   .glance-hero-card     { min-height: 190px; }
-  .glance-upcoming-card { min-height: 200px; }
   .glance-lookahead-card{ min-height: 240px; }
   .glance-col-bulletin  { min-height: 240px; }
 
