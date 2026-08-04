@@ -6,13 +6,6 @@ import ChoresList          from '../../components/ChoresList/ChoresList'
 import UpcomingEventsList  from '../../components/UpcomingEventsList/UpcomingEventsList'
 import './Unwind.css'
 
-// Module-level so it's a stable reference across renders — passing a fresh
-// array literal as a prop on every render would make ChoresList's internal
-// useCallback identity change every time, triggering an unnecessary refetch
-// whenever this page re-renders for any unrelated reason (e.g. opening the
-// movies/books modal).
-const EXCLUDE_KIDS = ['tori', 'nova']
-
 const FREQUENCY_OPTIONS = [
   { value: '',          label: 'No schedule (always show)' },
   { value: 'Daily',     label: 'Daily' },
@@ -201,7 +194,6 @@ export default function Unwind() {
       <div className="un-todo">
         <ChoresList
           title="To Do"
-          excludeWho={EXCLUDE_KIDS}
           whoInputMode="freeform"
           namePlaceholder="e.g. Vacuum living room"
           whoPlaceholder="Assigned to (optional)"
