@@ -202,6 +202,8 @@ export default function Unwind() {
           frequencyOptions={FREQUENCY_OPTIONS}
           showWeight={false}
           showPoints={false}
+          showHideCompletedToggle
+          hideCompletedStorageKey="family_chores_hide_completed"
         />
       </div>
       <div className="un-readwatch">
