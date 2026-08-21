@@ -4,11 +4,21 @@ import './AuthGate.css'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
+// Local-only escape hatch for working on layout/framework without a Google
+// session or live data. Gated on import.meta.env.DEV so this can never end
+// up true in a production build even if the var leaked into CI — set
+// VITE_SKIP_AUTH=true in a gitignored .env.local to use it. Data panels
+// will just show their empty/error states since there's no session token,
+// but the shell renders instantly with no sign-in step.
+const SKIP_AUTH = import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === 'true'
+
 // Gates the whole app behind a real, backend-enforced Google Sign-In.
 // The GAS script rejects any data request without a valid session token
 // (see chores_gas_script.gs), so this isn't just a client-side UI lock —
 // without signing in, no data loads at all, from any page.
 export default function AuthGate({ children }) {
+  if (SKIP_AUTH) return children
+
   const [session, setSession] = useState(() => getStoredSession())
   const [status, setStatus]   = useState('idle') // idle | verifying | denied | error
   const [deniedEmail, setDeniedEmail] = useState('')

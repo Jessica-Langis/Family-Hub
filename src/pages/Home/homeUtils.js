@@ -115,6 +115,45 @@ export function isStale(dateStr, timeStr) {
   return (new Date() - t) >= 2 * 60 * 60 * 1000
 }
 
+// ── Center-stage countdown (Glance Today tile) ──────────────────────
+// Distinct from countdownLabel above — this gives an hours/minutes-level
+// readout for the single "closest upcoming" event the new Today tile
+// highlights, rather than the flat day-level TODAY/TOMORROW/N DAYS
+// wording used everywhere else (Lookahead, And Stuff's Upcoming Events
+// list). Only meaningful for a same-day event with a known start time;
+// anything else (a future day, or an all-day event with no clock time)
+// falls back to the same flat wording those other places use.
+export function centerStageCountdown(dateStr, timeStr) {
+  const d = getDayDiff(dateStr)
+  if (isNaN(d)) return ''
+  if (d !== 0) return countdownLabel(dateStr) // center-stage is always today's own pick
+  if (!timeStr) return 'TODAY' // all-day event — no clock time to count down from
+
+  const start = new Date(`${dateStr} ${timeStr}`)
+  if (isNaN(start.getTime())) return 'TODAY'
+
+  const minutes = Math.round((start - new Date()) / 60000)
+  if (minutes <= 0) return 'NOW' // already started, but not stale yet — see isCenterStageStale
+  if (minutes < 60) return `in ${minutes} min`
+  const hours = Math.round(minutes / 60)
+  return `in ${hours} hour${hours === 1 ? '' : 's'}`
+}
+
+// ── Center-stage staleness (Glance Today tile) ───────────────────────
+// Tighter than isStale()'s 2h "what's happening" grace window above
+// (shared by Lookahead + Upcoming Events, deliberately loose) — this one
+// governs only which event earns the Today tile's single "closest
+// upcoming" spot: drop it 20 min after it starts rather than letting it
+// sit there all day. All-day events (no time) are never stale by this
+// rule, so they stay eligible as center-stage for the whole day.
+export function isCenterStageStale(dateStr, timeStr) {
+  if (!timeStr) return false
+  const start = new Date(`${dateStr} ${timeStr}`)
+  if (isNaN(start.getTime())) return false
+  const minutesPast = (new Date() - start) / 60000
+  return minutesPast >= 20
+}
+
 export function formatReminderDate(dateStr) {
   if (!dateStr?.trim()) return ''
   const today = new Date(); today.setHours(0,0,0,0)

@@ -1,18 +1,18 @@
 /* ══════════════════════════════════════════
    AT A GLANCE — Page Layout
    Three tiles. This screen is visible to guests, not just the family, so
-   it stays purely calendar + bulletin — no chores, no who's-home. Hero
+   it stays purely calendar + bulletin — no chores, no who's-home. Today
    and the 7-day lookahead share the full-width left column; the bulletin
    board holds the full-height right column.
 
-   A 4th "Upcoming" tile used to sit next to Hero (everything after it,
-   as a flat list) but it just duplicated the Lookahead grid in a worse
-   shape — a recurring event like weekly trash pickup shows up once per
-   grid day but once per LIST ROW, so it drowned out everything else.
+   A 4th "Upcoming" tile used to sit next to Today/Hero (everything after
+   it, as a flat list) but it just duplicated the Lookahead grid in a
+   worse shape — a recurring event like weekly trash pickup shows up once
+   per grid day but once per LIST ROW, so it drowned out everything else.
    Removed rather than replaced.
 
        ┌─────────────────────┬─────────┐
-       │        hero         │         │
+       │        today        │         │
        ├──────────────────── ┤ bulletin│
        │      lookahead      │         │
        └─────────────────────┴─────────┘
@@ -23,7 +23,7 @@
   grid-template-columns: 1fr 0.43fr;
   grid-template-rows: 1.15fr 1fr;
   grid-template-areas:
-    "hero      bulletin"
+    "today     bulletin"
     "lookahead bulletin";
   gap: 14px;
   height: 100%;
@@ -43,7 +43,7 @@
    SHARED CARD BASE
 ══════════════════════════════════════════ */
 
-.glance-hero-card,
+.glance-today-card,
 .glance-lookahead-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -84,75 +84,194 @@
    global.css — And Stuff's Upcoming Events list uses them too. */
 
 /* ══════════════════════════════════════════
-   HERO CARD — the very next event, countdown is the headline
+   TODAY CARD — today's events (left) + a peek beyond today (right)
+   Replaces the old single-event Hero (see 2026-08-21 note up top).
 ══════════════════════════════════════════ */
 
-.glance-hero-card {
-  grid-area: hero;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 2px;
-  padding: clamp(14px, 3vh, 32px) 20px;
+.glance-today-card {
+  grid-area: today;
+  flex-direction: row;
   background: linear-gradient(165deg, var(--surface) 0%, var(--surface2) 100%);
 }
 
-/* Top rule picks up the urgency colour so the whole tile reads at a glance */
-.glance-hero-card::before {
+.glance-today-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
   border-radius: 12px 12px 0 0;
-  background: var(--urgency, var(--accent6));
+  background: var(--accent);
 }
 
-.glance-hero-countdown {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
-  font-size: clamp(2.2rem, 7vw, 4.6rem);
-  line-height: 1;
-  color: var(--urgency, var(--text));
-  letter-spacing: -0.02em;
+.glance-today-left,
+.glance-today-right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(12px, 2.4vh, 22px) 18px;
+  gap: 8px;
 }
 
-/* "TODAY"/"TOMORROW" render as words, not a digit — dial the size back
-   so they fit. Set as an explicit class from JSX rather than a :has()
-   selector, which isn't safe to assume on an older kiosk browser. */
-.glance-hero-countdown.is-word {
-  font-size: clamp(1.6rem, 4.5vw, 3rem);
-  letter-spacing: 0.02em;
+.glance-today-left  { flex: 1.5; }
+.glance-today-right { flex: 1; }
+
+.glance-today-divider {
+  width: 1px;
+  flex-shrink: 0;
+  margin: 16px 0;
+  background: var(--border);
 }
 
-.glance-hero-unit {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: -2px;
+/* ── Left: today's stack ── */
+
+.glance-today-stack {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.glance-hero-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
-  font-size: clamp(1.05rem, 2.2vw, 1.7rem);
-  line-height: 1.2;
+.glance-today-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
   color: var(--text);
-  margin-top: 10px;
+}
+.glance-today-row:last-child { border-bottom: none; }
+
+/* Already-started-and-past events stay in the stack (per design call —
+   the day's full shape is still worth seeing at a glance) but fade back
+   so the eye goes to what's next instead. */
+.glance-today-row.is-past { opacity: 0.45; }
+
+.glance-today-row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glance-today-row-time {
+  font-size: 0.72rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.glance-today-row-person,
+.glance-today-person {
+  font-weight: 700;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent6);
+  flex-shrink: 0;
+}
+.glance-today-row-person[data-person="tori"],
+.glance-today-person[data-person="tori"] { color: var(--accent4); }
+.glance-today-row-person[data-person="nova"],
+.glance-today-person[data-person="nova"] { color: var(--accent3); }
+
+/* Center-stage row — the one closest still-relevant event (or "NOW"),
+   called out with its own countdown headline instead of the plain
+   list-row shape everything else in the stack uses. */
+.glance-today-row.is-center {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 4px 0 12px;
+}
+
+.glance-today-center-countdown {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.glance-today-center-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  line-height: 1.25;
+  color: var(--text);
   max-width: 100%;
   overflow-wrap: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-.glance-hero-date {
-  font-size: 0.85rem;
+.glance-today-person { margin-right: 6px; }
+
+.glance-today-center-time {
+  font-size: 0.78rem;
   color: var(--muted);
-  margin-top: 2px;
 }
+
+.glance-today-more {
+  font-size: 0.72rem;
+  color: var(--accent2);
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Right: "Coming Up" peek beyond today ── */
+
+.glance-upcoming-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.glance-upcoming-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.glance-upcoming-row:last-child { border-bottom: none; }
+
+.glance-upcoming-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.glance-upcoming-when {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.glance-upcoming-person {
+  font-weight: 700;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent6);
+  flex-shrink: 0;
+}
+.glance-upcoming-person[data-person="tori"] { color: var(--accent4); }
+.glance-upcoming-person[data-person="nova"] { color: var(--accent3); }
+
+.glance-upcoming-medal { flex-shrink: 0; }
 
 /* ══════════════════════════════════════════
    LOOKAHEAD CARD — 7-day strip, weather inline in the header
@@ -349,7 +468,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     grid-template-areas:
-      "hero"
+      "today"
       "lookahead"
       "bulletin";
     height: auto;
@@ -363,7 +482,11 @@
     max-width: 100%;
   }
 
-  .glance-hero-card     { min-height: 190px; }
+  /* Side-by-side left/right doesn't fit a phone width — stack instead,
+     with the divider becoming a horizontal rule between the two. */
+  .glance-today-card { flex-direction: column; min-height: 260px; }
+  .glance-today-divider { width: auto; height: 1px; margin: 4px 18px; }
+
   .glance-lookahead-card{ min-height: 240px; }
   .glance-col-bulletin  { min-height: 240px; }
 
