@@ -1,3 +1,13 @@
+// ── Local dev bypass (see AuthGate.jsx) ──
+// Dev-only, gated on import.meta.env.DEV so it's structurally inert in a
+// production build. When on, every SCRIPTS.* base below points at the
+// in-memory mock backend instead of a real GAS deployment — see
+// apiFetch() further down and mockBackend.js — regardless of whatever is
+// (or isn't) set in .env. That means turning this on always fully
+// disconnects from the real calendar/spreadsheets, even if real script
+// URLs happen to be configured too.
+export const MOCK_MODE = import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === 'true'
+
 // ── Google Apps Script endpoints ──
 // Real values come from build-time env vars (see .env.example) so the
 // actual deployment URLs never land in the git repo. Vite inlines these
@@ -5,7 +15,13 @@
 // client-only app calling GAS directly (anyone can still view-source the
 // live site), but they're at least not sitting in source control / repo
 // history for anyone browsing GitHub to find.
-export const SCRIPTS = {
+export const SCRIPTS = MOCK_MODE ? {
+  GROCERY: 'mock://grocery',
+  CHORES:  'mock://chores',
+  MEAL:    'mock://meal',
+  TORI:    'mock://tori',
+  NOVA:    'mock://nova',
+} : {
   GROCERY: import.meta.env.VITE_SCRIPT_GROCERY || '',
   CHORES:  import.meta.env.VITE_SCRIPT_CHORES  || '',
   MEAL:    import.meta.env.VITE_SCRIPT_MEAL    || '',
@@ -28,12 +44,15 @@ export const WEATHER_CONFIG = {
   timezone: import.meta.env.VITE_WEATHER_TZ || 'America/Los_Angeles',
 }
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && !MOCK_MODE) {
   const missing = Object.entries(SCRIPTS).filter(([, v]) => !v).map(([k]) => `VITE_SCRIPT_${k}`)
   if (!WEATHER_CONFIG.lat || !WEATHER_CONFIG.lon) missing.push('VITE_WEATHER_LAT/VITE_WEATHER_LON')
   if (missing.length) {
     console.warn(`[scripts.js] Missing env vars: ${missing.join(', ')} — copy .env.example to .env and fill in real values.`)
   }
+}
+if (MOCK_MODE) {
+  console.info('[scripts.js] VITE_SKIP_AUTH is on — running fully offline against mock data, no calendar/spreadsheet connection.')
 }
 
 // ── Auth session (Google Sign-In gate) ──
@@ -77,6 +96,15 @@ export function clearStoredSession() {
 const DEFAULT_TIMEOUT_MS = 20000
 
 export async function apiFetch(url, options = {}) {
+  // In mock mode, every SCRIPTS.* base is a mock:// URL (see above) — hand
+  // off to the in-memory mock backend instead of touching the network at
+  // all. No session juggling, no timeout, no real GAS/calendar/sheet ever
+  // gets called.
+  if (MOCK_MODE) {
+    const { mockFetch } = await import('./mockBackend')
+    return mockFetch(url, options)
+  }
+
   // Auto-attach the session token to every request so individual call
   // sites throughout the app don't each need to remember to do it.
   const session = getStoredSession()

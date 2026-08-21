@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useMemo, Component } from 'react'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
 import {
-  getNextUSHolidays, getDayDiff, evSummary, dateParts,
-  classifyEvent, urgencyClass, countdownLabel, isStale,
+  getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
+  centerStageCountdown, isCenterStageStale,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -12,30 +12,45 @@ import './Glance.css'
 // This screen is visible to guests, not just the family, which rules out
 // anything personal (chores, who's-home) — so it stays purely calendar +
 // bulletin. Three tiles, nothing rotating, everything visible at once:
-//   • Hero (top-left)   the very next event, countdown as the headline,
-//                       tinted by urgency
+//   • Today (top-left)  split tile: today's events stacked on the left
+//                       (closest one gets the center-stage countdown,
+//                       already-passed ones stay in the stack but dim
+//                       out), next few events from beyond today on the
+//                       right so the tile is never empty on a light day
 //   • Lookahead (bottom) compact 7-day strip of everything, sports
 //                       visually distinct, with today's weather inline
 //   • Bulletin (right)  compact strip, full height
 //
-// A 4th "Upcoming" tile (a flat list of everything after the hero) used
-// to sit next to Hero, but it just duplicated the Lookahead grid in a
+// A 4th "Upcoming" tile (a flat list of everything after Today) used to
+// sit next to it, but it just duplicated the Lookahead grid in a
 // different shape — worse, actually, since a recurring event (e.g. a
 // weekly "Garbage to street") shows up as one line per occurrence in a
 // flat list, but only once per day in the grid. Removed rather than
-// replaced; Hero and Lookahead now take the full width instead.
+// replaced; Today and Lookahead take the full width instead.
+//
+// 2026-08-21: replaced the old single-event Hero (biggest countdown =
+// the very next event, full stop) with this split Today tile. Hero's
+// "next event of any kind" pick meant a same-day all-day entry (e.g.
+// "Family Movie Night") could occupy the spotlight ahead of a still-
+// upcoming timed event later that same day, and its day-level countdown
+// ("TODAY") had no granularity once something was actually close. See
+// design-session-log.md for the fuller writeup.
 
 const LOOKAHEAD_DAYS = 7
 const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
-function fmtFull(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
-  if (isNaN(d.getTime())) return ''
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+// Capped so the tile's height stays predictable even on a packed day —
+// same "+N more" pattern Bulletin already uses.
+const TODAY_CAP = 5
+// "Coming Up" (right side) — just enough to keep the tile from ever
+// reading empty, without turning into its own scrollable list.
+const UPCOMING_BEYOND_COUNT = 3
 
 // ── Flatten calendar days → one sorted, classified event list ───────
-function useGlanceEvents(calDays) {
+// `tick` isn't read below — it's a plain re-render trigger (see Glance())
+// so the Today tile's minute-level countdown keeps advancing between the
+// hourly calendar refetches instead of sitting frozen for up to an hour.
+function useGlanceEvents(calDays, tick) {
   return useMemo(() => {
     const today    = new Date(); today.setHours(0, 0, 0, 0)
     const todayStr = dateParts(today)
@@ -56,11 +71,30 @@ function useGlanceEvents(calDays) {
         : a.date.localeCompare(b.date)
     )
 
-    // Hero is simply the next event of any kind.
-    let hero = all[0] || null
-    if (!hero) {
+    const todayRaw = all.filter(e => e.date === todayStr)
+    const laterRaw = all.filter(e => e.date !== todayStr)
+
+    // The closest still-relevant event today earns the center-stage
+    // slot — "relevant" meaning not yet 20 min past its start (see
+    // isCenterStageStale). All-day events are never stale by that rule,
+    // so a day with no timed events left just keeps its all-day entry
+    // (if any) front and center all day, same as before.
+    const centerIdx = todayRaw.findIndex(e => !isCenterStageStale(e.date, e.time))
+
+    const todayEvents = todayRaw.slice(0, TODAY_CAP).map((e, i) => ({
+      ...e,
+      isCenterStage: i === centerIdx,
+      isPast: isCenterStageStale(e.date, e.time),
+      countdown: i === centerIdx ? centerStageCountdown(e.date, e.time) : null,
+    }))
+    const todayOverflow = Math.max(0, todayRaw.length - TODAY_CAP)
+
+    // "Coming Up" — next few events from tomorrow on, regardless of how
+    // many (if any) are left today, so the right side never goes blank.
+    let upcomingBeyond = laterRaw.slice(0, UPCOMING_BEYOND_COUNT)
+    if (upcomingBeyond.length === 0) {
       const h = getNextUSHolidays(1)[0]
-      if (h) hero = { date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false }
+      if (h) upcomingBeyond = [{ date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false }]
     }
 
     // 7-day strip — every day gets a column whether or not it has events.
@@ -77,8 +111,9 @@ function useGlanceEvents(calDays) {
       }
     })
 
-    return { hero, lookahead }
-  }, [calDays])
+    return { todayEvents, todayOverflow, upcomingBeyond, lookahead }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calDays, tick])
 }
 
 // ── Error Boundary ────────────────────────────────────────────
@@ -104,27 +139,76 @@ class GlanceErrorBoundary extends Component {
   }
 }
 
-// ── Hero card — the very next event, countdown as the headline ──────
-function HeroCard({ event }) {
-  if (!event) {
-    return (
-      <div className="glance-hero-card glance-card-empty">
-        <span className="glance-empty-msg">Nothing on the calendar</span>
-      </div>
-    )
-  }
-  const diff = getDayDiff(event.date)
-  const soon = diff <= 1   // TODAY / TOMORROW read as words, not a number
+// ── Today tile — replaces the old single-event Hero. Left side stacks
+// everything happening today (closest still-relevant one gets center
+// stage, already-passed ones stay in the stack but dim out); right side
+// is a small teaser of what's coming after today, so the tile still has
+// something to show even on a light day.
+function TodayTile({ todayEvents, todayOverflow, upcomingBeyond }) {
+  const hasToday = todayEvents.length > 0
 
   return (
-    <div className={`glance-hero-card urgency-${urgencyClass(event.date)}`}>
-      <div className={`glance-hero-countdown${soon ? ' is-word' : ''}`}>
-        {soon ? countdownLabel(event.date) : diff}
+    <div className="glance-today-card">
+      <div className="glance-today-left">
+        <span className="glance-card-label">Today</span>
+        {!hasToday ? (
+          <div className="glance-card-empty"><span className="glance-empty-msg">Nothing today</span></div>
+        ) : (
+          <div className="glance-today-stack">
+            {todayEvents.map((ev, i) => (
+              <div
+                key={i}
+                className={`glance-today-row${ev.isCenterStage ? ' is-center' : ''}${ev.isPast ? ' is-past' : ''}`}
+              >
+                {ev.isCenterStage ? (
+                  <>
+                    <div className="glance-today-center-countdown">{ev.countdown}</div>
+                    <div className="glance-today-center-title">
+                      {ev.person && (
+                        <span className="glance-today-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+                      )}
+                      {ev.title}
+                    </div>
+                    {ev.time && <div className="glance-today-center-time">{ev.time}</div>}
+                  </>
+                ) : (
+                  <>
+                    {ev.person && (
+                      <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+                    )}
+                    <span className="glance-today-row-title">{ev.title}</span>
+                    <span className="glance-today-row-time">{ev.time || 'All day'}</span>
+                  </>
+                )}
+              </div>
+            ))}
+            {todayOverflow > 0 && (
+              <div className="glance-today-more">+{todayOverflow} more today</div>
+            )}
+          </div>
+        )}
       </div>
-      {!soon && <div className="glance-hero-unit">days away</div>}
-      <div className="glance-hero-title">{event.title}</div>
-      <div className="glance-hero-date">
-        {fmtFull(event.date)}{event.time ? ` · ${event.time}` : ''}
+
+      <div className="glance-today-divider" />
+
+      <div className="glance-today-right">
+        <span className="glance-card-label">Coming Up</span>
+        {upcomingBeyond.length === 0 ? (
+          <div className="glance-card-empty"><span className="glance-empty-msg">Nothing else on the calendar</span></div>
+        ) : (
+          <div className="glance-upcoming-list">
+            {upcomingBeyond.map((ev, i) => (
+              <div key={i} className="glance-upcoming-row">
+                {ev.isSports && <span className="glance-upcoming-medal">🏅</span>}
+                {ev.person && (
+                  <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+                )}
+                <span className="glance-upcoming-title">{ev.title}</span>
+                <span className="glance-upcoming-when">{countdownLabel(ev.date)}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -182,6 +266,9 @@ function LookaheadCard({ days }) {
 // ── Main page ─────────────────────────────────────────────────
 export default function Glance() {
   const [calDays, setCalDays] = useState([])
+  // Pure re-render trigger — see useGlanceEvents' comment on why this
+  // needs to tick faster than the hourly calendar refetch below.
+  const [tick, setTick] = useState(0)
 
   const loadAll = useCallback(async () => {
     try {
@@ -196,12 +283,17 @@ export default function Glance() {
     return () => clearInterval(id)
   }, [loadAll])
 
-  const { hero, lookahead } = useGlanceEvents(calDays)
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30 * 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const { todayEvents, todayOverflow, upcomingBeyond, lookahead } = useGlanceEvents(calDays, tick)
 
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
-        <HeroCard event={hero} />
+        <TodayTile todayEvents={todayEvents} todayOverflow={todayOverflow} upcomingBeyond={upcomingBeyond} />
         <LookaheadCard days={lookahead} />
         <div className="glance-col-bulletin">
           <BulletinPanel
