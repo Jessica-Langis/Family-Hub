@@ -92,6 +92,12 @@
   grid-area: today;
   flex-direction: row;
   background: linear-gradient(165deg, var(--surface) 0%, var(--surface2) 100%);
+  /* The one size everything else in the tile ranks off of — the
+     center-stage title. Stack rows and Coming Up rows both key their
+     own title size off this (~40%, see below) so the tile always reads
+     as "one main event, everything else clearly secondary" no matter
+     how big this grows on a wide/tall screen. */
+  --main-event-title-size: clamp(1.3rem, 1.6vw + 1.6vh, 3.2rem);
 }
 
 .glance-today-card::before {
@@ -107,10 +113,12 @@
 .glance-today-right {
   display: flex;
   flex-direction: column;
+  align-items: center;
   min-width: 0;
   min-height: 0;
-  padding: clamp(12px, 2.4vh, 22px) 18px;
+  padding: clamp(12px, 2.4vh, 22px) clamp(18px, 2.5vw, 40px);
   gap: 8px;
+  text-align: center;
 }
 
 .glance-today-left  { flex: 1.5; }
@@ -123,25 +131,59 @@
   background: var(--border);
 }
 
+/* ── All-day banner — sits above everything else in the stack; all-day
+   events (e.g. "Family Movie Night") don't compete for center stage,
+   they just always show, small and out of the way. Fixed ~16pt rather
+   than tied to --main-event-title-size — it's not ranked against the
+   other events, just a constant "also happening today" note. ── */
+
+.glance-today-allday {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.glance-today-allday-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 16pt;
+  color: var(--text);
+}
+
 /* ── Left: today's stack ── */
 
 .glance-today-stack {
   flex: 1;
+  width: 100%;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 2px;
 }
 
 .glance-today-row {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
+  /* Subject/description text for every non-center-stage event ranks
+     visibly off the center-stage title — ~40% of it, so the tile always
+     reads as one main event with everything else clearly secondary. */
+  font-size: calc(var(--main-event-title-size) * 0.4);
   color: var(--text);
+  width: 100%;
 }
 .glance-today-row:last-child { border-bottom: none; }
 
@@ -159,7 +201,7 @@
 }
 
 .glance-today-row-time {
-  font-size: 0.72rem;
+  font-size: clamp(0.72rem, 0.4vw + 0.4vh, 0.92rem);
   color: var(--muted);
   flex-shrink: 0;
   white-space: nowrap;
@@ -168,7 +210,7 @@
 .glance-today-row-person,
 .glance-today-person {
   font-weight: 700;
-  font-size: 0.68rem;
+  font-size: clamp(0.68rem, 0.35vw + 0.35vh, 0.85rem);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent6);
@@ -184,15 +226,16 @@
    list-row shape everything else in the stack uses. */
 .glance-today-row.is-center {
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 4px 0 12px;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 16px;
+  width: 100%;
 }
 
 .glance-today-center-countdown {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+  font-size: clamp(2.4rem, 3.8vw + 3.8vh, 7.5rem);
   line-height: 1;
   color: var(--accent);
   letter-spacing: -0.01em;
@@ -201,7 +244,7 @@
 .glance-today-center-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-size: var(--main-event-title-size);
   line-height: 1.25;
   color: var(--text);
   max-width: 100%;
@@ -211,12 +254,12 @@
 .glance-today-person { margin-right: 6px; }
 
 .glance-today-center-time {
-  font-size: 0.78rem;
+  font-size: clamp(0.95rem, 0.7vw + 0.7vh, 1.6rem);
   color: var(--muted);
 }
 
 .glance-today-more {
-  font-size: 0.72rem;
+  font-size: clamp(0.72rem, 0.4vw + 0.4vh, 0.92rem);
   color: var(--accent2);
   padding-top: 4px;
   flex-shrink: 0;
@@ -226,10 +269,12 @@
 
 .glance-upcoming-list {
   flex: 1;
+  width: 100%;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 2px;
 }
 
@@ -239,7 +284,8 @@
   gap: 6px;
   padding: 7px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
+  /* Same ~40%-of-center-stage ratio as the today stack rows above. */
+  font-size: calc(var(--main-event-title-size) * 0.4);
 }
 .glance-upcoming-row:last-child { border-bottom: none; }
 
@@ -253,7 +299,7 @@
 }
 
 .glance-upcoming-when {
-  font-size: 0.66rem;
+  font-size: clamp(0.66rem, 0.35vw + 0.35vh, 0.85rem);
   font-weight: 700;
   color: var(--muted);
   flex-shrink: 0;
@@ -262,7 +308,7 @@
 
 .glance-upcoming-person {
   font-weight: 700;
-  font-size: 0.64rem;
+  font-size: clamp(0.64rem, 0.32vw + 0.32vh, 0.8rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--accent6);
@@ -486,6 +532,15 @@
      with the divider becoming a horizontal rule between the two. */
   .glance-today-card { flex-direction: column; min-height: 260px; }
   .glance-today-divider { width: auto; height: 1px; margin: 4px 18px; }
+
+  /* The ~40%-of-center-stage ratio (see --main-event-title-size) is a
+     desktop/tablet call — on a phone the center-stage title itself is
+     already near its clamp floor, so 40% of that reads too small to be
+     useful. Break the tie here and give row text its own floor instead. */
+  .glance-today-row,
+  .glance-upcoming-row {
+    font-size: 0.85rem;
+  }
 
   .glance-lookahead-card{ min-height: 240px; }
   .glance-col-bulletin  { min-height: 240px; }
