@@ -12,7 +12,9 @@ import './Glance.css'
 // This screen is visible to guests, not just the family, which rules out
 // anything personal (chores, who's-home) — so it stays purely calendar +
 // bulletin. Three tiles, nothing rotating, everything visible at once:
-//   • Today (top-left)  split tile: today's events stacked on the left
+//   • Today (top-left)  split tile: any all-day events sit in a small
+//                       banner above everything (see 2026-08-26 below),
+//                       then today's timed events stack on the left
 //                       (closest one gets the center-stage countdown,
 //                       already-passed ones stay in the stack but dim
 //                       out), next few events from beyond today on the
@@ -35,6 +37,15 @@ import './Glance.css'
 // upcoming timed event later that same day, and its day-level countdown
 // ("TODAY") had no granularity once something was actually close. See
 // design-session-log.md for the fuller writeup.
+//
+// 2026-08-26: all-day events pulled out of center-stage contention
+// entirely — they now render as their own small (~16pt) banner above
+// the stack instead of sorting first and grabbing the spotlight. The
+// first still-relevant *timed* event today always gets center stage
+// with its minutes/hours countdown; the rest of the stack, plus the
+// Coming Up rows on the right, are sized at ~40% of that center-stage
+// title (via the --main-event-title-size custom property in Glance.css)
+// so everything visibly ranks off the one event that matters most.
 
 const LOOKAHEAD_DAYS = 7
 const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
@@ -74,20 +85,26 @@ function useGlanceEvents(calDays, tick) {
     const todayRaw = all.filter(e => e.date === todayStr)
     const laterRaw = all.filter(e => e.date !== todayStr)
 
-    // The closest still-relevant event today earns the center-stage
-    // slot — "relevant" meaning not yet 20 min past its start (see
-    // isCenterStageStale). All-day events are never stale by that rule,
-    // so a day with no timed events left just keeps its all-day entry
-    // (if any) front and center all day, same as before.
-    const centerIdx = todayRaw.findIndex(e => !isCenterStageStale(e.date, e.time))
+    // All-day events don't compete for the center-stage spot — they get
+    // their own small banner above everything instead (see TodayTile),
+    // so a same-day all-day entry (e.g. "Family Movie Night") can never
+    // bump a still-upcoming timed event out of the spotlight.
+    const todayAllDay = todayRaw.filter(e => !e.time)
+    const todayTimed  = todayRaw.filter(e => e.time)
 
-    const todayEvents = todayRaw.slice(0, TODAY_CAP).map((e, i) => ({
+    // The closest still-relevant timed event today earns the center-stage
+    // slot — "relevant" meaning not yet 20 min past its start (see
+    // isCenterStageStale). If nothing timed is left today, nothing gets
+    // the center-stage treatment (the all-day banner still shows).
+    const centerIdx = todayTimed.findIndex(e => !isCenterStageStale(e.date, e.time))
+
+    const todayEvents = todayTimed.slice(0, TODAY_CAP).map((e, i) => ({
       ...e,
       isCenterStage: i === centerIdx,
       isPast: isCenterStageStale(e.date, e.time),
       countdown: i === centerIdx ? centerStageCountdown(e.date, e.time) : null,
     }))
-    const todayOverflow = Math.max(0, todayRaw.length - TODAY_CAP)
+    const todayOverflow = Math.max(0, todayTimed.length - TODAY_CAP)
 
     // "Coming Up" — next few events from tomorrow on, regardless of how
     // many (if any) are left today, so the right side never goes blank.
@@ -111,7 +128,7 @@ function useGlanceEvents(calDays, tick) {
       }
     })
 
-    return { todayEvents, todayOverflow, upcomingBeyond, lookahead }
+    return { todayAllDay, todayEvents, todayOverflow, upcomingBeyond, lookahead }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calDays, tick])
 }
@@ -144,16 +161,28 @@ class GlanceErrorBoundary extends Component {
 // stage, already-passed ones stay in the stack but dim out); right side
 // is a small teaser of what's coming after today, so the tile still has
 // something to show even on a light day.
-function TodayTile({ todayEvents, todayOverflow, upcomingBeyond }) {
-  const hasToday = todayEvents.length > 0
+function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) {
+  const hasTimed = todayEvents.length > 0
 
   return (
     <div className="glance-today-card">
       <div className="glance-today-left">
         <span className="glance-card-label">Today</span>
-        {!hasToday ? (
+        {todayAllDay.length > 0 && (
+          <div className="glance-today-allday">
+            {todayAllDay.map((ev, i) => (
+              <div key={i} className="glance-today-allday-row">
+                {ev.person && (
+                  <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+                )}
+                <span>{ev.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {!hasTimed && todayAllDay.length === 0 ? (
           <div className="glance-card-empty"><span className="glance-empty-msg">Nothing today</span></div>
-        ) : (
+        ) : !hasTimed ? null : (
           <div className="glance-today-stack">
             {todayEvents.map((ev, i) => (
               <div
@@ -288,12 +317,12 @@ export default function Glance() {
     return () => clearInterval(id)
   }, [])
 
-  const { todayEvents, todayOverflow, upcomingBeyond, lookahead } = useGlanceEvents(calDays, tick)
+  const { todayAllDay, todayEvents, todayOverflow, upcomingBeyond, lookahead } = useGlanceEvents(calDays, tick)
 
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
-        <TodayTile todayEvents={todayEvents} todayOverflow={todayOverflow} upcomingBeyond={upcomingBeyond} />
+        <TodayTile todayAllDay={todayAllDay} todayEvents={todayEvents} todayOverflow={todayOverflow} upcomingBeyond={upcomingBeyond} />
         <LookaheadCard days={lookahead} />
         <div className="glance-col-bulletin">
           <BulletinPanel
