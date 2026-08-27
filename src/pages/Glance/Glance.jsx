@@ -3,7 +3,7 @@ import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale,
+  centerStageCountdown, isCenterStageStale, urgencyClass,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -227,7 +227,10 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
         ) : (
           <div className="glance-upcoming-list">
             {upcomingBeyond.map((ev, i) => (
-              <div key={i} className="glance-upcoming-row">
+              <div
+                key={i}
+                className={`glance-upcoming-row urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
+              >
                 {ev.isSports && <span className="glance-upcoming-medal">🏅</span>}
                 {ev.person && (
                   <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>

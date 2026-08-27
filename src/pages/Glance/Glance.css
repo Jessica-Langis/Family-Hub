@@ -37,6 +37,22 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  /* Same per-tile container-relative sizing as Today/Lookahead (see
+     that comment above) — the Bulletin column is usually the narrowest,
+     tallest tile on the page, so it needs its own container context
+     rather than reacting to viewport width the same way a wide tile
+     would. */
+  container-type: size;
+}
+
+/* Bulletin's header title/badge come from the shared Panel component
+   (used by every page) — scoped to this tile only so other pages' use
+   of Panel/PanelHeader is unaffected. */
+.glance-col-bulletin .section-title {
+  font-size: clamp(0.95rem, 0.5cqw + 0.5cqh, 1.3rem);
+}
+.glance-col-bulletin .section-badge {
+  font-size: clamp(0.65rem, 0.3cqw + 0.3cqh, 0.85rem);
 }
 
 /* ══════════════════════════════════════════
@@ -54,6 +70,13 @@
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
+  /* Query container for this tile's own font sizing (see cqw/cqh usage
+     throughout this file) — text scales off the tile's own box, not the
+     viewport, so an unusual aspect ratio (ultra-wide monitor, portrait
+     kiosk, a narrow tall Bulletin column next to a short wide Lookahead
+     strip) sizes each tile's type appropriately instead of every tile
+     reacting the same way to raw viewport dimensions. */
+  container-type: size;
 }
 
 .glance-card-empty {
@@ -70,9 +93,12 @@
   font-size: 0.85rem;
 }
 
-/* Small uppercase tile label, shared by Sports + Lookahead */
+/* Small uppercase tile label, shared by Sports + Lookahead. cqw/cqh
+   resolves against whichever tile it's actually sitting in (Today vs
+   Lookahead have different container boxes), so this scales correctly
+   in both places without needing a per-tile override. */
 .glance-card-label {
-  font-size: 0.68rem;
+  font-size: clamp(0.68rem, 0.35cqw + 0.35cqh, 0.9rem);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -97,7 +123,7 @@
      own title size off this (~40%, see below) so the tile always reads
      as "one main event, everything else clearly secondary" no matter
      how big this grows on a wide/tall screen. */
-  --main-event-title-size: clamp(1.3rem, 1.6vw + 1.6vh, 3.2rem);
+  --main-event-title-size: clamp(1.3rem, 1.6cqw + 1.6cqh, 3.2rem);
 }
 
 .glance-today-card::before {
@@ -116,7 +142,7 @@
   align-items: center;
   min-width: 0;
   min-height: 0;
-  padding: clamp(12px, 2.4vh, 22px) clamp(18px, 2.5vw, 40px);
+  padding: clamp(12px, 2.4cqh, 22px) clamp(18px, 2.5cqw, 40px);
   gap: 8px;
   text-align: center;
 }
@@ -201,7 +227,7 @@
 }
 
 .glance-today-row-time {
-  font-size: clamp(0.72rem, 0.4vw + 0.4vh, 0.92rem);
+  font-size: clamp(0.72rem, 0.4cqw + 0.4cqh, 0.92rem);
   color: var(--muted);
   flex-shrink: 0;
   white-space: nowrap;
@@ -210,7 +236,7 @@
 .glance-today-row-person,
 .glance-today-person {
   font-weight: 700;
-  font-size: clamp(0.68rem, 0.35vw + 0.35vh, 0.85rem);
+  font-size: clamp(0.68rem, 0.35cqw + 0.35cqh, 0.85rem);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent6);
@@ -235,7 +261,7 @@
 .glance-today-center-countdown {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(2.4rem, 3.8vw + 3.8vh, 7.5rem);
+  font-size: clamp(2.4rem, 3.8cqw + 3.8cqh, 7.5rem);
   line-height: 1;
   color: var(--accent);
   letter-spacing: -0.01em;
@@ -254,18 +280,23 @@
 .glance-today-person { margin-right: 6px; }
 
 .glance-today-center-time {
-  font-size: clamp(0.95rem, 0.7vw + 0.7vh, 1.6rem);
+  font-size: clamp(0.95rem, 0.7cqw + 0.7cqh, 1.6rem);
   color: var(--muted);
 }
 
 .glance-today-more {
-  font-size: clamp(0.72rem, 0.4vw + 0.4vh, 0.92rem);
+  font-size: clamp(0.72rem, 0.4cqw + 0.4cqh, 0.92rem);
   color: var(--accent2);
   padding-top: 4px;
   flex-shrink: 0;
 }
 
-/* ── Right: "Coming Up" peek beyond today ── */
+/* ── Right: "Coming Up" peek beyond today ──
+   Rows carry a `urgency-today/-tomorrow/-later` class (global.css) so
+   .glance-upcoming-when below picks up --urgency automatically — same
+   system the Lookahead grid and And Stuff's Upcoming Events list use,
+   so the soonest of these visibly outranks the rest instead of every
+   row reading identically muted. */
 
 .glance-upcoming-list {
   flex: 1;
@@ -289,6 +320,15 @@
 }
 .glance-upcoming-row:last-child { border-bottom: none; }
 
+/* Sports get the same green edge treatment as the Lookahead pills and
+   And Stuff's list, so they're pickable out of the Coming Up list too. */
+.glance-upcoming-row.is-sport {
+  border-left: 2px solid var(--accent6);
+  padding-left: 8px;
+  margin-left: -10px;
+  background: rgba(136, 201, 168, 0.08);
+}
+
 .glance-upcoming-title {
   flex: 1;
   min-width: 0;
@@ -299,16 +339,16 @@
 }
 
 .glance-upcoming-when {
-  font-size: clamp(0.66rem, 0.35vw + 0.35vh, 0.85rem);
+  font-size: clamp(0.66rem, 0.35cqw + 0.35cqh, 0.85rem);
   font-weight: 700;
-  color: var(--muted);
+  color: var(--urgency, var(--muted));
   flex-shrink: 0;
   white-space: nowrap;
 }
 
 .glance-upcoming-person {
   font-weight: 700;
-  font-size: clamp(0.64rem, 0.32vw + 0.32vh, 0.8rem);
+  font-size: clamp(0.64rem, 0.32cqw + 0.32cqh, 0.8rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--accent6);
@@ -345,7 +385,7 @@
 }
 .gws-icon { font-size: 1rem; line-height: 1; }
 .gws-temp {
-  font-size: 0.78rem;
+  font-size: clamp(0.78rem, 0.35cqw + 0.35cqh, 1rem);
   font-weight: 600;
   color: var(--accent2);
   white-space: nowrap;
@@ -376,7 +416,7 @@
 }
 
 .glance-look-dayname {
-  font-size: 0.62rem;
+  font-size: clamp(0.62rem, 0.28cqw + 0.28cqh, 0.8rem);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -402,13 +442,13 @@
 }
 
 .glance-look-none {
-  font-size: 0.7rem;
+  font-size: clamp(0.7rem, 0.3cqw + 0.3cqh, 0.88rem);
   color: var(--border);
 }
 
 /* Regular event pill */
 .glance-look-ev {
-  font-size: 0.68rem;
+  font-size: clamp(0.68rem, 0.3cqw + 0.3cqh, 0.88rem);
   line-height: 1.3;
   color: var(--text);
   padding: 3px 5px;
@@ -462,7 +502,7 @@
 .bulletin-line:hover { opacity: 0.8; }
 
 .bulletin-line-who {
-  font-size: 0.68rem;
+  font-size: clamp(0.68rem, 0.3cqw + 0.3cqh, 0.88rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -476,7 +516,7 @@
 }
 
 .bulletin-line-text {
-  font-size: 0.82rem;
+  font-size: clamp(0.82rem, 0.4cqw + 0.4cqh, 1.05rem);
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -486,7 +526,7 @@
 }
 
 .bulletin-more-row {
-  font-size: 0.72rem;
+  font-size: clamp(0.72rem, 0.32cqw + 0.32cqh, 0.9rem);
   color: var(--accent2);
   padding: 8px 0 2px;
   cursor: pointer;
@@ -532,6 +572,23 @@
      with the divider becoming a horizontal rule between the two. */
   .glance-today-card { flex-direction: column; min-height: 260px; }
   .glance-today-divider { width: auto; height: 1px; margin: 4px 18px; }
+
+  /* On mobile the page itself scrolls (.glance-content is height:auto /
+     overflow:visible above) rather than each tile being a fixed box —
+     tiles grow with their content instead of clipping to it. Container
+     *size* queries need a definite height to measure against, which
+     directly fights that, so size containment is desktop/tablet-only:
+     switch back to viewport units here for the one property (the
+     center-stage countdown/title size) where that distinction actually
+     shows. */
+  .glance-today-card,
+  .glance-lookahead-card,
+  .glance-col-bulletin {
+    container-type: normal;
+  }
+  .glance-today-card {
+    --main-event-title-size: clamp(1.3rem, 1.6vw + 1.6vh, 3.2rem);
+  }
 
   /* The ~40%-of-center-stage ratio (see --main-event-title-size) is a
      desktop/tablet call — on a phone the center-stage title itself is

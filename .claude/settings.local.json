@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(cd \"g:/Other computers/My Laptop/Documents/Claude Cowork/Home Management Dashboard/Family-Hub\" && rm -f scratch_shot5.mjs && git status --short)"
+    ],
+    "additionalDirectories": [
+      "g:\\Other computers\\My Laptop\\Documents\\Claude Cowork\\Home Management Dashboard\\Family-Hub"
     ]
   }
 }
