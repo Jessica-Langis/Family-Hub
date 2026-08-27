@@ -189,7 +189,11 @@
   flex: 1;
   width: 100%;
   min-height: 0;
-  overflow-y: auto;
+  /* Hard clip, not scroll — TODAY_CAP + the "+N more" row already cap
+     how much this ever has to hold, and a kiosk display isn't something
+     anyone scrolls, so a stray scrollbar here is always a sign the math
+     is off by a hair somewhere, never a thing to actually use. */
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -302,7 +306,11 @@
   flex: 1;
   width: 100%;
   min-height: 0;
-  overflow-y: auto;
+  /* Same reasoning as .glance-today-stack — capped to
+     UPCOMING_BEYOND_COUNT already, so this should never actually need
+     to scroll; hard clip rather than risk a stray scrollbar on a
+     display no one interacts with. */
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
