@@ -44,6 +44,20 @@
 //  ALLOWED_EMAILS, and last SESSION_DAYS days so a kiosk screen doesn't
 //  need to re-login constantly. To force a device to log out, delete its
 //  row from the Sessions tab.
+//
+//  DAILY DIGEST EMAIL: sendDailyDigest() emails today's + tomorrow's
+//  calendar events (styled like the At A Glance Today tile) to
+//  DIGEST_RECIPIENTS. One-time setup:
+//    1. Set the DIGEST_RECIPIENTS script property (comma-separated
+//       emails) — same mechanism as SS_ID/CALENDAR_ID/ALLOWED_EMAILS
+//       above. Deliberately separate from ALLOWED_EMAILS — who signs
+//       into the kiosk and who gets a morning email aren't necessarily
+//       the same list.
+//    2. Run createDailyDigestTrigger() once from this editor (function
+//       dropdown → select it → Run) to install the 6am-ish daily
+//       trigger. Re-running it is safe — it clears any existing
+//       sendDailyDigest trigger first, so it never double-installs.
+//    3. Authorize the Gmail/MailApp scope when prompted (first run only).
 // ═══════════════════════════════════════════════════════════════
 
 var SESSION_DAYS = 30;
@@ -55,14 +69,23 @@ var ALLOWED_EMAILS = (_props.getProperty('ALLOWED_EMAILS') || '')
   .split(',')
   .map(function(s) { return s.trim().toLowerCase(); })
   .filter(Boolean);
+// Recipients for sendDailyDigest() below — separate from ALLOWED_EMAILS
+// on purpose: who's allowed to sign into the app isn't necessarily who
+// wants a morning email (e.g. a grandparent who gets the digest but
+// doesn't use the kiosk, or vice versa).
+var DIGEST_RECIPIENTS = (_props.getProperty('DIGEST_RECIPIENTS') || '')
+  .split(',')
+  .map(function(s) { return s.trim(); })
+  .filter(Boolean);
 
 // Run this once from the editor (see header comment), then feel free to
 // blank out the values below again — they're only needed for that one run.
 function setupProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    SS_ID:          '',  // paste your Sheet ID here, run once, then clear
-    CALENDAR_ID:    '',  // paste your family Calendar ID here, run once, then clear
-    ALLOWED_EMAILS: ''   // comma-separated emails, run once, then clear
+    SS_ID:             '',  // paste your Sheet ID here, run once, then clear
+    CALENDAR_ID:       '',  // paste your family Calendar ID here, run once, then clear
+    ALLOWED_EMAILS:    '',  // comma-separated emails, run once, then clear
+    DIGEST_RECIPIENTS: ''   // comma-separated emails for the daily digest, run once, then clear
   });
   Logger.log('Script properties saved. You can blank this function out again now.');
 }
@@ -442,71 +465,80 @@ function doGet(e) {
   // ── UPCOMING (N-day window via Calendar API) ──
   if (type === 'upcoming') {
     try {
-      var tz       = Session.getScriptTimeZone();
-      var numDays  = parseInt(e.parameter.days || '31', 10);
-      var today    = new Date(); today.setHours(0, 0, 0, 0);
-      var end      = new Date(today); end.setDate(end.getDate() + numDays);
-      var todayStr = Utilities.formatDate(today, tz, 'yyyy-MM-dd');
-      var endStr   = Utilities.formatDate(end,   tz, 'yyyy-MM-dd');
-
-      var resp = Calendar.Events.list(CALENDAR_ID, {
-        timeMin:      today.toISOString(),
-        timeMax:      end.toISOString(),
-        singleEvents: true,
-        orderBy:      'startTime',
-        maxResults:   2500
-      });
-
-      var byDate = {};
-      (resp.items || []).forEach(function(ev) {
-        var isAllDay = !ev.start.dateTime;
-        var startDate, endDate, startTime = null, endTime = null;
-
-        if (isAllDay) {
-          startDate = ev.start.date;
-          var ed = new Date(ev.end.date + 'T00:00:00');
-          ed.setDate(ed.getDate() - 1); // Google all-day end is exclusive
-          endDate = Utilities.formatDate(ed, tz, 'yyyy-MM-dd');
-        } else {
-          var sd  = new Date(ev.start.dateTime);
-          var edt = new Date(ev.end.dateTime);
-          startDate = Utilities.formatDate(sd,  tz, 'yyyy-MM-dd');
-          endDate   = Utilities.formatDate(edt, tz, 'yyyy-MM-dd');
-          startTime = Utilities.formatDate(sd,  tz, 'h:mm a');
-          endTime   = Utilities.formatDate(edt, tz, 'h:mm a');
-        }
-
-        var cursor = new Date(startDate + 'T00:00:00');
-        var evEnd  = new Date(endDate   + 'T00:00:00');
-        while (cursor <= evEnd) {
-          var ds = Utilities.formatDate(cursor, tz, 'yyyy-MM-dd');
-          if (ds >= todayStr && ds < endStr) {
-            if (!byDate[ds]) byDate[ds] = [];
-            byDate[ds].push({
-              summary:   ev.summary || '',
-              location:  ev.location || '',
-              startTime: startTime,
-              endTime:   endTime,
-              isAllDay:  isAllDay
-            });
-          }
-          cursor.setDate(cursor.getDate() + 1);
-        }
-      });
-
-      var days = [];
-      for (var i = 0; i < numDays; i++) {
-        var d = new Date(today); d.setDate(d.getDate() + i);
-        var ds = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
-        days.push({ date: ds, events: byDate[ds] || [] });
-      }
-      return json(days);
+      var numDays = parseInt(e.parameter.days || '31', 10);
+      return json(getUpcomingDays(numDays));
     } catch (err) {
       return json({ error: 'Upcoming fetch error: ' + err.toString() });
     }
   }
 
   return json({ error: 'unknown type: ' + type });
+}
+
+// Shared by doGet's 'upcoming' branch above and sendDailyDigest() below —
+// both need "the next N days, bucketed by date" from the same calendar,
+// so this is the one place that logic lives. Returns
+// [{ date: 'yyyy-MM-dd', events: [{ summary, location, startTime,
+// endTime, isAllDay }] }, ...], one entry per day starting today.
+function getUpcomingDays(numDays) {
+  var tz       = Session.getScriptTimeZone();
+  var today    = new Date(); today.setHours(0, 0, 0, 0);
+  var end      = new Date(today); end.setDate(end.getDate() + numDays);
+  var todayStr = Utilities.formatDate(today, tz, 'yyyy-MM-dd');
+  var endStr   = Utilities.formatDate(end,   tz, 'yyyy-MM-dd');
+
+  var resp = Calendar.Events.list(CALENDAR_ID, {
+    timeMin:      today.toISOString(),
+    timeMax:      end.toISOString(),
+    singleEvents: true,
+    orderBy:      'startTime',
+    maxResults:   2500
+  });
+
+  var byDate = {};
+  (resp.items || []).forEach(function(ev) {
+    var isAllDay = !ev.start.dateTime;
+    var startDate, endDate, startTime = null, endTime = null;
+
+    if (isAllDay) {
+      startDate = ev.start.date;
+      var ed = new Date(ev.end.date + 'T00:00:00');
+      ed.setDate(ed.getDate() - 1); // Google all-day end is exclusive
+      endDate = Utilities.formatDate(ed, tz, 'yyyy-MM-dd');
+    } else {
+      var sd  = new Date(ev.start.dateTime);
+      var edt = new Date(ev.end.dateTime);
+      startDate = Utilities.formatDate(sd,  tz, 'yyyy-MM-dd');
+      endDate   = Utilities.formatDate(edt, tz, 'yyyy-MM-dd');
+      startTime = Utilities.formatDate(sd,  tz, 'h:mm a');
+      endTime   = Utilities.formatDate(edt, tz, 'h:mm a');
+    }
+
+    var cursor = new Date(startDate + 'T00:00:00');
+    var evEnd  = new Date(endDate   + 'T00:00:00');
+    while (cursor <= evEnd) {
+      var ds = Utilities.formatDate(cursor, tz, 'yyyy-MM-dd');
+      if (ds >= todayStr && ds < endStr) {
+        if (!byDate[ds]) byDate[ds] = [];
+        byDate[ds].push({
+          summary:   ev.summary || '',
+          location:  ev.location || '',
+          startTime: startTime,
+          endTime:   endTime,
+          isAllDay:  isAllDay
+        });
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  });
+
+  var days = [];
+  for (var i = 0; i < numDays; i++) {
+    var d = new Date(today); d.setDate(d.getDate() + i);
+    var ds = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    days.push({ date: ds, events: byDate[ds] || [] });
+  }
+  return days;
 }
 
 // ─────────────────────────────────────────────
@@ -766,4 +798,402 @@ function listMyCalendars() {
   cals.forEach(function(c) {
     Logger.log(c.getId() + ' | ' + c.getName());
   });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DAILY DIGEST EMAIL
+//  See the header comment at the top of this file for one-time setup.
+// ═══════════════════════════════════════════════════════════════
+
+// Mirrors src/pages/Home/homeUtils.js on the frontend (KID_NAMES,
+// SPORTS_KEYWORDS, parsePersonEvent, classifyEvent) so a "Tori - Dentist
+// Appointment" event reads the same way in the email as it does on the
+// At A Glance page — kid name pulled out as a badge, sport keyword
+// flagged. Kept in sync by hand; there's no code sharing between an
+// Apps Script project and the Vite frontend.
+var DIGEST_KID_NAMES = ['Tori', 'Nova'];
+var DIGEST_SPORTS_KEYWORDS = [
+  'tournament', 'meet', 'match', 'practice', 'wrestling', 'game',
+  'scrimmage', 'tryout', 'competition', 'qualifier', 'regional',
+  'championship', 'dual'
+];
+var DIGEST_SPORTS_RE = new RegExp(
+  '\\b(?:' + DIGEST_SPORTS_KEYWORDS.join('|') + ')(?:e?s)?\\b', 'i'
+);
+
+function digestHasSportsKeyword(text) {
+  return DIGEST_SPORTS_RE.test(String(text || ''));
+}
+
+function digestParsePersonEvent(summary, name) {
+  var re = new RegExp('^\\s*' + name + '\\s*[-:\u2013]\\s*(.+)$', 'i');
+  var m = String(summary || '').match(re);
+  return m ? m[1].trim() : null;
+}
+
+// Returns { isSports, person, title } — see homeUtils.js's classifyEvent.
+function digestClassifyEvent(summary) {
+  var raw = String(summary || '').trim();
+  for (var i = 0; i < DIGEST_KID_NAMES.length; i++) {
+    var person = DIGEST_KID_NAMES[i];
+    var stripped = digestParsePersonEvent(raw, person);
+    if (stripped) {
+      return { isSports: digestHasSportsKeyword(stripped), person: person, title: stripped };
+    }
+  }
+  return { isSports: digestHasSportsKeyword(raw), person: null, title: raw };
+}
+
+// Same accent hex values as src/styles/tokens.css, so the email's kid
+// badges match the app's colors (Tori = pink, Nova = sky blue) instead
+// of picking their own palette.
+var DIGEST_PERSON_COLOR = { Tori: '#f5b8ce', Nova: '#87ceeb' };
+
+// App's actual dark palette (src/styles/tokens.css) — kept in sync by
+// hand since this GAS project can't import the frontend's CSS. This is
+// what makes the digest read as a snip of the real app instead of a
+// generic email template: same background/surface/border/accent/text
+// colors the At A Glance page itself uses.
+var DIGEST_COLORS = {
+  bg:      '#0f1117',
+  surface: '#181c27',
+  border:  '#2a3045',
+  accent:  '#e8b86d',
+  accent6: '#88c9a8', // sports green — matches the Lookahead grid's sport pills
+  text:    '#e8eaf0',
+  muted:   '#8891a8'
+};
+var DIGEST_FONT = "-apple-system,'Segoe UI',Roboto,sans-serif";
+
+function digestEscapeHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── Chores + FamilyReminders for the digest ──────────────────────────
+// Chores due today (including anything overdue and still not done, so
+// nothing silently falls off the radar — per design call) or due
+// tomorrow; FamilyReminders on the same two-day window, same overdue
+// rule. Kept separate from the doGet 'chores' / 'family_reminders'
+// handlers above since those are shaped for the live app's full list +
+// CRUD, not a simple two-day digest slice. Personal per-kid Reminders
+// (Tori/Nova) are deliberately excluded — this is a family-wide digest,
+// not a place to surface a kid's personal reminder list in a parent's
+// inbox.
+function getDigestChores() {
+  var sheet = getSheet('Chores');
+  if (!sheet) return { today: [], tomorrow: [] };
+  var tz = Session.getScriptTimeZone();
+  var todayStr = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  var tomorrowD = new Date(); tomorrowD.setDate(tomorrowD.getDate() + 1);
+  var tomorrowStr = Utilities.formatDate(tomorrowD, tz, 'yyyy-MM-dd');
+
+  var rows = sheet.getDataRange().getValues();
+  var today = [];
+  var tomorrow = [];
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+    var done = r[4] === true || r[4] === 'TRUE' || r[4] === 1;
+    if (done) continue;
+    var dueDateVal = r[3];
+    if (!dueDateVal) continue;
+    var dd = new Date(dueDateVal);
+    if (isNaN(dd.getTime())) continue;
+    var dueStr = Utilities.formatDate(dd, tz, 'yyyy-MM-dd');
+    var weightVal = parseInt(r[5], 10);
+    if (!(weightVal >= 1 && weightVal <= 3)) weightVal = 1;
+    var item = { name: r[0] || '', who: r[1] || '', weight: weightVal };
+    if (dueStr <= todayStr) today.push(item);            // overdue folds into today
+    else if (dueStr === tomorrowStr) tomorrow.push(item);
+  }
+  return { today: today, tomorrow: tomorrow };
+}
+
+function getDigestFamilyReminders() {
+  var sheet = getSheet('FamilyReminders');
+  if (!sheet) return { today: [], tomorrow: [] };
+  var tz = Session.getScriptTimeZone();
+  var todayStr = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  var tomorrowD = new Date(); tomorrowD.setDate(tomorrowD.getDate() + 1);
+  var tomorrowStr = Utilities.formatDate(tomorrowD, tz, 'yyyy-MM-dd');
+
+  var rows = sheet.getDataRange().getValues();
+  var today = [];
+  var tomorrow = [];
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+    var dateVal = r[1];
+    if (!dateVal) continue;
+    var d = new Date(dateVal);
+    if (isNaN(d.getTime())) continue;
+    var dStr = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    var item = { text: r[0] || '' };
+    if (dStr <= todayStr) today.push(item);
+    else if (dStr === tomorrowStr) tomorrow.push(item);
+  }
+  return { today: today, tomorrow: tomorrow };
+}
+
+// One <tr> per event — time, kid badge, sport medal (with the same
+// green accent-edge treatment the Lookahead grid and Coming Up rows use
+// for sports), title, location. The last row in a section drops its
+// bottom border, matching .glance-today-row:last-child in the app.
+function digestEventRowHtml(ev, i, arr) {
+  var c = DIGEST_COLORS;
+  var cls = digestClassifyEvent(ev.summary);
+  var when = ev.isAllDay ? 'All day' : (ev.startTime || '');
+  var isLast = i === arr.length - 1;
+  var rowBorder = isLast ? '' : ('border-bottom:1px solid ' + c.border + ';');
+  var badge = cls.person
+    ? '<span style="display:inline-block;font-size:11px;font-weight:700;' +
+      'text-transform:uppercase;letter-spacing:0.04em;color:' + DIGEST_PERSON_COLOR[cls.person] +
+      ';margin-right:6px;">' + digestEscapeHtml(cls.person) + '</span>'
+    : '';
+  var medal = cls.isSports ? '🏅 ' : '';
+  var location = ev.location
+    ? '<div style="font-size:12px;color:' + c.muted + ';margin-top:2px;">' + digestEscapeHtml(ev.location) + '</div>'
+    : '';
+  var sportAccent = cls.isSports
+    ? 'border-left:2px solid ' + c.accent6 + ';background:rgba(136,201,168,0.08);'
+    : '';
+  return '' +
+    '<tr>' +
+      '<td style="padding:10px 0;' + rowBorder + 'width:76px;' +
+        'font-size:12px;color:' + c.muted + ';vertical-align:top;white-space:nowrap;">' +
+        digestEscapeHtml(when) +
+      '</td>' +
+      '<td style="padding:10px 0 10px 12px;' + rowBorder + sportAccent +
+        'font-size:14px;color:' + c.text + ';">' +
+        badge + medal + digestEscapeHtml(cls.title) + location +
+      '</td>' +
+    '</tr>';
+}
+
+// One section of the calendar tile ("Today" / "Tomorrow") — small
+// uppercase label (same treatment as .glance-card-label), date, then
+// the event rows or an empty-state line matching the app's own
+// "Nothing on the calendar" wording.
+function digestDaySectionHtml(label, day) {
+  var c = DIGEST_COLORS;
+  var tz = Session.getScriptTimeZone();
+  var dateLabel = Utilities.formatDate(new Date(day.date + 'T00:00:00'), tz, 'EEEE, MMMM d');
+  var rows;
+  if (!day.events || day.events.length === 0) {
+    rows = '<tr><td style="padding:10px 0;color:' + c.muted + ';font-style:italic;font-size:13px;">' +
+      'Nothing on the calendar</td></tr>';
+  } else {
+    rows = day.events.map(digestEventRowHtml).join('');
+  }
+  return '' +
+    '<div style="padding:16px 18px;">' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;' +
+        'color:' + c.muted + ';margin-bottom:2px;">' + label + '</div>' +
+      '<div style="font-size:13px;color:' + c.muted + ';margin-bottom:6px;">' + dateLabel + '</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">' +
+        rows +
+      '</table>' +
+    '</div>';
+}
+
+// One row in the chores/reminders tile — checkbox glyph for a chore
+// (with its kid badge, reusing the same DIGEST_PERSON_COLOR map as
+// events, and a ★ weight indicator matching ChoresList's star display),
+// pushpin glyph for a family reminder. Combined into one flat list per
+// day (rather than two separately-bordered mini-lists) so the last-row
+// border logic reads as one clean list, not two stacked with an odd gap
+// between them.
+function digestTaskRowHtml(item, i, arr) {
+  var c = DIGEST_COLORS;
+  var isLast = i === arr.length - 1;
+  var rowBorder = isLast ? '' : ('border-bottom:1px solid ' + c.border + ';');
+  if (item.kind === 'reminder') {
+    return '' +
+      '<tr>' +
+        '<td style="padding:9px 0;' + rowBorder + 'width:22px;font-size:13px;vertical-align:top;">📌</td>' +
+        '<td style="padding:9px 0 9px 6px;' + rowBorder + 'font-size:14px;color:' + c.text + ';">' +
+          digestEscapeHtml(item.text) +
+        '</td>' +
+      '</tr>';
+  }
+  var whoColor = DIGEST_PERSON_COLOR[item.who] || c.muted;
+  var badge = item.who
+    ? '<span style="display:inline-block;font-size:11px;font-weight:700;' +
+      'text-transform:uppercase;letter-spacing:0.04em;color:' + whoColor +
+      ';margin-right:6px;">' + digestEscapeHtml(item.who) + '</span>'
+    : '';
+  var stars = new Array((item.weight || 1) + 1).join('★'); // GAS/ES5 — no String.prototype.repeat
+  return '' +
+    '<tr>' +
+      '<td style="padding:9px 0;' + rowBorder + 'width:22px;font-size:13px;color:' + c.muted + ';vertical-align:top;">☐</td>' +
+      '<td style="padding:9px 0 9px 6px;' + rowBorder + 'font-size:14px;color:' + c.text + ';">' +
+        badge + digestEscapeHtml(item.name) +
+        ' <span style="font-size:11px;color:' + c.muted + ';">' + stars + '</span>' +
+      '</td>' +
+    '</tr>';
+}
+
+// One section of the chores/reminders tile ("Today" / "Tomorrow") —
+// chores and reminders merged into one list, sorted chores-first then
+// reminders. Empty state reuses ChoresList's own "All done!" wording
+// rather than the calendar tile's "Nothing on the calendar", so it
+// reads as the same app, not a copy-pasted string.
+function digestTasksSectionHtml(label, chores, reminders) {
+  var c = DIGEST_COLORS;
+  var items = [];
+  chores.forEach(function(ch) {
+    items.push({ kind: 'chore', name: ch.name, who: ch.who, weight: ch.weight });
+  });
+  reminders.forEach(function(r) {
+    items.push({ kind: 'reminder', text: r.text });
+  });
+
+  var rows;
+  if (items.length === 0) {
+    rows = '<tr><td style="padding:10px 0;color:' + c.muted + ';font-style:italic;font-size:13px;">All done!</td></tr>';
+  } else {
+    rows = items.map(digestTaskRowHtml).join('');
+  }
+  return '' +
+    '<div style="padding:16px 18px;">' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;' +
+        'color:' + c.muted + ';margin-bottom:8px;">' + label + '</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">' +
+        rows +
+      '</table>' +
+    '</div>';
+}
+
+// Full email — a small header mirroring the app's branding, then two
+// "tile" cards styled like the app's own panels: a calendar tile (Today
+// above a divider above Tomorrow, the same stacked shape the real Today
+// tile switches to under 640px — see Glance.css's MOBILE block), and a
+// chores/reminders tile below it in the same visual language but kept
+// as its own separate card — the app itself never mixes chores into the
+// calendar tile (At A Glance is deliberately calendar-only, guest-
+// visible), so the digest doesn't either. Colors come straight from
+// DIGEST_COLORS above so this reads as a snip of the actual app, not a
+// generic email template.
+function buildDigestHtml(days, tasks) {
+  var c = DIGEST_COLORS;
+  var dividerRow = '<tr><td style="padding:0 18px;"><div style="height:1px;line-height:1px;font-size:0;' +
+    'background:' + c.border + ';">&nbsp;</div></td></tr>';
+  var cardOpen = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;' +
+    'background:' + c.surface + ';border:1px solid ' + c.border + ';border-top:3px solid ' + c.accent + ';' +
+    'border-radius:12px;font-family:' + DIGEST_FONT + ';">';
+  return '' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' + c.bg + ';">' +
+      '<tr><td align="center" style="padding:28px 16px;">' +
+        '<table role="presentation" width="420" cellpadding="0" cellspacing="0" style="width:420px;max-width:100%;">' +
+          '<tr><td style="padding-bottom:18px;font-family:' + DIGEST_FONT + ';">' +
+            '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;' +
+              'color:' + c.accent + ';margin-bottom:6px;">🏠 Family Hub</div>' +
+            '<div style="font-size:22px;font-weight:700;color:' + c.text + ';">🌄 Quick Look: Today &amp; Tomorrow</div>' +
+          '</td></tr>' +
+          '<tr><td>' +
+            cardOpen +
+              '<tr><td>' + digestDaySectionHtml('Today', days[0]) + '</td></tr>' +
+              dividerRow +
+              '<tr><td>' + digestDaySectionHtml('Tomorrow', days[1]) + '</td></tr>' +
+            '</table>' +
+          '</td></tr>' +
+          '<tr><td style="height:14px;line-height:14px;font-size:0;">&nbsp;</td></tr>' +
+          '<tr><td style="padding-bottom:8px;font-family:' + DIGEST_FONT + ';font-size:11px;font-weight:700;' +
+            'text-transform:uppercase;letter-spacing:0.1em;color:' + c.accent + ';">✅ Chores &amp; Reminders</td></tr>' +
+          '<tr><td>' +
+            cardOpen +
+              '<tr><td>' + digestTasksSectionHtml('Today', tasks.chores.today, tasks.reminders.today) + '</td></tr>' +
+              dividerRow +
+              '<tr><td>' + digestTasksSectionHtml('Tomorrow', tasks.chores.tomorrow, tasks.reminders.tomorrow) + '</td></tr>' +
+            '</table>' +
+          '</td></tr>' +
+          '<tr><td style="padding-top:14px;font-family:' + DIGEST_FONT + ';font-size:11px;color:' + c.muted + ';">' +
+            'Sent automatically each morning.' +
+          '</td></tr>' +
+        '</table>' +
+      '</td></tr>' +
+    '</table>';
+}
+
+// Plain-text fallback for clients that don't render HTML.
+function buildDigestPlainText(days, tasks) {
+  var tz = Session.getScriptTimeZone();
+  var labels = ['Today', 'Tomorrow'];
+  var out = 'FAMILY HUB — DAILY DIGEST\n';
+  for (var i = 0; i < days.length; i++) {
+    var day = days[i];
+    var dateLabel = Utilities.formatDate(new Date(day.date + 'T00:00:00'), tz, 'EEEE, MMMM d');
+    out += '\n' + labels[i].toUpperCase() + ' — ' + dateLabel + '\n';
+    if (!day.events || day.events.length === 0) {
+      out += '  Nothing on the calendar\n';
+    } else {
+      day.events.forEach(function(ev) {
+        var c = digestClassifyEvent(ev.summary);
+        var when = ev.isAllDay ? 'All day' : (ev.startTime || '');
+        var who = c.person ? c.person + ' - ' : '';
+        out += '  ' + when + '  ' + who + c.title + (ev.location ? ' (' + ev.location + ')' : '') + '\n';
+      });
+    }
+  }
+
+  out += '\nCHORES & REMINDERS\n';
+  var choreDays    = [tasks.chores.today,    tasks.chores.tomorrow];
+  var reminderDays = [tasks.reminders.today, tasks.reminders.tomorrow];
+  for (var j = 0; j < 2; j++) {
+    out += '\n' + labels[j].toUpperCase() + '\n';
+    var lines = [];
+    choreDays[j].forEach(function(ch) {
+      lines.push('  [ ] ' + (ch.who ? ch.who + ' - ' : '') + ch.name);
+    });
+    reminderDays[j].forEach(function(r) {
+      lines.push('  * ' + r.text);
+    });
+    out += lines.length ? (lines.join('\n') + '\n') : '  All done!\n';
+  }
+  return out;
+}
+
+// The function the daily trigger calls. Safe to run manually too (from
+// the editor's function dropdown) to preview/test — it'll actually send.
+function sendDailyDigest() {
+  if (DIGEST_RECIPIENTS.length === 0) {
+    Logger.log('sendDailyDigest: DIGEST_RECIPIENTS is empty, skipping send. ' +
+      'Set the DIGEST_RECIPIENTS script property (see header comment) first.');
+    return;
+  }
+  var days = getUpcomingDays(2); // [today, tomorrow]
+  var tasks = {
+    chores:    getDigestChores(),
+    reminders: getDigestFamilyReminders()
+  };
+  var tz = Session.getScriptTimeZone();
+  var subject = 'Family Hub Daily Digest — ' + Utilities.formatDate(new Date(), tz, 'EEEE, MMM d');
+  MailApp.sendEmail({
+    to:       DIGEST_RECIPIENTS.join(','),
+    subject:  subject,
+    body:     buildDigestPlainText(days, tasks),
+    htmlBody: buildDigestHtml(days, tasks),
+    name:     'Family Hub'
+  });
+}
+
+// Run once from the editor (see header comment) to install the daily
+// trigger. Safe to re-run — clears any existing sendDailyDigest
+// trigger first, so it never ends up with two firing the same day.
+function createDailyDigestTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'sendDailyDigest') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // atHour(6) fires sometime within the 6am hour (GAS time triggers
+  // aren't to-the-minute) — script timezone, not the reader's.
+  ScriptApp.newTrigger('sendDailyDigest')
+    .timeBased()
+    .atHour(6)
+    .everyDays(1)
+    .create();
+  Logger.log('Daily digest trigger installed — fires ~6am, script timezone: ' + Session.getScriptTimeZone());
 }
