@@ -70,9 +70,10 @@ function useGlanceEvents(calDays, tick) {
     calDays.filter(d => d.date >= todayStr).forEach(d => {
       ;(d.events || []).forEach(ev => {
         const time = ev.isAllDay === false && ev.startTime ? ev.startTime : null
+        const endTime = ev.isAllDay === false && ev.endTime ? ev.endTime : null
         if (isStale(d.date, time)) return
         const { isSports, person, title } = classifyEvent(evSummary(ev))
-        all.push({ date: d.date, time, title, person, isSports })
+        all.push({ date: d.date, time, endTime, title, person, isSports })
       })
     })
 
@@ -284,6 +285,13 @@ function LookaheadCard({ days }) {
                         <span className="glance-look-ev-who">{ev.person}</span>
                       )}
                       {ev.title}
+                      {/* All-day events carry no time at all — only timed
+                          ones get a start (and end, when known) line. */}
+                      {ev.time && (
+                        <span className="glance-look-ev-time">
+                          {ev.time}{ev.endTime ? ` – ${ev.endTime}` : ''}
+                        </span>
+                      )}
                     </span>
                   ))
               }
