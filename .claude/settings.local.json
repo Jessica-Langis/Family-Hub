@@ -2,10 +2,32 @@
   "permissions": {
     "allow": [
       "Bash(node -e ' *)",
-      "Bash(cd \"g:/Other computers/My Laptop/Documents/Claude Cowork/Home Management Dashboard/Family-Hub\" && rm -f scratch_shot5.mjs && git status --short)"
+      "Bash(cd \"g:/Other computers/My Laptop/Documents/Claude Cowork/Home Management Dashboard/Family-Hub\" && rm -f scratch_shot5.mjs && git status --short)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5175/Family-Hub/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/Family-Hub/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5174/Family-Hub/)",
+      "Bash(npx --no-install playwright --version)",
+      "Read(//c/Users/Black NVR/.claude/**)",
+      "Read(//g//**)",
+      "Bash(node screenshot.mjs)",
+      "Bash(npm root *)",
+      "Read(//c/Users/Black NVR/AppData/Local/npm-cache/**)",
+      "Bash(npm ls *)",
+      "Bash(curl -s http://localhost:5175/Family-Hub/src/pages/Glance/Glance.css)",
+      "Read(//c/Users/Black NVR/AppData/Local/npm-cache/_npx/**)",
+      "Bash(node -e \"const {chromium} = require\\('playwright'\\); console.log\\(chromium.executablePath\\(\\)\\)\")",
+      "Bash(mv _tmp_inspect.js _tmp_inspect.cjs)",
+      "Bash(node _tmp_inspect.cjs)",
+      "Bash(node _tmp_inspect2.cjs)",
+      "Bash(cd \"G:/Other computers/My Laptop/Documents/Claude Cowork/Home Management Dashboard/Family-Hub\" && rm -f _tmp_inspect.cjs _tmp_inspect2.cjs && git status --short)",
+      "Bash(git fetch *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
-      "g:\\Other computers\\My Laptop\\Documents\\Claude Cowork\\Home Management Dashboard\\Family-Hub"
+      "g:\\Other computers\\My Laptop\\Documents\\Claude Cowork\\Home Management Dashboard\\Family-Hub",
+      "G:\\Other computers\\My Laptop\\Documents\\Claude Cowork\\Home Management Dashboard\\Family-Hub"
     ]
   }
 }
