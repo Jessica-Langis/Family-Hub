@@ -15,7 +15,7 @@
   justify-content: center;
   color: var(--muted);
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
 }
 
 .uel-list {
@@ -45,14 +45,14 @@
 }
 
 .uel-medal {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   flex-shrink: 0;
   line-height: 1;
 }
 
 /* Kid name badge — only rendered when the title actually carries a name */
 .uel-person {
-  font-size: 0.62rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -68,15 +68,13 @@
 .uel-title {
   flex: 1;
   min-width: 0;
-  font-size: 0.88rem;
+  font-size: var(--fs-md);
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .uel-when {
-  font-size: 0.68rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--urgency, var(--muted));

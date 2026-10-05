@@ -143,11 +143,11 @@ class GlanceErrorBoundary extends Component {
       return (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--muted)' }}>
           <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Something went wrong</div>
-          <div style={{ fontFamily: 'monospace', fontSize: '0.72rem', wordBreak: 'break-all',
+          <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-xs)', wordBreak: 'break-all',
             marginBottom: 20 }}>{this.state.error?.message}</div>
           <button
             style={{ padding: '6px 18px', background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 8, color: 'var(--text)', cursor: 'pointer', fontSize: '0.85rem' }}
+              borderRadius: 8, color: 'var(--text)', cursor: 'pointer', fontSize: 'var(--fs-md)' }}
             onClick={() => this.setState({ error: null })}
           >Retry</button>
         </div>

@@ -59,10 +59,10 @@
    (used by every page) — scoped to this tile only so other pages' use
    of Panel/PanelHeader is unaffected. */
 .glance-col-bulletin .section-title {
-  font-size: clamp(0.95rem, 0.5cqw + 0.5cqh, 1.3rem);
+  font-size: var(--fs-lg);
 }
 .glance-col-bulletin .section-badge {
-  font-size: clamp(0.65rem, 0.3cqw + 0.3cqh, 0.85rem);
+  font-size: var(--fs-xs);
 }
 
 /* ══════════════════════════════════════════
@@ -100,7 +100,7 @@
 .glance-empty-msg {
   color: var(--muted);
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
 }
 
 /* Small uppercase tile label, shared by Sports + Lookahead. cqw/cqh
@@ -108,7 +108,7 @@
    Lookahead have different container boxes), so this scales correctly
    in both places without needing a per-tile override. */
 .glance-card-label {
-  font-size: clamp(0.68rem, 0.35cqw + 0.35cqh, 0.9rem);
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -136,7 +136,7 @@
      container — see the shared rule above), so this scales with the
      window/screen rather than the card's own box, which can now grow
      taller to fit its content instead of needing to be measured. */
-  --main-event-title-size: clamp(1rem, 0.7cqw + 0.7cqh, 2rem);
+  --main-event-title-size: clamp(var(--fs-xl), 0.7cqw + 0.7cqh, 2.4rem);
 }
 
 .glance-today-card::before {
@@ -192,7 +192,7 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 16pt;
+  font-size: var(--fs-lg);
   color: var(--text);
 }
 
@@ -227,7 +227,7 @@
      40% of a legitimately-small title is smaller still. A floor keeps
      it legible even then; the ceiling keeps it from rivaling the title
      on a large screen where the title itself gets big. */
-  font-size: clamp(0.95rem, calc(var(--main-event-title-size) * 0.85), 2.4rem);
+  font-size: clamp(var(--fs-md), calc(var(--main-event-title-size) * 0.85), 2.4rem);
   color: var(--text);
   width: 100%;
   min-width: 0;
@@ -242,13 +242,11 @@
 .glance-today-row-title {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .glance-today-row-time {
-  font-size: clamp(0.72rem, 0.4cqw + 0.4cqh, 0.92rem);
+  font-size: var(--fs-sm);
   color: var(--muted);
   flex-shrink: 0;
   white-space: nowrap;
@@ -257,7 +255,7 @@
 .glance-today-row-person,
 .glance-today-person {
   font-weight: 700;
-  font-size: clamp(0.68rem, 0.35cqw + 0.35cqh, 0.85rem);
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent6);
@@ -283,7 +281,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   /* See --main-event-title-size above — viewport-scaled, same reasoning. */
-  font-size: clamp(1.6rem, 1.7cqw + 1.7cqh, 4rem);
+  font-size: clamp(var(--fs-2xl), 1.7cqw + 1.7cqh, 4rem);
   line-height: 1;
   color: var(--accent);
   letter-spacing: -0.01em;
@@ -302,12 +300,12 @@
 .glance-today-person { margin-right: 6px; }
 
 .glance-today-center-time {
-  font-size: clamp(0.72rem, 0.3cqw + 0.3cqh, 1.1rem);
+  font-size: var(--fs-sm);
   color: var(--muted);
 }
 
 .glance-today-more {
-  font-size: clamp(0.72rem, 0.4cqw + 0.4cqh, 0.92rem);
+  font-size: var(--fs-sm);
   color: var(--accent2);
   padding-top: 4px;
   flex-shrink: 0;
@@ -344,7 +342,7 @@
   /* Same close-to-title sizing as the today stack rows above (see the
      comment there) — legible on its own instead of a steep fraction of
      whatever the title happens to be. */
-  font-size: clamp(0.95rem, calc(var(--main-event-title-size) * 0.85), 2.4rem);
+  font-size: clamp(var(--fs-md), calc(var(--main-event-title-size) * 0.85), 2.4rem);
   min-width: 0;
 }
 .glance-upcoming-row:last-child { border-bottom: none; }
@@ -361,14 +359,12 @@
 .glance-upcoming-title {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--text);
+  overflow-wrap: break-word;
 }
 
 .glance-upcoming-when {
-  font-size: clamp(0.66rem, 0.35cqw + 0.35cqh, 0.85rem);
+  font-size: var(--fs-sm);
   font-weight: 700;
   color: var(--urgency, var(--muted));
   flex-shrink: 0;
@@ -377,7 +373,7 @@
 
 .glance-upcoming-person {
   font-weight: 700;
-  font-size: clamp(0.64rem, 0.32cqw + 0.32cqh, 0.8rem);
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--accent6);
@@ -412,9 +408,9 @@
   gap: 6px;
   flex-shrink: 0;
 }
-.gws-icon { font-size: 1rem; line-height: 1; }
+.gws-icon { font-size: var(--fs-lg); line-height: 1; }
 .gws-temp {
-  font-size: clamp(0.78rem, 0.35cqw + 0.35cqh, 1rem);
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--accent2);
   white-space: nowrap;
@@ -445,7 +441,7 @@
 }
 
 .glance-look-dayname {
-  font-size: clamp(0.62rem, 0.28cqw + 0.28cqh, 0.8rem);
+  font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -472,14 +468,14 @@
 }
 
 .glance-look-none {
-  font-size: clamp(0.7rem, 0.3cqw + 0.3cqh, 0.88rem);
+  font-size: var(--fs-sm);
   color: var(--border);
 }
 
 /* Regular event pill — no line-clamp: a long title wraps and grows the
    pill (and its day's whole grid row) rather than being cut off. */
 .glance-look-ev {
-  font-size: clamp(0.68rem, 0.3cqw + 0.3cqh, 0.88rem);
+  font-size: var(--fs-sm);
   line-height: 1.3;
   color: var(--text);
   padding: 3px 5px;
@@ -503,7 +499,7 @@
 
 .glance-look-ev-time {
   display: block;
-  font-size: 0.85em;
+  font-size: var(--fs-xs);
   color: var(--muted);
   margin-top: 1px;
 }
@@ -535,7 +531,7 @@
 .bulletin-line:hover { opacity: 0.8; }
 
 .bulletin-line-who {
-  font-size: clamp(0.68rem, 0.3cqw + 0.3cqh, 0.88rem);
+  font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -549,17 +545,15 @@
 }
 
 .bulletin-line-text {
-  font-size: clamp(0.82rem, 0.4cqw + 0.4cqh, 1.05rem);
+  font-size: var(--fs-md);
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
   flex: 1;
+  overflow-wrap: break-word;
 }
 
 .bulletin-more-row {
-  font-size: clamp(0.72rem, 0.32cqw + 0.32cqh, 0.9rem);
+  font-size: var(--fs-sm);
   color: var(--accent2);
   padding: 8px 0 2px;
   cursor: pointer;
@@ -579,19 +573,23 @@
 }
 
 /* ══════════════════════════════════════════
-   MOBILE — single column stack
+   NARROW (tablet portrait, half-width windows, phones) — single column
+   stack. Below ~1000px the two-column kiosk layout leaves Coming Up and
+   the Bulletin too thin to read, so everything goes full width.
 ══════════════════════════════════════════ */
 
-@media (max-width: 640px) {
+@media (max-width: 1000px) {
   .glance-content {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    /* max-content, not auto: with a fixed-height scroller, auto rows shrink
+       to each tile's min-height and the content spills out */
+    grid-template-rows: max-content max-content max-content;
     grid-template-areas:
       "today"
       "lookahead"
       "bulletin";
-    height: auto;
-    overflow: visible;
+    /* Base rule keeps height:100% + overflow-y:auto, so between 641-1000px
+       this stack scrolls inside the page (phones scroll the body instead). */
     gap: 10px;
     padding: 0 4px 8px;
   }
@@ -605,6 +603,13 @@
      with the divider becoming a horizontal rule between the two. */
   .glance-today-card { flex-direction: column; min-height: 260px; }
   .glance-today-divider { width: auto; height: 1px; margin: 4px 18px; }
+  /* Once stacked, the desktop flex:1.5/1 (0 basis) split would divide the
+     card's fixed height between the halves instead of letting each grow
+     to its content — that squeezed Coming Up into an inner scroll. Size
+     both halves (and the list) to their content so the tile grows. */
+  .glance-today-left,
+  .glance-today-right { flex: none; }
+  .glance-upcoming-list { flex: none; overflow: visible; }
 
   /* Bulletin is still the one card that's a size container (see the base
      rule up top) — Today/Lookahead already aren't, at any width, so they
@@ -615,6 +620,11 @@
 
   .glance-lookahead-card{ min-height: 240px; }
   .glance-col-bulletin  { min-height: 240px; }
+}
+
+/* ── Phone — the 7-day strip becomes a vertical list ── */
+@media (max-width: 640px) {
+  .glance-content { height: auto; overflow: visible; }
 
   /* Stacked vertical list reads better than 7 thin columns on a phone */
   .glance-lookahead-grid {

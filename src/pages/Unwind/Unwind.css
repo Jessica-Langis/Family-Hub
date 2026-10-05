@@ -19,7 +19,9 @@
 .unwind-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  /* Rows have a floor so a short/odd-shaped window scrolls the page
+     instead of crushing tiles (see the type-scale note in tokens.css). */
+  grid-template-rows: repeat(3, minmax(170px, 1fr));
   grid-template-areas:
     "todo   grocery"
     "todo   grocery"
@@ -27,7 +29,8 @@
   gap: 8px;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .un-grocery,
@@ -79,7 +82,7 @@
   border-radius: 5px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   font-family: inherit;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -104,7 +107,7 @@
 .fun-empty {
   padding: 8px 14px;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   font-style: italic;
 }
 
@@ -114,7 +117,7 @@
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
+  font-size: var(--fs-md);
   color: var(--text);
 }
 .fun-item:last-child { border-bottom: none; }
@@ -136,20 +139,19 @@
 }
 
 .fun-item-title {
-  font-size: 0.82rem;
+  font-size: var(--fs-md);
   color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .fun-item-sub {
-  font-size: 0.7rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
 }
 
 .fun-item-tag {
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   background: var(--surface2);
   padding: 2px 7px;
@@ -162,7 +164,7 @@
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: var(--fs-lg);
   cursor: pointer;
   padding: 0 2px;
   line-height: 1;
@@ -194,7 +196,7 @@
 }
 
 .fun-overlay-title {
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--accent5);
   margin-bottom: 4px;
@@ -205,7 +207,7 @@
   border: 1px solid var(--border);
   border-radius: 7px;
   padding: 8px 12px;
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   color: var(--text);
   font-family: inherit;
   width: 100%;
@@ -216,7 +218,7 @@
 }
 
 .fun-overlay-status {
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   color: var(--accent3);
   min-height: 1rem;
   text-align: center;
@@ -232,7 +234,7 @@
 .fun-overlay-btn {
   padding: 7px 18px;
   border-radius: 7px;
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   font-family: inherit;
   border: none;
   cursor: pointer;
@@ -256,7 +258,7 @@
 
 /* ── Grocery (moved from Home) ── */
 .quick-add-spinner {
-  font-size: 0.75rem; color: var(--muted);
+  font-size: var(--fs-sm); color: var(--muted);
   min-width: 14px; text-align: center;
   opacity: 0; transition: opacity 0.15s;
 }
@@ -275,23 +277,23 @@
   padding: 5px 8px;
   background: var(--surface2); border-radius: 6px;
   border: 1px solid var(--border);
-  font-size: 0.78rem; color: var(--text);
+  font-size: var(--fs-md); color: var(--text);
   cursor: pointer; transition: opacity 0.15s;
   user-select: none;
 }
 .grocery-item.bought { opacity: 0.4; text-decoration: line-through; }
 .grocery-item:hover { background: rgba(255,255,255,0.04); }
-.grocery-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grocery-text { flex: 1; min-width: 0; overflow-wrap: break-word; }
 .grocery-delete {
   background: none; border: none; color: var(--muted);
-  font-size: 1rem; cursor: pointer; padding: 0 2px; line-height: 1;
+  font-size: var(--fs-lg); cursor: pointer; padding: 0 2px; line-height: 1;
   flex-shrink: 0; transition: color 0.15s;
 }
 .grocery-delete:hover { color: #e07070; }
 .clear-btn {
   background: none; border: 1px solid var(--border);
   border-radius: 5px; padding: 2px 8px;
-  font-size: 0.7rem; color: var(--muted);
+  font-size: var(--fs-xs); color: var(--muted);
   cursor: pointer; font-family: inherit;
 }
 .clear-btn:hover { color: var(--text); border-color: var(--text); }
@@ -359,30 +361,30 @@
 .bulletin-item[data-color="blue"]     { background: linear-gradient(160deg,#0e1e30 0%,#091525 100%); border-color: rgba(100,160,220,0.22); border-top-color: rgba(100,160,220,0.6); }
 .bulletin-item[data-color="lavender"] { background: linear-gradient(160deg,#1e1530 0%,#150e24 100%); border-color: rgba(170,130,220,0.22); border-top-color: rgba(170,130,220,0.6); }
 
-.bulletin-item[data-font="dancing"]  .bulletin-text { font-family: 'Dancing Script', cursive;  font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
-.bulletin-item[data-font="caveat"]   .bulletin-text { font-family: 'Caveat', cursive;           font-size: 1.1rem;  font-weight: 500; line-height: 1.4; }
-.bulletin-item[data-font="pacifico"] .bulletin-text { font-family: 'Pacifico', cursive;         font-size: 0.88rem; font-weight: 400; line-height: 1.45; }
-.bulletin-item[data-font="satisfy"]  .bulletin-text { font-family: 'Satisfy', cursive;          font-size: 0.95rem; font-weight: 400; line-height: 1.45; }
-.bulletin-item[data-font="kalam"]    .bulletin-text { font-family: 'Kalam', cursive;            font-size: 1rem;    font-weight: 400; line-height: 1.45; }
-.bulletin-item[data-font="patrick"]  .bulletin-text { font-family: 'Patrick Hand', cursive;     font-size: 0.98rem; font-weight: 400; line-height: 1.45; }
+.bulletin-item[data-font="dancing"]  .bulletin-text { font-family: 'Dancing Script', cursive;  font-size: calc(var(--fs-md) * 1.2); font-weight: 600; line-height: 1.4; }
+.bulletin-item[data-font="caveat"]   .bulletin-text { font-family: 'Caveat', cursive;           font-size: calc(var(--fs-md) * 1.25); font-weight: 500; line-height: 1.4; }
+.bulletin-item[data-font="pacifico"] .bulletin-text { font-family: 'Pacifico', cursive;         font-size: var(--fs-md); font-weight: 400; line-height: 1.45; }
+.bulletin-item[data-font="satisfy"]  .bulletin-text { font-family: 'Satisfy', cursive;          font-size: calc(var(--fs-md) * 1.08); font-weight: 400; line-height: 1.45; }
+.bulletin-item[data-font="kalam"]    .bulletin-text { font-family: 'Kalam', cursive;            font-size: calc(var(--fs-md) * 1.14); font-weight: 400; line-height: 1.45; }
+.bulletin-item[data-font="patrick"]  .bulletin-text { font-family: 'Patrick Hand', cursive;     font-size: calc(var(--fs-md) * 1.11); font-weight: 400; line-height: 1.45; }
 
 .bulletin-inner { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow: hidden; }
 .bulletin-who {
-  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.1em; color: rgba(232,184,109,0.75); margin-top: 4px;
 }
 .bulletin-dinner-who { color: rgba(100,200,180,0.7) !important; }
 .bulletin-text {
-  font-size: 0.88rem; color: rgba(232,234,240,0.9); line-height: 1.5;
+  font-size: var(--fs-md); color: rgba(232,234,240,0.9); line-height: 1.5;
   font-family: 'DM Sans', sans-serif; word-break: break-word;
   flex: 1; min-height: 0; overflow: hidden;
 }
-.bulletin-text.empty-dinner { color: var(--muted); font-style: italic; font-size: 0.85rem; }
-.bulletin-date { font-size: 0.65rem; color: rgba(136,145,168,0.7); margin-top: 4px; }
+.bulletin-text.empty-dinner { color: var(--muted); font-style: italic; font-size: var(--fs-md); }
+.bulletin-date { font-size: var(--fs-xs); color: rgba(136,145,168,0.7); margin-top: 4px; }
 .bulletin-delete {
   position: absolute; top: 4px; right: 6px;
   background: none; border: none; color: rgba(136,145,168,0.4);
-  font-size: 1.15rem; cursor: pointer; padding: 4px 5px; line-height: 1;
+  font-size: var(--fs-lg); cursor: pointer; padding: 4px 5px; line-height: 1;
   min-width: 28px; min-height: 28px;
   display: inline-flex; align-items: center; justify-content: center;
   transition: color 0.15s;

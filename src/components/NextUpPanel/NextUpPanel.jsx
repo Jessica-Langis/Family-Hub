@@ -101,7 +101,7 @@ export default function NextUpPanel({ name, script }) {
           actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
         />
         {loading
-          ? <div className="next-up-hero"><span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Loading…</span></div>
+          ? <div className="next-up-hero"><span style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)' }}>Loading…</span></div>
           : next
             ? <div className="next-up-split-hero">
                 <div className="next-up-primary">

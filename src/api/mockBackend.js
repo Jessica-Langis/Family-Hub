@@ -102,6 +102,51 @@ const mealStore = {
   Saturday:  'Grilled burgers',
 }
 
+// Ids start at 2 to match the real sheet, where row 1 is the header row.
+let mealIdeasStore = [
+  { id: 2, name: 'Simple Sandwich Bread', category: 'Breakfast', ingredient: 'Flour',
+    link: `Ingredients:
+3 cups flour
+1 packet yeast
+1 cup warm water
+2 tbsp sugar
+2 tbsp butter, melted
+1 tsp salt
+
+Steps:
+1. Dissolve yeast and sugar in warm water, let sit 5 min.
+2. Mix in butter, salt, and flour; knead 8 min.
+3. Rise 1 hr, shape into loaf pan, rise 30 min more.
+4. Bake at 375°F for 30 min.` },
+  { id: 3, name: 'Apple Crisp', category: 'Dessert', ingredient: 'Apples',
+    link: `Ingredients:
+6 apples, sliced
+1 cup oats
+3/4 cup brown sugar
+1/2 cup flour
+1/2 cup butter
+1 tsp cinnamon
+
+Steps:
+1. Spread apples in a baking dish.
+2. Mix oats, sugar, flour, cinnamon; cut in butter until crumbly.
+3. Sprinkle over apples and bake at 350°F for 45 min.` },
+  { id: 4, name: 'Tomato Bruschetta', category: 'Snack', ingredient: 'Tomatoes',
+    link: `Ingredients:
+4 roma tomatoes, diced
+2 cloves garlic, minced
+Fresh basil
+1 baguette
+Olive oil, salt
+
+Steps:
+1. Toss tomatoes, garlic, basil, oil, and salt.
+2. Slice and toast the baguette.
+3. Spoon tomato mix on top and serve.` },
+  { id: 5, name: 'Sheet Pan Chicken Fajitas', category: 'Dinner', ingredient: 'Chicken',
+    link: 'https://example.com/sheet-pan-fajitas' },
+]
+
 let groceryStore = ['Milk', 'Eggs', 'Bread', 'Bananas', 'Chicken breast', 'Coffee', 'Paper towels']
 
 // Calendar events, expressed as an offset in days from today so the whole
@@ -147,6 +192,7 @@ function handleGet(base, params) {
     if (type === 'books')         return [...booksStore]
     if (type === 'tori_wishlist') return [...toriWishlistStore]
     if (type === 'nova_wishlist') return [...novaWishlistStore]
+    if (type === 'mealideas')     return [...mealIdeasStore]
     if (type === 'upcoming')      return buildUpcoming(parseInt(params.get('days') || '31', 10))
     return { error: 'unknown mock type: ' + type }
   }
@@ -244,6 +290,21 @@ function handlePost(base, fields) {
       }
       if (action === 'delete') {
         booksStore = booksStore.filter(b => b.id !== Number(fields.idx))
+        return { status: 'ok' }
+      }
+    }
+
+    if (type === 'mealideas') {
+      if (action === 'add') {
+        mealIdeasStore.push({
+          id: Math.max(nextIdFor(mealIdeasStore), 2),
+          name: fields.name || '', category: fields.category || '',
+          ingredient: fields.ingredient || '', link: fields.link || '',
+        })
+        return { status: 'ok' }
+      }
+      if (action === 'delete') {
+        mealIdeasStore = mealIdeasStore.filter(r => r.id !== Number(fields.idx))
         return { status: 'ok' }
       }
     }

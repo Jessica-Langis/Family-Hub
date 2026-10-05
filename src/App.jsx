@@ -5,10 +5,12 @@ import Unwind    from './pages/Unwind/Unwind'
 import Tori      from './pages/Tori/Tori'
 import Nova      from './pages/Nova/Nova'
 import Glance    from './pages/Glance/Glance'
+import Recipes   from './pages/Recipes/Recipes'
 
 const PAGES = {
   glance: Glance,
   unwind: Unwind,
+  recipes: Recipes,
   tori:   Tori,
   nova:   Nova,
 }
@@ -16,6 +18,7 @@ const PAGES = {
 const TAB_TITLES = {
   glance: 'At A Glance',
   unwind: '🛋️ And Stuff',
+  recipes: '🍳 Recipes',
   tori:   'Tori',
   nova:   'Nova',
 }
@@ -23,6 +26,7 @@ const TAB_TITLES = {
 const TAB_COLORS = {
   glance: 'var(--accent6)',
   unwind: 'var(--accent5)',
+  recipes: 'var(--accent)',
   tori:   'var(--accent4)',
   nova:   'var(--accent3)',
 }

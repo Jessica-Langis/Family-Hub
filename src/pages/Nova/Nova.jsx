@@ -14,15 +14,15 @@ class NovaErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: '20px', color: 'var(--muted)', fontSize: '0.85rem' }}>
+        <div style={{ padding: '20px', color: 'var(--muted)', fontSize: 'var(--fs-md)' }}>
           <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Nova page crashed</div>
-          <div style={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-sm)', wordBreak: 'break-all' }}>
             {this.state.error?.message}
           </div>
           <button
             style={{ marginTop: 12, padding: '4px 12px', background: 'var(--surface2)',
               border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text)',
-              cursor: 'pointer', fontSize: '0.8rem' }}
+              cursor: 'pointer', fontSize: 'var(--fs-sm)' }}
             onClick={() => this.setState({ error: null })}
           >Retry</button>
         </div>
