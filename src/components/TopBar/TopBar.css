@@ -13,7 +13,7 @@
 
 .topbar-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.4rem;
+  font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -23,13 +23,13 @@
 
 .clock {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 3rem;
+  font-size: clamp(1.6rem, 0.8rem + 3.2vmin + 0.5vw, 3.6rem);
   color: var(--text);
   letter-spacing: 0.05em;
 }
 
 .clock-date {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--muted);
   margin-top: 2px;
 }
@@ -42,7 +42,7 @@
 }
 
 .weather-loading {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--muted);
 }
 
@@ -55,23 +55,23 @@
 }
 
 .weather-day .day-name {
-  font-size: 0.7rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.weather-day .weather-icon { font-size: 1.3rem; margin-bottom: 2px; }
+.weather-day .weather-icon { font-size: var(--fs-xl); margin-bottom: 2px; }
 
 .weather-day .temp {
-  font-size: 1.1rem;
+  font-size: var(--fs-lg);
   font-weight: 500;
   color: var(--accent2);
   margin: 4px 0 2px;
 }
 
 .weather-day .condition {
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
 }
 
@@ -82,20 +82,17 @@
   .weather-day:nth-child(5) { display: none; }
 }
 
-/* Below 760px: also hide 4th day, shrink clock */
+/* Below 760px: also hide 4th day (clock/text sizes are fluid — tokens.css) */
 @media (max-width: 760px) {
   .weather-day:nth-child(4) { display: none; }
-  .clock { font-size: 2.2rem; }
   .weather-day { min-width: 60px; padding: 6px 8px; }
   .weather-block { gap: 8px; }
   .topbar { padding: 8px 14px; }
 }
 
-/* Below 640px (phone): hide all but today, shrink clock further */
+/* Below 640px (phone): hide all but today */
 @media (max-width: 640px) {
   .weather-day:nth-child(n+3) { display: none; }
-  .clock { font-size: 1.6rem; }
-  .clock-date { font-size: 0.7rem; }
   .weather-day { min-width: 52px; padding: 5px 6px; }
   .weather-block { gap: 6px; }
   .topbar {
@@ -103,5 +100,13 @@
     grid-template-columns: auto 1fr auto;
     gap: 6px;
   }
-  .topbar-title { font-size: 1rem; }
+  /* Shares one row with the clock + weather, so one step down */
+  .topbar-title { font-size: var(--fs-lg); }
+}
+
+/* Very narrow (small phones, slim side-by-side windows): the title gets
+   its own row so it isn't squeezed into a sliver beside the clock */
+@media (max-width: 420px) {
+  .topbar { grid-template-columns: 1fr auto; row-gap: 2px; }
+  .topbar-title { grid-column: 1 / -1; }
 }

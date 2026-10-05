@@ -80,16 +80,16 @@ export default function CompletedFeed({ title = 'Recently Completed', matchWho =
                   display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0',
                   borderBottom: i < items.length - 1 ? '1px solid var(--border)' : 'none',
                 }}>
-                  <span style={{ color: 'var(--accent6)', fontSize: '0.85rem', flexShrink: 0 }}>✓</span>
+                  <span style={{ color: 'var(--accent6)', fontSize: 'var(--fs-md)', flexShrink: 0 }}>✓</span>
                   <span style={{
-                    flex: 1, minWidth: 0, fontSize: '0.82rem', color: 'var(--text)',
+                    flex: 1, minWidth: 0, fontSize: 'var(--fs-md)', color: 'var(--text)',
                     textDecoration: 'line-through', opacity: 0.75,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    overflowWrap: 'break-word',
                   }}>{c.name}</span>
                   {c.weight > 0 && (
-                    <span style={{ fontSize: '0.68rem', color: 'var(--accent)', flexShrink: 0 }}>+{c.weight || 1}pt</span>
+                    <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--accent)', flexShrink: 0 }}>+{c.weight || 1}pt</span>
                   )}
-                  <span style={{ fontSize: '0.68rem', color: 'var(--muted)', flexShrink: 0 }}>
+                  <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', flexShrink: 0 }}>
                     {relativeTime(c._completedDate)}
                   </span>
                 </div>

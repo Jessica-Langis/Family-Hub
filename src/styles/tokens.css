@@ -11,5 +11,35 @@
   --accent6: #88c9a8;
   --text: #e8eaf0;
   --muted: #8891a8;
-  --nav-h: 60px;
+
+  /* ── Fluid type scale — THE way to size text anywhere in the app ──
+     Every font-size should be one of these tokens (or a calc()/clamp()
+     built on one), never a fixed rem/px. Each step grows with the screen
+     and is floored so it stays readable from a normal viewing distance
+     even on a phone or an odd-shaped window:
+
+       --fs-xs   ≥12.5px  labels, badges, timestamps, "who" tags
+       --fs-sm   ≥14px    secondary text, inputs, buttons, empty states
+       --fs-md   ≥15px    primary list/body text (chores, events, notes)
+       --fs-lg   ≥17px    emphasized rows, icon buttons
+       --fs-xl   ≥20px    page/section headings, large icons
+       --fs-2xl  ≥26px    hero numbers / featured titles
+
+     The preferred value blends vmin (so short-but-wide or tall-but-narrow
+     windows don't balloon or shrink the text) with a little vw (so big
+     wall/kiosk screens still scale up for across-the-room reading).
+
+     Companion rule: content text WRAPS, it doesn't truncate. Titles,
+     notes, chores, items etc. use `overflow-wrap: break-word` and let the
+     tile grow; only short fixed labels (times, badges, counts) stay
+     `white-space: nowrap`. No `text-overflow: ellipsis` on content. */
+  --fs-xs:  clamp(0.78rem, 0.58rem + 0.32vmin + 0.12vw, 1.05rem);
+  --fs-sm:  clamp(0.88rem, 0.66rem + 0.36vmin + 0.13vw, 1.18rem);
+  --fs-md:  clamp(0.95rem, 0.72rem + 0.40vmin + 0.14vw, 1.3rem);
+  --fs-lg:  clamp(1.05rem, 0.80rem + 0.50vmin + 0.18vw, 1.5rem);
+  --fs-xl:  clamp(1.25rem, 0.90rem + 0.80vmin + 0.26vw, 2rem);
+  --fs-2xl: clamp(1.6rem,  1.00rem + 1.60vmin + 0.45vw, 3.2rem);
+
+  /* Bottom nav grows with the type so its labels never clip */
+  --nav-h: clamp(60px, 52px + 1.2vmin + 0.3vw, 84px);
 }

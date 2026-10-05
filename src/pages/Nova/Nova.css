@@ -2,11 +2,14 @@
 .nova-content {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr;
+  /* Rows have a floor so a short/odd-shaped window scrolls the page
+     instead of crushing tiles (see the type-scale note in tokens.css). */
+  grid-template-rows: minmax(460px, 1fr);
   gap: 8px;
   height: auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* First column stacks Next Up (top) over Recently Completed, split evenly —
@@ -23,7 +26,7 @@
 
 /* ── Today tile — "Coming Up" section ── */
 .today-subhead {
-  font-size: 0.68rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -63,14 +66,14 @@
   border: 1px solid rgba(255,190,80,0.25);
 }
 .fun-fact-panel.tile-joke .fun-fact-label {
-  font-size: 0.95rem;
+  font-size: var(--fs-md);
   font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: none;
   color: #f5c842;
 }
 .fun-fact-panel.tile-joke .fun-fact-text {
-  font-size: 0.88rem;
+  font-size: var(--fs-md);
   line-height: 1.55;
   color: var(--text);
 }
@@ -84,7 +87,7 @@
 }
 
 .fun-fact-text {
-  font-size: 0.88rem;
+  font-size: var(--fs-md);
   line-height: 1.55;
   color: var(--text);
 }
@@ -93,7 +96,7 @@
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   cursor: pointer;
   padding: 0 2px;
   line-height: 1;
@@ -112,10 +115,22 @@
   max-width: 100%;
 }
 
+/* ── Tablet / narrow window: three columns get too thin to read, so the
+   joke spans the top and Next Up | Chores sit side by side below ── */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .nova-content {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto minmax(460px, 1fr);
+  }
+  /* fit-content: the base min-height:0 would let a short window collapse it */
+  .nova-content > .tile-joke { grid-column: 1 / -1; min-height: fit-content; }
+}
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .nova-content {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
     flex: none;
     height: auto;
     overflow: visible;
@@ -127,6 +142,9 @@
   .fun-fact-panel { min-height: 140px; min-width: 0; overflow: hidden; }
   .na-cell { min-height: 320px; overflow: visible; min-width: 0; }
   .na-cell .panel { flex: none; min-height: 300px; min-width: 0; max-width: 100%; }
+  /* flex:none — stacked cells size to their content instead of splitting
+     the column height (which let Next Up spill under Recently Completed) */
+  .na-nextup-cell, .na-completed-cell, .na-chores-cell { flex: none; }
   .na-nextup-cell { min-height: 160px; }
   .na-nextup-cell .panel { min-height: 150px; }
   .na-completed-cell { min-height: 160px; }

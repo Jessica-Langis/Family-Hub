@@ -2,11 +2,14 @@
 .tori-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
+  /* Rows have a floor so a short/odd-shaped window scrolls the page
+     instead of crushing tiles (see the type-scale note in tokens.css). */
+  grid-template-rows: minmax(460px, 1fr);
   gap: 8px;
   height: auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* First column stacks Next Up (top) over Reminders, split evenly */
@@ -50,8 +53,11 @@
     gap: 8px;
   }
 
+  /* flex:none — stacked, each tile sizes to its content instead of
+     splitting a shared height (which clipped Next Up on narrow phones) */
   .ta-nextup,
   .ta-completed, .ta-todo, .ta-wishlist {
+    flex: none;
     min-height: 140px;
     overflow: visible;
   }

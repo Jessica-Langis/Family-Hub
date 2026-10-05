@@ -16,6 +16,8 @@
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   gap: 8px;
+  /* Narrow tile: buttons drop under the title instead of crushing it */
+  flex-wrap: wrap;
 }
 
 .section-header-left {
@@ -27,15 +29,16 @@
 
 .section-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.95rem;
+  font-size: var(--fs-lg);
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.03em;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .section-badge {
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
