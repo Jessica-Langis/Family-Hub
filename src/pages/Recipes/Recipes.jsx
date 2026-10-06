@@ -16,23 +16,23 @@ import EmptyState from '../../components/EmptyState/EmptyState'
 // D=Link). Column D holds either a URL to an online recipe or the full
 // recipe text pasted into the cell — RecipeBody handles both.
 // Category icons are Microsoft's Fluent Emoji 3D set (MIT licensed,
-// github.com/microsoft/fluentui-emoji). `icon` shows in the chips, list
-// and detail; `emoji` is the plain-text stand-in for the Add form's
-// <select>, since <option> can't render images.
+// github.com/microsoft/fluentui-emoji). They show in the chips, list and
+// detail; the Add/Edit form's <select> lists the names only, since an
+// <option> can't hold an image.
 const img = (src) => <img className="rc-icon" src={src} alt="" />
 
 const TYPES = [
-  { value: 'Breakfast', icon: img(breakfastIcon), emoji: '🍳' },
-  { value: 'Lunch',     icon: img(lunchIcon),     emoji: '🥪' },
-  { value: 'Dinner',    icon: img(dinnerIcon),    emoji: '🥩' },
-  { value: 'Snack',     icon: img(snackIcon),     emoji: '🍿' },
-  { value: 'Dessert',   icon: img(dessertIcon),   emoji: '🥧' },
-  { value: 'Baking',    icon: img(bakingIcon),    emoji: '🍞' },
-  { value: 'Drinks',    icon: img(drinksIcon),    emoji: '🧋' },
+  { value: 'Breakfast', icon: img(breakfastIcon) },
+  { value: 'Lunch',     icon: img(lunchIcon)     },
+  { value: 'Dinner',    icon: img(dinnerIcon)    },
+  { value: 'Snack',     icon: img(snackIcon)     },
+  { value: 'Dessert',   icon: img(dessertIcon)   },
+  { value: 'Baking',    icon: img(bakingIcon)    },
+  { value: 'Drinks',    icon: img(drinksIcon)    },
 ]
 
 const typeIcon = (category) =>
-  TYPES.find(t => t.value.toLowerCase() === String(category).trim().toLowerCase())?.icon || '🍽️'
+  TYPES.find(t => t.value.toLowerCase() === String(category).trim().toLowerCase())?.icon || <Icon name="utensils" className="rc-icon" />
 
 const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s).trim())
 
@@ -72,7 +72,7 @@ function RecipeBody({ link }) {
   if (isUrl(text)) {
     return (
       <a className="rc-open-link" href={text} target="_blank" rel="noopener noreferrer">
-        Open recipe ↗
+        Open recipe <Icon name="external" size="1em" />
       </a>
     )
   }
@@ -113,7 +113,7 @@ function RecipeModal({ recipe, onClose, onSaved }) {
   // doesn't silently switch it to the first category in the list.
   const categoryOptions = TYPES.some(t => t.value === values.category)
     ? TYPES
-    : [...TYPES, { value: values.category, emoji: '🍽️' }]
+    : [...TYPES, { value: values.category }]
 
   async function handleSubmit() {
     if (!values.name.trim()) return
@@ -135,7 +135,9 @@ function RecipeModal({ recipe, onClose, onSaved }) {
   return (
     <div className="rc-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="rc-overlay-box">
-        <div className="rc-overlay-title">{editing ? '✏️ Edit Recipe' : '🍳 Add a Recipe'}</div>
+        <div className="rc-overlay-title">{editing
+          ? <><Icon name="pencil" size="1em" /> Edit Recipe</>
+          : <><Icon name="chefHat" size="1em" /> Add a Recipe</>}</div>
         <input
           className="rc-input"
           placeholder="Title, e.g. Apple Crisp"
@@ -145,7 +147,7 @@ function RecipeModal({ recipe, onClose, onSaved }) {
         />
         <div className="rc-overlay-row">
           <select className="rc-input" value={values.category} onChange={e => set('category', e.target.value)}>
-            {categoryOptions.map(t => <option key={t.value} value={t.value}>{t.emoji} {t.value}</option>)}
+            {categoryOptions.map(t => <option key={t.value} value={t.value}>{t.value}</option>)}
           </select>
           <input
             className="rc-input"
@@ -242,13 +244,16 @@ export default function Recipes() {
           />
 
           <div className="rc-filters">
-            <input
-              className="rc-input rc-search"
-              type="search"
-              placeholder="🔍 Search by title…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
+            <div className="rc-search-wrap">
+              <Icon name="search" size="1em" />
+              <input
+                className="rc-input rc-search"
+                type="search"
+                placeholder="Search by title…"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+              />
+            </div>
             <div className="rc-chips">
               <button className={`rc-chip${!type ? ' active' : ''}`} onClick={() => setType('')}>All</button>
               {TYPES.map(t => (
@@ -318,14 +323,14 @@ export default function Recipes() {
               <div className="rc-detail-body">
                 <div className="rc-tags">
                   {selected.category   && <span className="rc-tag">{typeIcon(selected.category)} {selected.category}</span>}
-                  {selected.ingredient && <span className="rc-tag">🥕 {selected.ingredient}</span>}
+                  {selected.ingredient && <span className="rc-tag"><Icon name="carrot" size="1em" /> {selected.ingredient}</span>}
                 </div>
                 <RecipeBody link={selected.link} />
               </div>
             </>
           ) : (
             <div className="rc-placeholder">
-              <div className="rc-placeholder-icon">🍳</div>
+              <div className="rc-placeholder-icon"><Icon name="chefHat" size="1em" /></div>
               <div>Pick a recipe to see it here</div>
             </div>
           )}

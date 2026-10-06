@@ -16,7 +16,7 @@ class NovaErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div style={{ padding: '20px', color: 'var(--muted)', fontSize: 'var(--fs-md)' }}>
-          <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Nova page crashed</div>
+          <div style={{ color: '#e07070', marginBottom: 8 }}><Icon name="alert" size="1em" /> Nova page crashed</div>
           <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-sm)', wordBreak: 'break-all' }}>
             {this.state.error?.message}
           </div>

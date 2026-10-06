@@ -376,7 +376,7 @@
 }
 .glance-upcoming-person[data-person] { color: var(--person); }
 
-.glance-upcoming-medal { flex-shrink: 0; }
+.glance-upcoming-medal { flex-shrink: 0; color: #f5c842; }
 
 /* ══════════════════════════════════════════
    LOOKAHEAD CARD — 7-day strip, weather inline in the header

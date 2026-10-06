@@ -26,6 +26,18 @@
 }
 
 /* ── Shared inputs ── */
+/* Search box with a magnifier icon inside it, on the left */
+.rc-search-wrap { position: relative; }
+.rc-search-wrap > .icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.rc-search-wrap > .rc-search { width: 100%; padding-left: 2.1em; }
+
 .rc-input {
   background: var(--surface2);
   border: 1px solid var(--border);

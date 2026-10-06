@@ -211,7 +211,7 @@ export default function ChoresList({
       <Panel>
         <PanelHeader
           title={title}
-          badge={showPoints && points > 0 ? `🏆 ${points} pts` : null}
+          badge={showPoints && points > 0 ? <><Icon name="trophy" size="1em" /> {points} pts</> : null}
           actions={
             <>
               {showHideCompletedToggle && (
@@ -241,7 +241,7 @@ export default function ChoresList({
                       {whoInputMode === 'freeform' && <PersonTag name={c.who} />}
                       {showWeight && (
                         <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
-                          {'★'.repeat(c.weight || 1)}
+                          {Array.from({ length: c.weight || 1 }, (_, i) => <Icon key={i} name="star" size="0.95em" filled />)}
                         </span>
                       )}
                       {badge && (
@@ -270,7 +270,7 @@ export default function ChoresList({
             <div className="overlay-title">{detail.name}</div>
             <div className="detail-row">
               <span className="detail-label">Status</span>
-              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+              <span className="detail-value">{detail.done ? <><Icon name="check" size="1em" /> Done</> : 'Not done'}</span>
             </div>
             {whoInputMode === 'freeform' && detail.who && (
               <div className="detail-row">

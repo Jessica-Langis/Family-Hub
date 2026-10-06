@@ -29,7 +29,7 @@ class ToriErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div style={{ padding: '20px', color: 'var(--muted)', fontSize: 'var(--fs-md)' }}>
-          <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Tori page crashed</div>
+          <div style={{ color: '#e07070', marginBottom: 8 }}><Icon name="alert" size="1em" /> Tori page crashed</div>
           <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-sm)', wordBreak: 'break-all' }}>
             {this.state.error?.message}
           </div>
@@ -229,7 +229,7 @@ function TodoPanel() {
       <Panel>
         <PanelHeader
           title="To Do"
-          badge={points > 0 ? `🏆 ${points} pts` : null}
+          badge={points > 0 ? <><Icon name="trophy" size="1em" /> {points} pts</> : null}
           actions={
             <>
               <button
@@ -256,9 +256,9 @@ function TodoPanel() {
                       <span className={`chore-item-name${item.done ? ' done' : ''}`}>{item.name}</span>
                       {item.kind === 'chore'
                         ? <span className="chore-item-weight" title={WEIGHT_LABELS[item.weight || 1]}>
-                            {'★'.repeat(item.weight || 1)}
+                            {Array.from({ length: item.weight || 1 }, (_, i) => <Icon key={i} name="star" size="0.95em" filled />)}
                           </span>
-                        : <span className="chore-item-weight" title="Reminder">🔔</span>
+                        : <span className="chore-item-weight" title="Reminder"><Icon name="bell" size="1em" /></span>
                       }
                       {badge && (
                         <span className={`countdown-badge ${badge}`}>
@@ -296,7 +296,7 @@ function TodoPanel() {
               <>
                 <div className="detail-row">
                   <span className="detail-label">Status</span>
-                  <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+                  <span className="detail-value">{detail.done ? <><Icon name="check" size="1em" /> Done</> : 'Not done'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Difficulty</span>

@@ -109,7 +109,7 @@ export default function NextUpPanel({ name, script }) {
                   <div className="next-up-name">{next.name}</div>
                   {next.type && <div className="next-up-type">{next.type}</div>}
                   <div className="next-up-date">{formatDateShort(next.date)}</div>
-                  {next.location && <div className="next-up-loc">📍 {next.location}</div>}
+                  {next.location && <div className="next-up-loc"><Icon name="mapPin" size="1em" /> {next.location}</div>}
                   <span className={`countdown-badge ${choreBadgeCls(next.date)}`}>
                     {(() => {
                       const d = getDayDiff(next.date)
@@ -126,7 +126,7 @@ export default function NextUpPanel({ name, script }) {
                     <div className="next-up-name next-up-name-sm">{next2.name}</div>
                     {next2.type && <div className="next-up-type">{next2.type}</div>}
                     <div className="next-up-date">{formatDateShort(next2.date)}</div>
-                    {next2.location && <div className="next-up-loc">📍 {next2.location}</div>}
+                    {next2.location && <div className="next-up-loc"><Icon name="mapPin" size="1em" /> {next2.location}</div>}
                     <span className={`countdown-badge ${choreBadgeCls(next2.date)}`}>
                       {(() => {
                         const d = getDayDiff(next2.date)

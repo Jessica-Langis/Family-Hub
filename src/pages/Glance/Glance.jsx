@@ -9,6 +9,7 @@ import {
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
+import Icon from '../../components/Icon/Icon'
 
 // ── At a Glance — walk-by kiosk screen near the front door ──────────
 // This screen is visible to guests, not just the family, which rules out
@@ -144,7 +145,7 @@ class GlanceErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--muted)' }}>
-          <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Something went wrong</div>
+          <div style={{ color: '#e07070', marginBottom: 8 }}><Icon name="alert" size="1em" /> Something went wrong</div>
           <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-xs)', wordBreak: 'break-all',
             marginBottom: 20 }}>{this.state.error?.message}</div>
           <button
@@ -235,7 +236,7 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
                 key={i}
                 className={`glance-upcoming-row urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
               >
-                {ev.isSports && <span className="glance-upcoming-medal">🏅</span>}
+                {ev.isSports && <span className="glance-upcoming-medal"><Icon name="medal" size="1em" /></span>}
                 {ev.person && (
                   <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
                 )}

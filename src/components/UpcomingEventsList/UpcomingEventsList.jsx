@@ -5,6 +5,7 @@ import {
   evSummary, dateParts, classifyEvent, urgencyClass, countdownLabel, isStale,
 } from '../../pages/Home/homeUtils'
 import './UpcomingEventsList.css'
+import Icon from '../Icon/Icon'
 
 // ── Upcoming Events — And Stuff's "sit and plan" tile ────────────────
 // Replaces the old 2-week day-grid with a flat, ranked list — same shape
@@ -70,7 +71,7 @@ export default function UpcomingEventsList() {
               key={`${ev.date}-${ev.title}-${i}`}
               className={`uel-row urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
             >
-              {ev.isSports && <span className="uel-medal">🏅</span>}
+              {ev.isSports && <span className="uel-medal"><Icon name="medal" size="1em" /></span>}
               {ev.person && (
                 <span className="uel-person" data-person={ev.person.toLowerCase()}>
                   {ev.person}

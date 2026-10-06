@@ -56,14 +56,14 @@ function FunList({ items, status, titleKey, subKey, onDelete, emptyIcon, emptyTe
 // ── Add modal (Watch / Read only) ──────────────────────────────
 const FORM_CONFIG = {
   movies: {
-    title:  '🎬 Add to Watch List:',
+    title:  <><Icon name="film" size="1em" /> Add to Watch List</>,
     fields: [
       { id: 'title',     placeholder: 'e.g. Inception' },
       { id: 'mediaType', placeholder: 'Movie or Show' },
     ],
   },
   books: {
-    title:  '📚 Add to Reading List:',
+    title:  <><Icon name="book" size="1em" /> Add to Reading List</>,
     fields: [
       { id: 'title',  placeholder: 'e.g. Atomic Habits' },
       { id: 'author', placeholder: 'e.g. James Clear' },
@@ -138,10 +138,10 @@ function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
                 third of the column tall, so every row of height counts */}
             <div className="fun-toggle">
               <button className={`fun-toggle-btn ${isWatch ? 'active' : ''}`} onClick={() => setTab('watch')}>
-                🎬 Watch
+                <Icon name="film" size="1em" /> Watch
               </button>
               <button className={`fun-toggle-btn ${!isWatch ? 'active' : ''}`} onClick={() => setTab('read')}>
-                📚 Read
+                <Icon name="book" size="1em" /> Read
               </button>
             </div>
             <button

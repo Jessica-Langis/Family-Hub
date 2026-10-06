@@ -214,11 +214,15 @@ button {
 }
 
 .chore-item-weight {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
   font-size: var(--fs-xs);
   color: #f5c842;
-  letter-spacing: 1px;
   flex-shrink: 0;
 }
+/* Reminder bell sits in the same slot as the stars, in a quieter color */
+.chore-item-weight[title="Reminder"] { color: var(--accent2); }
 
 .weight-picker {
   display: flex;

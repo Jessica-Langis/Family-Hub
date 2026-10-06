@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { SCRIPTS, apiFetch, getStoredSession, storeSession, clearStoredSession } from '../../api/scripts'
 import './AuthGate.css'
+import Icon from '../Icon/Icon'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
@@ -86,7 +87,7 @@ export default function AuthGate({ children }) {
   return (
     <div className="authgate-wrap">
       <div className="authgate-box">
-        <div className="authgate-title">🏡 Family Hub</div>
+        <div className="authgate-title"><Icon name="house" size="1em" /> Family Hub</div>
         <div className="authgate-sub">Sign in with a family Google account to continue</div>
 
         {!GOOGLE_CLIENT_ID && (
