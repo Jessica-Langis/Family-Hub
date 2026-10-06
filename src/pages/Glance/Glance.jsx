@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, Component } from 'react'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
+import useAutoFit from '../../hooks/useAutoFit'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
   centerStageCountdown, isCenterStageStale, urgencyClass,
@@ -164,9 +165,10 @@ class GlanceErrorBoundary extends Component {
 // something to show even on a light day.
 function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) {
   const hasTimed = todayEvents.length > 0
+  const fitRef = useAutoFit()
 
   return (
-    <div className="glance-today-card">
+    <div ref={fitRef} className="glance-today-card fit-scope">
       <div className="glance-today-left">
         <span className="glance-card-label">Today</span>
         {todayAllDay.length > 0 && (
@@ -262,8 +264,9 @@ function WeatherStrip() {
 
 // ── Lookahead card — 7-day strip of everything ──────────────────────
 function LookaheadCard({ days }) {
+  const fitRef = useAutoFit()
   return (
-    <div className="glance-lookahead-card">
+    <div ref={fitRef} className="glance-lookahead-card fit-scope">
       <div className="glance-lookahead-head">
         <span className="glance-card-label">Next {LOOKAHEAD_DAYS} Days</span>
         <WeatherStrip />

@@ -4,6 +4,7 @@ import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
 import ChoresList from '../../components/ChoresList/ChoresList'
 import { SCRIPTS } from '../../api/scripts'
 import { NOVA_JOKES, pickDailyIndex } from '../../data/hypeContent'
+import useAutoFit from '../../hooks/useAutoFit'
 import './Nova.css'
 
 // ── Error boundary ────────────────────────────────────────────
@@ -69,8 +70,9 @@ export default function Nova() {
 // ── Joke tile ─────────────────────────────────────────────────
 function JokePanel() {
   const [idx, setIdx] = useState(() => pickDailyIndex(NOVA_JOKES, 2))
+  const fitRef = useAutoFit()
   return (
-    <div className="fun-fact-panel tile-joke">
+    <div ref={fitRef} className="fun-fact-panel tile-joke fit-scope">
       <div className="fun-fact-header">
         <span className="fun-fact-label">Joke of the Day</span>
         <button className="fact-shuffle-btn" title="New joke"

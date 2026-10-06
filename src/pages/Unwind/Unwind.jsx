@@ -131,20 +131,24 @@ function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
       <PanelHeader
         title={<span style={{ color: 'var(--accent5)' }}>{isWatch ? 'Watch List' : 'Reading List'}</span>}
         actions={
-          <button
-            className="add-btn"
-            onClick={() => onAdd(isWatch ? 'movies' : 'books')}
-          >+</button>
+          <>
+            {/* In the header rather than its own row — this tile is only a
+                third of the column tall, so every row of height counts */}
+            <div className="fun-toggle">
+              <button className={`fun-toggle-btn ${isWatch ? 'active' : ''}`} onClick={() => setTab('watch')}>
+                🎬 Watch
+              </button>
+              <button className={`fun-toggle-btn ${!isWatch ? 'active' : ''}`} onClick={() => setTab('read')}>
+                📚 Read
+              </button>
+            </div>
+            <button
+              className="add-btn"
+              onClick={() => onAdd(isWatch ? 'movies' : 'books')}
+            >+</button>
+          </>
         }
       />
-      <div className="fun-toggle">
-        <button className={`fun-toggle-btn ${isWatch ? 'active' : ''}`} onClick={() => setTab('watch')}>
-          🎬 Watch
-        </button>
-        <button className={`fun-toggle-btn ${!isWatch ? 'active' : ''}`} onClick={() => setTab('read')}>
-          📚 Read
-        </button>
-      </div>
       {isWatch
         ? <FunList items={movies} status={status.movies} titleKey="title" subKey="mediaType" onDelete={id => onDelete('movies', id)} />
         : <FunList items={books}  status={status.books}  titleKey="title" subKey="author"    onDelete={id => onDelete('books',  id)} />

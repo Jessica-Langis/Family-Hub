@@ -4,14 +4,13 @@
 .recipes-content {
   display: grid;
   grid-template-columns: minmax(280px, 2fr) 3fr;
-  /* Rows have a floor so a short/odd-shaped window scrolls the page
-     instead of crushing tiles (see the type-scale note in tokens.css). */
-  grid-template-rows: minmax(380px, 1fr);
+  /* The page never scrolls: rows split the screen, and useAutoFit scales
+     each tile's text to fit its share (see tokens.css). */
+  grid-template-rows: minmax(0, 1fr);
   gap: 8px;
   height: 100%;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .recipes-content > * {

@@ -18,9 +18,9 @@
 .unwind-content {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  /* Rows have a floor so a short/odd-shaped window scrolls the page
-     instead of crushing tiles (see the type-scale note in tokens.css). */
-  grid-template-rows: repeat(3, minmax(170px, 1fr));
+  /* The page never scrolls: rows split the screen, and useAutoFit scales
+     each tile's text to fit its share (see tokens.css). */
+  grid-template-rows: repeat(3, minmax(0, 1fr));
   grid-template-areas:
     "todo events grocery"
     "todo events grocery"
@@ -28,8 +28,7 @@
   gap: 8px;
   height: 100%;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .un-grocery,
@@ -69,14 +68,14 @@
   gap: 0;
   background: var(--surface2);
   border-radius: 7px;
-  padding: 3px;
-  margin: 8px 14px 6px;
+  padding: 2px;
   flex-shrink: 0;
 }
 
 .fun-toggle-btn {
   flex: 1;
-  padding: 5px 0;
+  padding: 3px 10px;
+  white-space: nowrap;
   border: none;
   border-radius: 5px;
   background: transparent;

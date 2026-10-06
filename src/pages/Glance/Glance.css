@@ -21,14 +21,11 @@
 .glance-content {
   display: grid;
   grid-template-columns: 1fr 0.43fr;
-  /* Both rows are `auto` — Today and Lookahead each size to their own
-     content and stack directly against each other (Lookahead starts
-     right where Today ends), rather than splitting the page into a
-     fixed proportion that clips whichever side needs more room on a
-     given day. Bulletin (spanning both rows) grows to match. If the
-     combined content ever exceeds the viewport, this container's own
-     scroll (below) picks it up instead of clipping anything. */
-  grid-template-rows: auto auto;
+  /* The page never scrolls. Today takes the height its content needs,
+     up to 55% of the page (fit-content), and Lookahead fills the rest.
+     If either tile's content is more than its share, useAutoFit scales
+     that tile's text down to fit (see tokens.css); Bulletin spans both. */
+  grid-template-rows: fit-content(55%) minmax(0, 1fr);
   grid-template-areas:
     "today     bulletin"
     "lookahead bulletin";
@@ -36,8 +33,7 @@
   height: 100%;
   padding: 0 4px 4px;
   box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .glance-col-bulletin {
@@ -79,14 +75,15 @@
   box-sizing: border-box;
   position: relative;
   /* Neither card is a size container — `container-type: size` implies
-     `contain: size`, which stops a box from ever sizing itself off its
-     own content. A day with several events (or a long title) needs to
-     grow the whole card taller instead of clipping, and the page (see
-     .glance-content) scrolls if that combined growth ever exceeds the
-     viewport. The cqw/cqh-based font rules throughout this file fall
-     back to viewport units with no query container in scope — still
-     capped by each clamp's own max, so sizing stays bounded. */
-  overflow: visible;
+     `contain: size`, which stops Today from sizing its row off its own
+     content (see .glance-content). The cqw/cqh-based font rules
+     throughout this file fall back to viewport units with no query
+     container in scope — still capped by each clamp's own max.
+     Each card's height is set by the page grid; useAutoFit scales its
+     text to fit, and it only scrolls if even the smallest readable size
+     won't fit. */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .glance-card-empty {
@@ -136,7 +133,7 @@
      container — see the shared rule above), so this scales with the
      window/screen rather than the card's own box, which can now grow
      taller to fit its content instead of needing to be measured. */
-  --main-event-title-size: clamp(var(--fs-xl), 0.7cqw + 0.7cqh, 2.4rem);
+  --main-event-title-size: calc(clamp(var(--fs-xl-base), 0.7cqw + 0.7cqh, 2.4rem) * var(--fit, 1));
 }
 
 .glance-today-card::before {
@@ -281,7 +278,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   /* See --main-event-title-size above — viewport-scaled, same reasoning. */
-  font-size: clamp(var(--fs-2xl), 1.7cqw + 1.7cqh, 4rem);
+  font-size: calc(clamp(var(--fs-2xl-base), 1.7cqw + 1.7cqh, 4rem) * var(--fit, 1));
   line-height: 1;
   color: var(--accent);
   letter-spacing: -0.01em;
@@ -581,15 +578,14 @@
 @media (max-width: 1000px) {
   .glance-content {
     grid-template-columns: 1fr;
-    /* max-content, not auto: with a fixed-height scroller, auto rows shrink
-       to each tile's min-height and the content spills out */
-    grid-template-rows: max-content max-content max-content;
+    /* Same no-scroll split as the wide layout, one column: Today up to
+       45%, Lookahead and Bulletin share the rest */
+    grid-template-rows: fit-content(45%) minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "today"
       "lookahead"
       "bulletin";
-    /* Base rule keeps height:100% + overflow-y:auto, so between 641-1000px
-       this stack scrolls inside the page (phones scroll the body instead). */
+    /* Phones (below) scroll the body instead of fitting the screen */
     gap: 10px;
     padding: 0 4px 8px;
   }
@@ -599,9 +595,24 @@
     max-width: 100%;
   }
 
+  /* Bulletin is still the one card that's a size container (see the base
+     rule up top) — Today/Lookahead already aren't, at any width, so they
+     need no mobile-specific override here anymore. */
+  .glance-col-bulletin {
+    container-type: normal;
+  }
+
+}
+
+/* ── Phone — the 7-day strip becomes a vertical list ── */
+@media (max-width: 640px) {
+  .glance-content { height: auto; overflow: visible; }
+
   /* Side-by-side left/right doesn't fit a phone width — stack instead,
-     with the divider becoming a horizontal rule between the two. */
-  .glance-today-card { flex-direction: column; min-height: 260px; }
+     with the divider becoming a horizontal rule between the two.
+     (Tablets keep them side by side: stacking there cost too much of
+     Today's share of a no-scroll screen.) */
+  .glance-today-card { flex-direction: column; }
   .glance-today-divider { width: auto; height: 1px; margin: 4px 18px; }
   /* Once stacked, the desktop flex:1.5/1 (0 basis) split would divide the
      card's fixed height between the halves instead of letting each grow
@@ -610,21 +621,9 @@
   .glance-today-left,
   .glance-today-right { flex: none; }
   .glance-upcoming-list { flex: none; overflow: visible; }
-
-  /* Bulletin is still the one card that's a size container (see the base
-     rule up top) — Today/Lookahead already aren't, at any width, so they
-     need no mobile-specific override here anymore. */
-  .glance-col-bulletin {
-    container-type: normal;
-  }
-
+  .glance-today-card    { min-height: 260px; }
   .glance-lookahead-card{ min-height: 240px; }
   .glance-col-bulletin  { min-height: 240px; }
-}
-
-/* ── Phone — the 7-day strip becomes a vertical list ── */
-@media (max-width: 640px) {
-  .glance-content { height: auto; overflow: visible; }
 
   /* Stacked vertical list reads better than 7 thin columns on a phone */
   .glance-lookahead-grid {
