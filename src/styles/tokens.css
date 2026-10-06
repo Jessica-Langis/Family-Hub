@@ -49,6 +49,10 @@
   --fs-xl-base:  clamp(1.25rem, 0.90rem + 0.80vmin + 0.26vw, 2rem);
   --fs-2xl-base: clamp(1.6rem,  1.00rem + 1.60vmin + 0.45vw, 3.2rem);
 
+  /* Minimum touch target for anything tappable (see TOUCH TARGETS in
+     global.css) — sized for fingers on a wall/counter tablet */
+  --tap: 40px;
+
   /* Bottom nav grows with the type so its labels never clip */
   --nav-h: clamp(60px, 52px + 1.2vmin + 0.3vw, 84px);
 }

@@ -866,3 +866,81 @@ button {
     display: block;
   }
 }
+
+/* ══════════════════════════════════════════
+   TOUCH TARGETS — every tappable control is at least --tap (40px) in
+   both directions, for fingers on a wall or counter tablet.
+
+   Two approaches, on purpose:
+   • Buttons inside list rows get a real 40×40 box (rows grow a little).
+     An invisible tap zone there would overlap the neighboring row, and
+     several of these are delete buttons — a near-miss shouldn't remove
+     the wrong item.
+   • Header buttons and chips keep their look and get an invisible tap
+     zone around them instead, so tile headers don't get taller.
+
+   `button.` prefixes outrank each component's own single-class rule
+   regardless of stylesheet order.
+══════════════════════════════════════════ */
+button.chore-check-btn,
+button.fun-delete,
+button.grocery-delete,
+button.reminder-edit,
+button.reminder-delete,
+button.bulletin-delete,
+button.fact-shuffle-btn,
+button.overlay-close {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+/* Rows whose height is now set by a 40px button don't also need their
+   old vertical padding — trimmed so the rows grow as little as possible
+   and short tiles still fit their lists without scrolling. (.fit-scope
+   prefix: some of these are also set in page stylesheets that load
+   after this one.) */
+.fit-scope .chore-item    { padding-top: 1px; padding-bottom: 1px; }
+.fit-scope .reminder-item { padding-top: 0;   padding-bottom: 0; }
+.fit-scope .fun-item      { padding-top: 0;   padding-bottom: 0; }
+.fit-scope .grocery-item  { padding-top: 0;   padding-bottom: 0; }
+.fit-scope .fun-list      { padding-top: 0;   padding-bottom: 0; }
+
+/* Pop-up buttons, pickers and form fields */
+button.overlay-btn,
+button.fun-overlay-btn,
+button.rc-btn,
+button.weight-btn,
+.overlay-input,
+.fun-overlay-input,
+.rc-input,
+.quick-add-input {
+  min-height: var(--tap);
+}
+
+/* Invisible tap zone: centered on the button, at least --tap square.
+   Insets are percentages of the button itself, so a button already
+   wider/taller than --tap just keeps its own size on that axis. */
+button.add-btn,
+button.rc-chip,
+button.rc-clear,
+button.clear-btn,
+button.fun-toggle-btn {
+  position: relative;
+}
+button.add-btn::after,
+button.rc-chip::after,
+button.rc-clear::after,
+button.clear-btn::after,
+button.fun-toggle-btn::after {
+  content: '';
+  position: absolute;
+  top:    min(0px, calc(50% - var(--tap) / 2));
+  bottom: min(0px, calc(50% - var(--tap) / 2));
+  left:   min(0px, calc(50% - var(--tap) / 2));
+  right:  min(0px, calc(50% - var(--tap) / 2));
+}
+
