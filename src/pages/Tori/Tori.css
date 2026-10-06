@@ -12,10 +12,9 @@
   overflow-y: auto;
 }
 
-/* First column stacks Next Up (top) over Reminders, split evenly */
+/* First column is Next Up, filling the full column height */
 .ta-nextup-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .ta-nextup     { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
-.ta-completed  { display: flex; flex-direction: column; min-height: 0; flex: 1 1 0; }
 
 /* Last column stacks To Do (majority of height) over Wishlist (compact) */
 .ta-todo-col  { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
@@ -55,8 +54,7 @@
 
   /* flex:none — stacked, each tile sizes to its content instead of
      splitting a shared height (which clipped Next Up on narrow phones) */
-  .ta-nextup,
-  .ta-completed, .ta-todo, .ta-wishlist {
+  .ta-nextup, .ta-todo, .ta-wishlist {
     flex: none;
     min-height: 140px;
     overflow: visible;

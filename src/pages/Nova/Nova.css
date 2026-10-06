@@ -12,11 +12,10 @@
   overflow-y: auto;
 }
 
-/* First column stacks Next Up (top) over Recently Completed, split evenly —
+/* First column is Next Up, filling the full column height —
    mirrors Tori's ta-nextup-col now that Nova uses the same shared NextUpPanel */
 .na-nextup-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.na-nextup-cell    { flex: 1 1 0; }
-.na-completed-cell { flex: 1 1 0; }
+.na-nextup-cell { flex: 1 1 0; }
 
 /* Last column stacks Chores (majority of height) over Wishlist (compact) */
 .na-chores-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
@@ -143,12 +142,10 @@
   .na-cell { min-height: 320px; overflow: visible; min-width: 0; }
   .na-cell .panel { flex: none; min-height: 300px; min-width: 0; max-width: 100%; }
   /* flex:none — stacked cells size to their content instead of splitting
-     the column height (which let Next Up spill under Recently Completed) */
-  .na-nextup-cell, .na-completed-cell, .na-chores-cell { flex: none; }
+     the column height */
+  .na-nextup-cell, .na-chores-cell { flex: none; }
   .na-nextup-cell { min-height: 160px; }
   .na-nextup-cell .panel { min-height: 150px; }
-  .na-completed-cell { min-height: 160px; }
-  .na-completed-cell .panel { min-height: 150px; }
 
   .na-nextup-col { min-height: 0; gap: 8px; }
   .na-wishlist { min-height: 140px; overflow: visible; min-width: 0; }

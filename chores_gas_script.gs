@@ -730,6 +730,13 @@ function doPost(e) {
       sheet.appendRow([p.name || '', p.category || '', p.ingredient || '', p.link || '']);
       return json({ status: 'ok' });
     }
+    if (action === 'update') {
+      var row = parseInt(p.idx);
+      if (row > 1) {
+        sheet.getRange(row, 1, 1, 4).setValues([[p.name || '', p.category || '', p.ingredient || '', p.link || '']]);
+      }
+      return json({ status: 'ok' });
+    }
     if (action === 'delete') {
       var row = parseInt(p.idx);
       if (row > 0) sheet.deleteRow(row);

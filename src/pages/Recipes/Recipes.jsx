@@ -1,17 +1,32 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
+import breakfastIcon from '../../assets/recipe-icons/breakfast.png'
+import lunchIcon     from '../../assets/recipe-icons/lunch.png'
+import dinnerIcon    from '../../assets/recipe-icons/dinner.png'
+import snackIcon     from '../../assets/recipe-icons/snack.png'
+import dessertIcon   from '../../assets/recipe-icons/dessert.png'
+import bakingIcon    from '../../assets/recipe-icons/baking.png'
+import drinksIcon    from '../../assets/recipe-icons/drinks.png'
 import './Recipes.css'
 
 // Backed by the MealIdeas sheet tab (A=Name B=Category C=Main Ingredient
 // D=Link). Column D holds either a URL to an online recipe or the full
 // recipe text pasted into the cell — RecipeBody handles both.
+// Category icons are Microsoft's Fluent Emoji 3D set (MIT licensed,
+// github.com/microsoft/fluentui-emoji). `icon` shows in the chips, list
+// and detail; `emoji` is the plain-text stand-in for the Add form's
+// <select>, since <option> can't render images.
+const img = (src) => <img className="rc-icon" src={src} alt="" />
+
 const TYPES = [
-  { value: 'Breakfast', icon: '🥞' },
-  { value: 'Lunch',     icon: '🥪' },
-  { value: 'Dinner',    icon: '🍝' },
-  { value: 'Snack',     icon: '🥨' },
-  { value: 'Dessert',   icon: '🍰' },
+  { value: 'Breakfast', icon: img(breakfastIcon), emoji: '🍳' },
+  { value: 'Lunch',     icon: img(lunchIcon),     emoji: '🥪' },
+  { value: 'Dinner',    icon: img(dinnerIcon),    emoji: '🥩' },
+  { value: 'Snack',     icon: img(snackIcon),     emoji: '🍿' },
+  { value: 'Dessert',   icon: img(dessertIcon),   emoji: '🥧' },
+  { value: 'Baking',    icon: img(bakingIcon),    emoji: '🍞' },
+  { value: 'Drinks',    icon: img(drinksIcon),    emoji: '🧋' },
 ]
 
 const typeIcon = (category) =>
@@ -76,23 +91,38 @@ function RecipeBody({ link }) {
   })
 }
 
-// ── Add modal ──────────────────────────────────────────────────
-function AddRecipeModal({ onClose, onAdded }) {
-  const [values, setValues] = useState({ name: '', category: 'Dinner', ingredient: '', link: '' })
+// ── Add / edit modal ───────────────────────────────────────────
+// Pass `recipe` to edit an existing row; omit it to add a new one.
+function RecipeModal({ recipe, onClose, onSaved }) {
+  const editing = !!recipe
+  const [values, setValues] = useState(() => ({
+    name:       String(recipe?.name       ?? ''),
+    category:   String(recipe?.category   || 'Dinner'),
+    ingredient: String(recipe?.ingredient ?? ''),
+    link:       String(recipe?.link       ?? ''),
+  }))
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
   const set = (id, val) => setValues(v => ({ ...v, [id]: val }))
+
+  // A recipe saved under a category that's no longer in TYPES (or typed
+  // straight into the sheet) still shows as an option, so editing it
+  // doesn't silently switch it to the first category in the list.
+  const categoryOptions = TYPES.some(t => t.value === values.category)
+    ? TYPES
+    : [...TYPES, { value: values.category, emoji: '🍽️' }]
 
   async function handleSubmit() {
     if (!values.name.trim()) return
     setSaving(true); setError('')
     try {
       const fd = new FormData()
-      fd.append('action', 'add'); fd.append('type', 'mealideas')
+      fd.append('action', editing ? 'update' : 'add'); fd.append('type', 'mealideas')
+      if (editing) fd.append('idx', String(recipe.id))
       Object.entries(values).forEach(([k, v]) => fd.append(k, v.trim()))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      onAdded()
+      onSaved()
       onClose()
     } catch {
       setError('Failed to save — try again')
@@ -103,7 +133,7 @@ function AddRecipeModal({ onClose, onAdded }) {
   return (
     <div className="rc-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="rc-overlay-box">
-        <div className="rc-overlay-title">🍳 Add a Recipe</div>
+        <div className="rc-overlay-title">{editing ? '✏️ Edit Recipe' : '🍳 Add a Recipe'}</div>
         <input
           className="rc-input"
           placeholder="Title, e.g. Apple Crisp"
@@ -113,7 +143,7 @@ function AddRecipeModal({ onClose, onAdded }) {
         />
         <div className="rc-overlay-row">
           <select className="rc-input" value={values.category} onChange={e => set('category', e.target.value)}>
-            {TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.value}</option>)}
+            {categoryOptions.map(t => <option key={t.value} value={t.value}>{t.emoji} {t.value}</option>)}
           </select>
           <input
             className="rc-input"
@@ -132,7 +162,7 @@ function AddRecipeModal({ onClose, onAdded }) {
         <div className="rc-overlay-actions">
           <button className="rc-btn cancel" onClick={onClose}>Cancel</button>
           <button className="rc-btn submit" onClick={handleSubmit} disabled={saving}>
-            {saving ? 'Saving…' : 'Add'}
+            {saving ? 'Saving…' : editing ? 'Save' : 'Add'}
           </button>
         </div>
       </div>
@@ -149,6 +179,7 @@ export default function Recipes() {
   const [ingredient, setIngredient] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [adding, setAdding]         = useState(false)
+  const [editing, setEditing]       = useState(null)
 
   const load = useCallback(async () => {
     setStatus('loading')
@@ -275,6 +306,7 @@ export default function Recipes() {
                 actions={
                   <>
                     <button className="add-btn rc-back" onClick={() => setSelectedId(null)}>← Back</button>
+                    <button className="add-btn" title="Edit recipe" onClick={() => setEditing(selected)}>Edit</button>
                     <button className="add-btn rc-delete" title="Remove recipe" onClick={() => handleDelete(selected)}>🗑</button>
                   </>
                 }
@@ -296,7 +328,8 @@ export default function Recipes() {
         </Panel>
       </div>
 
-      {adding && <AddRecipeModal onClose={() => setAdding(false)} onAdded={load} />}
+      {adding  && <RecipeModal onClose={() => setAdding(false)} onSaved={load} />}
+      {editing && <RecipeModal recipe={editing} onClose={() => setEditing(null)} onSaved={load} />}
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { useState, Component } from 'react'
 import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
 import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
-import CompletedFeed from '../../components/CompletedFeed/CompletedFeed'
 import ChoresList from '../../components/ChoresList/ChoresList'
 import { SCRIPTS } from '../../api/scripts'
 import { NOVA_JOKES, pickDailyIndex } from '../../data/hypeContent'
@@ -40,14 +39,12 @@ class NovaErrorBoundary extends Component {
 // to the shared ChoresList component too (was a near-duplicate of Tori's
 // and Unwind's copies of the same ~150 lines).
 export default function Nova() {
-  const [refreshTick, setRefreshTick] = useState(0)
   return (
     <NovaErrorBoundary>
     <div className="nova-content">
       <JokePanel />
       <div className="na-nextup-col">
         <div className="na-cell na-nextup-cell"><NextUpPanel name="Nova" script={SCRIPTS.NOVA} /></div>
-        <div className="na-cell na-completed-cell"><CompletedFeed matchWho="nova" refreshKey={refreshTick} /></div>
       </div>
       <div className="na-chores-col">
         <div className="na-cell na-chores-cell">
@@ -60,7 +57,6 @@ export default function Nova() {
             showPoints
             showHideCompletedToggle
             hideCompletedStorageKey="nova_chores_hide_completed"
-            onChange={() => setRefreshTick(t => t + 1)}
           />
         </div>
         <div className="na-wishlist"><WishlistPanel type="nova_wishlist" /></div>

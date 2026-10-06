@@ -20,10 +20,10 @@ import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
 //   showFrequency              show/collect a frequency field (Unwind only)
 //   showWeight                 show the 1-3 difficulty/points picker (Tori/Nova)
 //   showPoints                 show the points badge in the header (Tori/Nova)
-//   showHideCompletedToggle    show the 👁 hide-completed toggle (Nova)
+//   showHideCompletedToggle    show the Show done / Hide done toggle (Unwind, Nova)
 //   hideCompletedStorageKey    localStorage key for that toggle's state
 //   onChange                   called after any successful add/update/toggle/delete —
-//                               lets a sibling CompletedFeed know to refresh
+//                               lets a sibling tile know to refresh
 
 export function isWho(c, name) {
   return (c.who || '').trim().toLowerCase() === String(name || '').trim().toLowerCase()
@@ -85,7 +85,8 @@ export default function ChoresList({
   }
 
   const points = showPoints ? chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0) : 0
-  const visibleChores = (showHideCompletedToggle && hideCompleted) ? chores.filter(c => !c.done) : chores
+  const doneCount = chores.filter(c => c.done).length
+  const visibleChores =(showHideCompletedToggle && hideCompleted) ? chores.filter(c => !c.done) : chores
 
   // Depend on a joined string, not the array reference itself — a caller
   // passing an inline array literal (e.g. excludeWho={['tori','nova']})
@@ -212,10 +213,10 @@ export default function ChoresList({
             <>
               {showHideCompletedToggle && (
                 <button
-                  className={`add-btn${hideCompleted ? ' active' : ''}`}
+                  className="add-btn"
                   onClick={toggleHideCompleted}
-                  title={hideCompleted ? 'Completed chores are hidden — click to show them' : 'Hide completed chores'}
-                >👁</button>
+                  title={hideCompleted ? 'Completed tasks are hidden — click to show them' : 'Hide completed tasks'}
+                >{hideCompleted ? `Show done${doneCount ? ` (${doneCount})` : ''}` : 'Hide done'}</button>
               )}
               <button className="add-btn" onClick={openAdd}>+ add</button>
             </>

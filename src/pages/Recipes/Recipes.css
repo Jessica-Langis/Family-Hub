@@ -136,6 +136,14 @@
 
 .rc-item-icon { font-size: var(--fs-xl); flex-shrink: 0; }
 
+/* Fluent 3D category icons — shown a touch larger than 1em so their
+   detail reads next to emoji at the same font-size. */
+.rc-icon {
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.3em;
+}
+
 .rc-item-body {
   display: flex;
   flex-direction: column;
