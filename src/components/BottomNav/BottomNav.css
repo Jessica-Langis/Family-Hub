@@ -53,5 +53,8 @@
 .nav-tab[data-tab="fun"].active             { color: var(--accent5); }
 .nav-tab[data-tab="fun"].active::after      { background: var(--accent5); }
 
-.nav-icon  { font-size: var(--fs-xl); }
+.nav-icon  {
+  width: calc(var(--fs-xl) * 1.15);
+  height: calc(var(--fs-xl) * 1.15);
+}
 .nav-label { font-weight: 500; }

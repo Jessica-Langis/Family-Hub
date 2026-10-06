@@ -1,16 +1,15 @@
-/* ── Grid layout: 2 columns × 3 equal rows, square-ish tiles ──
-   To Do and Grocery each span rows 1–2 (2/3 of the height) since they're
-   the two most-used tiles; Upcoming Events and Watch List share row 3
-   (1/3 height each). What's for Dinner was removed — see the note by
-   .un-events below.
+/* ── Grid layout: 3 columns × 3 equal rows ──
+   To Do and Upcoming Events each run the full height of their column;
+   Grocery takes rows 1–2 of column 3 with the Watch List under it.
+   What's for Dinner was removed — see the note by .un-events below.
 
-       ┌────────┬─────────┐
-       │        │         │
-       │  todo  │ grocery │
-       │        │         │
-       ├────────┼─────────┤
-       │ events │  watch  │
-       └────────┴─────────┘
+       ┌────────┬────────┬─────────┐
+       │        │        │         │
+       │  todo  │ events │ grocery │
+       │        │        │         │
+       │        │        ├─────────┤
+       │        │        │  watch  │
+       └────────┴────────┴─────────┘
 
    Named grid-areas (not DOM order) drive this, specifically so the mobile
    breakpoint below can keep its own — unrelated — visual order (Grocery,
@@ -18,19 +17,18 @@
    actual element order. */
 .unwind-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  /* Rows have a floor so a short/odd-shaped window scrolls the page
-     instead of crushing tiles (see the type-scale note in tokens.css). */
-  grid-template-rows: repeat(3, minmax(170px, 1fr));
+  grid-template-columns: 1fr 1fr 1fr;
+  /* The page never scrolls: rows split the screen, and useAutoFit scales
+     each tile's text to fit its share (see tokens.css). */
+  grid-template-rows: repeat(3, minmax(0, 1fr));
   grid-template-areas:
-    "todo   grocery"
-    "todo   grocery"
-    "events watch";
+    "todo events grocery"
+    "todo events grocery"
+    "todo events watch";
   gap: 8px;
   height: 100%;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .un-grocery,
@@ -70,14 +68,14 @@
   gap: 0;
   background: var(--surface2);
   border-radius: 7px;
-  padding: 3px;
-  margin: 8px 14px 6px;
+  padding: 2px;
   flex-shrink: 0;
 }
 
 .fun-toggle-btn {
   flex: 1;
-  padding: 5px 0;
+  padding: 3px 10px;
+  white-space: nowrap;
   border: none;
   border-radius: 5px;
   background: transparent;
@@ -161,6 +159,8 @@
 }
 
 .fun-delete {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
   color: var(--muted);
@@ -263,6 +263,8 @@
   opacity: 0; transition: opacity 0.15s;
 }
 .quick-add-spinner.active { opacity: 1; }
+.quick-add-spinner.active .icon { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .grocery-grid {
   flex: 1; overflow-y: auto; min-height: 0;
@@ -285,6 +287,7 @@
 .grocery-item:hover { background: rgba(255,255,255,0.04); }
 .grocery-text { flex: 1; min-width: 0; overflow-wrap: break-word; }
 .grocery-delete {
+  display: inline-flex; align-items: center;
   background: none; border: none; color: var(--muted);
   font-size: var(--fs-lg); cursor: pointer; padding: 0 2px; line-height: 1;
   flex-shrink: 0; transition: color 0.15s;
@@ -374,6 +377,7 @@
   letter-spacing: 0.1em; color: rgba(232,184,109,0.75); margin-top: 4px;
 }
 .bulletin-dinner-who { color: rgba(100,200,180,0.7) !important; }
+.bulletin-who[data-person] { color: var(--person); }
 .bulletin-text {
   font-size: var(--fs-md); color: rgba(232,234,240,0.9); line-height: 1.5;
   font-family: 'DM Sans', sans-serif; word-break: break-word;
@@ -404,7 +408,7 @@
 .note-color-swatch.selected { border-color: var(--text); }
 
 /* ── Mobile — stacked order: Grocery, To Do, Watch, Events. Kept
-   independent of the desktop 2×3 grid above via its own
+   independent of the desktop 3×3 grid above via its own
    grid-template-areas. ── */
 @media (max-width: 640px) {
   .unwind-content {

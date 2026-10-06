@@ -48,6 +48,7 @@
   font-size: var(--fs-xs);
   flex-shrink: 0;
   line-height: 1;
+  color: #f5c842;   /* medal gold, like the 🏅 it replaced */
 }
 
 /* Kid name badge — only rendered when the title actually carries a name */
@@ -62,8 +63,7 @@
   background: var(--surface2);
   color: var(--muted);
 }
-.uel-person[data-person="tori"] { color: var(--accent4); }
-.uel-person[data-person="nova"] { color: var(--accent3); }
+.uel-person[data-person] { color: var(--person); }  /* person colors: tokens.css */
 
 .uel-title {
   flex: 1;

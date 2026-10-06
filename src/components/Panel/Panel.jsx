@@ -1,9 +1,11 @@
+import useAutoFit from '../../hooks/useAutoFit'
 import './Panel.css'
 
-/** Wrapper card used by every section */
+/** Wrapper card used by every section — scales its text to fit (useAutoFit) */
 export default function Panel({ className = '', children, style }) {
+  const ref = useAutoFit()
   return (
-    <div className={`panel ${className}`} style={style}>
+    <div ref={ref} className={`panel fit-scope ${className}`} style={style}>
       {children}
     </div>
   )

@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
+import Icon from '../Icon/Icon'
+import PersonTag from '../PersonTag/PersonTag'
+import EmptyState from '../EmptyState/EmptyState'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
 
@@ -208,7 +211,7 @@ export default function ChoresList({
       <Panel>
         <PanelHeader
           title={title}
-          badge={showPoints && points > 0 ? `🏆 ${points} pts` : null}
+          badge={showPoints && points > 0 ? <><Icon name="trophy" size="1em" /> {points} pts</> : null}
           actions={
             <>
               {showHideCompletedToggle && (
@@ -218,14 +221,16 @@ export default function ChoresList({
                   title={hideCompleted ? 'Completed tasks are hidden — click to show them' : 'Hide completed tasks'}
                 >{hideCompleted ? `Show done${doneCount ? ` (${doneCount})` : ''}` : 'Hide done'}</button>
               )}
-              <button className="add-btn" onClick={openAdd}>+ add</button>
+              <button className="add-btn" onClick={openAdd}><Icon name="plus" size="1em" /> Add</button>
             </>
           }
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
           : visibleChores.length === 0
-            ? <div className="chore-empty">All done!</div>
+            ? (chores.length === 0
+                ? <EmptyState icon="calendar">No tasks yet — tap Add to start one</EmptyState>
+                : <EmptyState icon="party">All done — nice work!</EmptyState>)
             : <div className="chore-list">
                 {visibleChores.map((c, i) => {
                   const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
@@ -233,25 +238,23 @@ export default function ChoresList({
                     <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
                       onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
                       <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                      {whoInputMode === 'freeform' && c.who && (
-                        <span className="chore-item-who">{c.who}</span>
-                      )}
+                      {whoInputMode === 'freeform' && <PersonTag name={c.who} />}
                       {showWeight && (
                         <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
-                          {'★'.repeat(c.weight || 1)}
+                          {Array.from({ length: c.weight || 1 }, (_, i) => <Icon key={i} name="star" size="0.95em" filled />)}
                         </span>
                       )}
                       {badge && (
                         <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
                       )}
+                      {/* Edit and Delete live in the details pop-up (tap the row) */}
                       <div className="chore-item-actions">
                         <button
                           className={`chore-check-btn${c.done ? ' done' : ''}`}
                           title={c.done ? 'Mark not done' : 'Mark done'}
+                          aria-label={c.done ? 'Mark not done' : 'Mark done'}
                           onClick={() => toggle(c.id, !!c.done)}
-                        >✓</button>
-                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(c)}>✏</button>
-                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteChore(c.id)}>×</button>
+                        ><Icon name="check" /></button>
                       </div>
                     </div>
                   )
@@ -263,16 +266,16 @@ export default function ChoresList({
       {detail && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setDetail(null)}>
           <div className="overlay-box">
-            <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
+            <button className="overlay-close" aria-label="Close" onClick={() => setDetail(null)}><Icon name="x" /></button>
             <div className="overlay-title">{detail.name}</div>
             <div className="detail-row">
               <span className="detail-label">Status</span>
-              <span className="detail-value">{detail.done ? 'Done ✓' : 'Not done'}</span>
+              <span className="detail-value">{detail.done ? <><Icon name="check" size="1em" /> Done</> : 'Not done'}</span>
             </div>
             {whoInputMode === 'freeform' && detail.who && (
               <div className="detail-row">
                 <span className="detail-label">{whoLabel}</span>
-                <span className="detail-value">{detail.who}</span>
+                <span className="detail-value"><PersonTag name={detail.who} /></span>
               </div>
             )}
             {showFrequency && detail.frequency && (
@@ -300,6 +303,7 @@ export default function ChoresList({
               <span className="detail-value detail-notes">{detail.notes || <em style={{ color: 'var(--muted)' }}>No notes</em>}</span>
             </div>
             <div className="overlay-actions">
+              <button className="overlay-btn danger" onClick={() => deleteChore(detail.id)}><Icon name="trash" size="1em" /> Delete</button>
               <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
               <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
             </div>

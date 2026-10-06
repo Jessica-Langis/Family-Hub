@@ -3,6 +3,7 @@ import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, parsePersonEvent } from '../../pages/Home/homeUtils'
 import './NextUpPanel.css'
+import Icon from '../Icon/Icon'
 
 // ── Shared "Next Up" panel ──────────────────────────────────────────
 // Merges a kid's own manually-added events with any family-calendar event
@@ -98,7 +99,7 @@ export default function NextUpPanel({ name, script }) {
       <Panel>
         <PanelHeader
           title="Next Up"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+          actions={<button className="add-btn" onClick={() => setShowAdd(true)}><Icon name="plus" size="1em" /> Add</button>}
         />
         {loading
           ? <div className="next-up-hero"><span style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)' }}>Loading…</span></div>
@@ -108,7 +109,7 @@ export default function NextUpPanel({ name, script }) {
                   <div className="next-up-name">{next.name}</div>
                   {next.type && <div className="next-up-type">{next.type}</div>}
                   <div className="next-up-date">{formatDateShort(next.date)}</div>
-                  {next.location && <div className="next-up-loc">📍 {next.location}</div>}
+                  {next.location && <div className="next-up-loc"><Icon name="mapPin" size="1em" /> {next.location}</div>}
                   <span className={`countdown-badge ${choreBadgeCls(next.date)}`}>
                     {(() => {
                       const d = getDayDiff(next.date)
@@ -125,7 +126,7 @@ export default function NextUpPanel({ name, script }) {
                     <div className="next-up-name next-up-name-sm">{next2.name}</div>
                     {next2.type && <div className="next-up-type">{next2.type}</div>}
                     <div className="next-up-date">{formatDateShort(next2.date)}</div>
-                    {next2.location && <div className="next-up-loc">📍 {next2.location}</div>}
+                    {next2.location && <div className="next-up-loc"><Icon name="mapPin" size="1em" /> {next2.location}</div>}
                     <span className={`countdown-badge ${choreBadgeCls(next2.date)}`}>
                       {(() => {
                         const d = getDayDiff(next2.date)

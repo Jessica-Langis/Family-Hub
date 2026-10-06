@@ -5,6 +5,8 @@ import GroceryPanel        from '../Home/panels/GroceryPanel'
 import ChoresList          from '../../components/ChoresList/ChoresList'
 import UpcomingEventsList  from '../../components/UpcomingEventsList/UpcomingEventsList'
 import './Unwind.css'
+import Icon from '../../components/Icon/Icon'
+import EmptyState from '../../components/EmptyState/EmptyState'
 
 const FREQUENCY_OPTIONS = [
   { value: '',          label: 'No schedule (always show)' },
@@ -34,15 +36,15 @@ function FunItem({ item, titleKey, subKey, onDelete }) {
         {sub && <span className="fun-item-sub">{sub}</span>}
       </div>
       {tag && <span className="fun-item-tag">{tag}</span>}
-      <button className="fun-delete" title="Remove" onClick={() => onDelete(item.id)}>×</button>
+      <button className="fun-delete" title="Remove" aria-label="Remove" onClick={() => onDelete(item.id)}><Icon name="x" /></button>
     </div>
   )
 }
 
-function FunList({ items, status, titleKey, subKey, onDelete }) {
+function FunList({ items, status, titleKey, subKey, onDelete, emptyIcon, emptyText }) {
   if (status === 'loading') return <div className="fun-empty">Loading…</div>
   if (status === 'error')   return <div className="fun-empty">Unavailable</div>
-  if (!items.length)        return <div className="fun-empty">Nothing here yet</div>
+  if (!items.length)        return <EmptyState icon={emptyIcon}>{emptyText}</EmptyState>
 
   return (
     <div className="fun-list">
@@ -54,14 +56,14 @@ function FunList({ items, status, titleKey, subKey, onDelete }) {
 // ── Add modal (Watch / Read only) ──────────────────────────────
 const FORM_CONFIG = {
   movies: {
-    title:  '🎬 Add to Watch List:',
+    title:  <><Icon name="film" size="1em" /> Add to Watch List</>,
     fields: [
       { id: 'title',     placeholder: 'e.g. Inception' },
       { id: 'mediaType', placeholder: 'Movie or Show' },
     ],
   },
   books: {
-    title:  '📚 Add to Reading List:',
+    title:  <><Icon name="book" size="1em" /> Add to Reading List</>,
     fields: [
       { id: 'title',  placeholder: 'e.g. Atomic Habits' },
       { id: 'author', placeholder: 'e.g. James Clear' },
@@ -131,23 +133,30 @@ function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
       <PanelHeader
         title={<span style={{ color: 'var(--accent5)' }}>{isWatch ? 'Watch List' : 'Reading List'}</span>}
         actions={
-          <button
-            className="add-btn"
-            onClick={() => onAdd(isWatch ? 'movies' : 'books')}
-          >+</button>
+          <>
+            {/* In the header rather than its own row — this tile is only a
+                third of the column tall, so every row of height counts */}
+            <div className="fun-toggle">
+              <button className={`fun-toggle-btn ${isWatch ? 'active' : ''}`} onClick={() => setTab('watch')}>
+                <Icon name="film" size="1em" /> Watch
+              </button>
+              <button className={`fun-toggle-btn ${!isWatch ? 'active' : ''}`} onClick={() => setTab('read')}>
+                <Icon name="book" size="1em" /> Read
+              </button>
+            </div>
+            <button
+              className="add-btn"
+              aria-label={isWatch ? 'Add to watch list' : 'Add to reading list'}
+              onClick={() => onAdd(isWatch ? 'movies' : 'books')}
+            ><Icon name="plus" size="1em" /></button>
+          </>
         }
       />
-      <div className="fun-toggle">
-        <button className={`fun-toggle-btn ${isWatch ? 'active' : ''}`} onClick={() => setTab('watch')}>
-          🎬 Watch
-        </button>
-        <button className={`fun-toggle-btn ${!isWatch ? 'active' : ''}`} onClick={() => setTab('read')}>
-          📚 Read
-        </button>
-      </div>
       {isWatch
-        ? <FunList items={movies} status={status.movies} titleKey="title" subKey="mediaType" onDelete={id => onDelete('movies', id)} />
-        : <FunList items={books}  status={status.books}  titleKey="title" subKey="author"    onDelete={id => onDelete('books',  id)} />
+        ? <FunList items={movies} status={status.movies} titleKey="title" subKey="mediaType" onDelete={id => onDelete('movies', id)}
+            emptyIcon="film" emptyText="Nothing to watch yet — tap + to add a show or movie" />
+        : <FunList items={books}  status={status.books}  titleKey="title" subKey="author"    onDelete={id => onDelete('books',  id)}
+            emptyIcon="book" emptyText="No books yet — tap + to add one" />
       }
     </Panel>
   )

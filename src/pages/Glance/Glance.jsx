@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, Component } from 'react'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
+import useAutoFit from '../../hooks/useAutoFit'
+import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
   centerStageCountdown, isCenterStageStale, urgencyClass,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
+import Icon from '../../components/Icon/Icon'
 
 // ── At a Glance — walk-by kiosk screen near the front door ──────────
 // This screen is visible to guests, not just the family, which rules out
@@ -142,7 +145,7 @@ class GlanceErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--muted)' }}>
-          <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Something went wrong</div>
+          <div style={{ color: '#e07070', marginBottom: 8 }}><Icon name="alert" size="1em" /> Something went wrong</div>
           <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-xs)', wordBreak: 'break-all',
             marginBottom: 20 }}>{this.state.error?.message}</div>
           <button
@@ -164,9 +167,10 @@ class GlanceErrorBoundary extends Component {
 // something to show even on a light day.
 function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) {
   const hasTimed = todayEvents.length > 0
+  const fitRef = useAutoFit()
 
   return (
-    <div className="glance-today-card">
+    <div ref={fitRef} className="glance-today-card fit-scope">
       <div className="glance-today-left">
         <span className="glance-card-label">Today</span>
         {todayAllDay.length > 0 && (
@@ -232,7 +236,7 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
                 key={i}
                 className={`glance-upcoming-row urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
               >
-                {ev.isSports && <span className="glance-upcoming-medal">🏅</span>}
+                {ev.isSports && <span className="glance-upcoming-medal"><Icon name="medal" size="1em" /></span>}
                 {ev.person && (
                   <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
                 )}
@@ -254,7 +258,7 @@ function WeatherStrip() {
   if (loading || !today) return null
   return (
     <span className="glance-weather-strip" title={today.condition}>
-      <span className="gws-icon">{today.icon}</span>
+      <WeatherIcon emoji={today.icon} className="gws-icon" />
       <span className="gws-temp">{today.temp}</span>
     </span>
   )
@@ -262,8 +266,9 @@ function WeatherStrip() {
 
 // ── Lookahead card — 7-day strip of everything ──────────────────────
 function LookaheadCard({ days }) {
+  const fitRef = useAutoFit()
   return (
-    <div className="glance-lookahead-card">
+    <div ref={fitRef} className="glance-lookahead-card fit-scope">
       <div className="glance-lookahead-head">
         <span className="glance-card-label">Next {LOOKAHEAD_DAYS} Days</span>
         <WeatherStrip />

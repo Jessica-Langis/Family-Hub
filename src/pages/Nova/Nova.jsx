@@ -4,7 +4,9 @@ import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
 import ChoresList from '../../components/ChoresList/ChoresList'
 import { SCRIPTS } from '../../api/scripts'
 import { NOVA_JOKES, pickDailyIndex } from '../../data/hypeContent'
+import useAutoFit from '../../hooks/useAutoFit'
 import './Nova.css'
+import Icon from '../../components/Icon/Icon'
 
 // ── Error boundary ────────────────────────────────────────────
 class NovaErrorBoundary extends Component {
@@ -14,7 +16,7 @@ class NovaErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div style={{ padding: '20px', color: 'var(--muted)', fontSize: 'var(--fs-md)' }}>
-          <div style={{ color: '#e07070', marginBottom: 8 }}>⚠ Nova page crashed</div>
+          <div style={{ color: '#e07070', marginBottom: 8 }}><Icon name="alert" size="1em" /> Nova page crashed</div>
           <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-sm)', wordBreak: 'break-all' }}>
             {this.state.error?.message}
           </div>
@@ -69,12 +71,13 @@ export default function Nova() {
 // ── Joke tile ─────────────────────────────────────────────────
 function JokePanel() {
   const [idx, setIdx] = useState(() => pickDailyIndex(NOVA_JOKES, 2))
+  const fitRef = useAutoFit()
   return (
-    <div className="fun-fact-panel tile-joke">
+    <div ref={fitRef} className="fun-fact-panel tile-joke fit-scope">
       <div className="fun-fact-header">
         <span className="fun-fact-label">Joke of the Day</span>
-        <button className="fact-shuffle-btn" title="New joke"
-          onClick={() => setIdx(i => (i + 1) % NOVA_JOKES.length)}>↻</button>
+        <button className="fact-shuffle-btn" title="New joke" aria-label="New joke"
+          onClick={() => setIdx(i => (i + 1) % NOVA_JOKES.length)}><Icon name="refresh" /></button>
       </div>
       <div className="fun-fact-text">{NOVA_JOKES[idx]}</div>
     </div>

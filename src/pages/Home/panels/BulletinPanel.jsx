@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import Panel, { PanelHeader } from '../../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../../api/scripts'
+import Icon from '../../../components/Icon/Icon'
+import { personKey } from '../../../components/PersonTag/PersonTag'
+
+// Color a note's author in their person color — only for family members
+// it knows, so anyone else keeps the default bulletin color
+const whoColorKey = (who, isDinner) => {
+  const k = personKey(who)
+  return isDinner || k === 'other' ? undefined : k
+}
 
 const BULLETIN_FONTS = ['dancing','caveat','pacifico','satisfy','kalam','patrick']
 function bulletinFont(row) {
@@ -30,10 +39,10 @@ function BulletinNote({ item, isDinner, onDelete, onOpen }) {
       style={{ cursor: onOpen ? 'pointer' : undefined }}
     >
       {!isDinner && onDelete && (
-        <button className="bulletin-delete" onClick={e => { e.stopPropagation(); onDelete(item.row) }}>×</button>
+        <button className="bulletin-delete" aria-label="Remove note" onClick={e => { e.stopPropagation(); onDelete(item.row) }}><Icon name="x" /></button>
       )}
       <div className="bulletin-inner">
-        <div className={`bulletin-who${isDinner ? ' bulletin-dinner-who' : ''}`}>
+        <div className={`bulletin-who${isDinner ? ' bulletin-dinner-who' : ''}`} data-person={whoColorKey(item.who, isDinner)}>
           {isDinner ? "Tonight's Dinner" : (item.who || 'Someone')}
         </div>
         <div className={`bulletin-text${isDinner && !item.text ? ' empty-dinner' : ''}`}>
@@ -71,9 +80,9 @@ function BulletinNoteModal({ item, isDinner, onClose, onDelete }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
-        <button onClick={onClose} style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize: 'var(--fs-lg)', cursor:'pointer' }}>✕</button>
+        <button onClick={onClose} aria-label="Close" style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize: 'var(--fs-lg)', cursor:'pointer' }}><Icon name="x" /></button>
         <div style={{ fontSize: 'var(--fs-xs)', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:6, fontWeight:700 }}>
-          📌 {isDinner ? "Tonight's Dinner" : 'Bulletin Note'}
+          <Icon name="pin" size="1em" /> {isDinner ? "Tonight's Dinner" : 'Bulletin Note'}
         </div>
         <div style={{ fontSize: 'var(--fs-lg)', fontWeight:700, color:'var(--text)', marginBottom:12 }}>{who}</div>
         <div style={{ fontSize: 'var(--fs-md)', color:'var(--text)', lineHeight:1.55, whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{text}</div>
@@ -130,7 +139,7 @@ function AddNoteModal({ onClose, onAdded }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box">
-        <div className="fun-overlay-title">📌 Post to Bulletin</div>
+        <div className="fun-overlay-title"><Icon name="pin" size="1em" /> Post to Bulletin</div>
         <input className="fun-overlay-input" placeholder="Who? (e.g. Mom)" value={who} onChange={e => setWho(e.target.value)} />
         <textarea
           className="fun-overlay-input"
@@ -172,7 +181,7 @@ function BulletinLine({ item, isDinner, onOpen }) {
   const text = isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')
   return (
     <div className="bulletin-line" onClick={() => onOpen({ item, isDinner })}>
-      <span className={`bulletin-line-who${isDinner ? ' dinner' : ''}`}>{who}</span>
+      <span className={`bulletin-line-who${isDinner ? ' dinner' : ''}`} data-person={whoColorKey(item.who, isDinner)}>{who}</span>
       <span className="bulletin-line-text">{text}</span>
     </div>
   )
@@ -182,8 +191,8 @@ function AllNotesModal({ dinner, bulletins, onClose, onOpenNote }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
-        <button onClick={onClose} style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize: 'var(--fs-lg)', cursor:'pointer' }}>✕</button>
-        <div style={{ fontSize: 'var(--fs-xs)', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:12, fontWeight:700 }}>📌 All Notes</div>
+        <button onClick={onClose} aria-label="Close" style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize: 'var(--fs-lg)', cursor:'pointer' }}><Icon name="x" /></button>
+        <div style={{ fontSize: 'var(--fs-xs)', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:12, fontWeight:700 }}><Icon name="pin" size="1em" /> All Notes</div>
         <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:4 }}>
           <BulletinLine item={{ text: dinner }} isDinner onOpen={onOpenNote} />
           {bulletins.map((b, i) => <BulletinLine key={i} item={b} onOpen={onOpenNote} />)}
@@ -230,7 +239,7 @@ export default function BulletinPanel({ bodyClassName, limit = 4, style, compact
       <PanelHeader
         title="Bulletin Board"
         actions={
-          <button className="add-btn" onClick={() => setShowAdd(true)}>+ Post</button>
+          <button className="add-btn" onClick={() => setShowAdd(true)}><Icon name="plus" size="1em" /> Post</button>
         }
       />
       {compact ? (

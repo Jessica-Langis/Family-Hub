@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Panel, { PanelHeader } from '../../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../../api/scripts'
+import Icon from '../../../components/Icon/Icon'
+import EmptyState from '../../../components/EmptyState/EmptyState'
 
 // Bought state lives in localStorage so it persists across refreshes
 function getBought() {
@@ -117,13 +119,17 @@ export default function GroceryPanel() {
           onKeyDown={quickAdd}
           disabled={saving}
         />
-        <span className={`quick-add-spinner${saving ? ' active' : ''}`}>↻</span>
+        <span className={`quick-add-spinner${saving ? ' active' : ''}`}><Icon name="spinner" /></span>
       </div>
 
       <div className="grocery-grid" id="grocery-list">
         {status === 'loading' && <div className="grocery-item" style={{ gridColumn: '1/-1', color: 'var(--muted)' }}>Loading…</div>}
         {status === 'error'   && <div className="grocery-item" style={{ gridColumn: '1/-1', color: 'var(--muted)' }}>Unavailable</div>}
-        {status === 'ok' && sorted.length === 0 && <div className="grocery-item" style={{ gridColumn: '1/-1', color: 'var(--muted)' }}>No items yet</div>}
+        {status === 'ok' && sorted.length === 0 && (
+          <div style={{ gridColumn: '1 / -1', display: 'flex' }}>
+            <EmptyState icon="basket">The list is empty — type above to add something</EmptyState>
+          </div>
+        )}
         {status === 'ok' && sorted.map(item => (
           <div
             key={item}
@@ -133,9 +139,9 @@ export default function GroceryPanel() {
             <span className="grocery-text">{item}</span>
             <button
               className="grocery-delete"
-              title="Remove"
+              title="Remove" aria-label="Remove"
               onClick={e => { e.stopPropagation(); deleteItem(item) }}
-            >×</button>
+            ><Icon name="x" /></button>
           </div>
         ))}
       </div>

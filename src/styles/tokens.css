@@ -12,6 +12,15 @@
   --text: #e8eaf0;
   --muted: #8891a8;
 
+  /* ── One color per person — every name tag, calendar tag and bulletin
+     "who" uses these (PersonTag / [data-person]) so a name reads as the
+     same color everywhere. Tori and Nova match their tab accents. ── */
+  --person-tori:  var(--accent4);
+  --person-nova:  var(--accent3);
+  --person-mom:   #c3a6f0;
+  --person-dad:   #f0a868;
+  --person-other: var(--accent6);
+
   /* ── Fluid type scale — THE way to size text anywhere in the app ──
      Every font-size should be one of these tokens (or a calc()/clamp()
      built on one), never a fixed rem/px. Each step grows with the screen
@@ -33,13 +42,37 @@
      notes, chores, items etc. use `overflow-wrap: break-word` and let the
      tile grow; only short fixed labels (times, badges, counts) stay
      `white-space: nowrap`. No `text-overflow: ellipsis` on content. */
-  --fs-xs:  clamp(0.78rem, 0.58rem + 0.32vmin + 0.12vw, 1.05rem);
-  --fs-sm:  clamp(0.88rem, 0.66rem + 0.36vmin + 0.13vw, 1.18rem);
-  --fs-md:  clamp(0.95rem, 0.72rem + 0.40vmin + 0.14vw, 1.3rem);
-  --fs-lg:  clamp(1.05rem, 0.80rem + 0.50vmin + 0.18vw, 1.5rem);
-  --fs-xl:  clamp(1.25rem, 0.90rem + 0.80vmin + 0.26vw, 2rem);
-  --fs-2xl: clamp(1.6rem,  1.00rem + 1.60vmin + 0.45vw, 3.2rem);
+  --fs-xs-base:  clamp(0.78rem, 0.58rem + 0.32vmin + 0.12vw, 1.05rem);
+  --fs-sm-base:  clamp(0.88rem, 0.66rem + 0.36vmin + 0.13vw, 1.18rem);
+  --fs-md-base:  clamp(0.95rem, 0.72rem + 0.40vmin + 0.14vw, 1.3rem);
+  --fs-lg-base:  clamp(1.05rem, 0.80rem + 0.50vmin + 0.18vw, 1.5rem);
+  --fs-xl-base:  clamp(1.25rem, 0.90rem + 0.80vmin + 0.26vw, 2rem);
+  --fs-2xl-base: clamp(1.6rem,  1.00rem + 1.60vmin + 0.45vw, 3.2rem);
+
+  /* Minimum touch target for anything tappable (see TOUCH TARGETS in
+     global.css) — sized for fingers on a wall/counter tablet */
+  --tap: 40px;
 
   /* Bottom nav grows with the type so its labels never clip */
   --nav-h: clamp(60px, 52px + 1.2vmin + 0.3vw, 84px);
 }
+
+/* ── Fit-to-tile scaling ──
+   Pages never scroll — every tile gets a fixed share of the screen, and
+   useAutoFit (src/hooks/useAutoFit.js) sets --fit on each tile (.fit-scope)
+   to the largest value ≤ 1 at which its content fits without scrolling.
+   The tokens are re-declared here so they resolve against each tile's own
+   --fit; everything outside a tile (top bar, nav) stays at --fit 1.
+   useAutoFit never goes below a readability floor — a tile that still
+   doesn't fit at the floor scrolls instead (the "unavoidable" case).
+
+   Pop-up forms render inside some tiles, so they reset to full size. */
+:root, .fit-scope, .overlay, .fun-overlay, .rc-overlay {
+  --fs-xs:  calc(var(--fs-xs-base)  * var(--fit, 1));
+  --fs-sm:  calc(var(--fs-sm-base)  * var(--fit, 1));
+  --fs-md:  calc(var(--fs-md-base)  * var(--fit, 1));
+  --fs-lg:  calc(var(--fs-lg-base)  * var(--fit, 1));
+  --fs-xl:  calc(var(--fs-xl-base)  * var(--fit, 1));
+  --fs-2xl: calc(var(--fs-2xl-base) * var(--fit, 1));
+}
+.overlay, .fun-overlay, .rc-overlay { --fit: 1; }

@@ -9,28 +9,30 @@ import dessertIcon   from '../../assets/recipe-icons/dessert.png'
 import bakingIcon    from '../../assets/recipe-icons/baking.png'
 import drinksIcon    from '../../assets/recipe-icons/drinks.png'
 import './Recipes.css'
+import Icon from '../../components/Icon/Icon'
+import EmptyState from '../../components/EmptyState/EmptyState'
 
 // Backed by the MealIdeas sheet tab (A=Name B=Category C=Main Ingredient
 // D=Link). Column D holds either a URL to an online recipe or the full
 // recipe text pasted into the cell — RecipeBody handles both.
 // Category icons are Microsoft's Fluent Emoji 3D set (MIT licensed,
-// github.com/microsoft/fluentui-emoji). `icon` shows in the chips, list
-// and detail; `emoji` is the plain-text stand-in for the Add form's
-// <select>, since <option> can't render images.
+// github.com/microsoft/fluentui-emoji). They show in the chips, list and
+// detail; the Add/Edit form's <select> lists the names only, since an
+// <option> can't hold an image.
 const img = (src) => <img className="rc-icon" src={src} alt="" />
 
 const TYPES = [
-  { value: 'Breakfast', icon: img(breakfastIcon), emoji: '🍳' },
-  { value: 'Lunch',     icon: img(lunchIcon),     emoji: '🥪' },
-  { value: 'Dinner',    icon: img(dinnerIcon),    emoji: '🥩' },
-  { value: 'Snack',     icon: img(snackIcon),     emoji: '🍿' },
-  { value: 'Dessert',   icon: img(dessertIcon),   emoji: '🥧' },
-  { value: 'Baking',    icon: img(bakingIcon),    emoji: '🍞' },
-  { value: 'Drinks',    icon: img(drinksIcon),    emoji: '🧋' },
+  { value: 'Breakfast', icon: img(breakfastIcon) },
+  { value: 'Lunch',     icon: img(lunchIcon)     },
+  { value: 'Dinner',    icon: img(dinnerIcon)    },
+  { value: 'Snack',     icon: img(snackIcon)     },
+  { value: 'Dessert',   icon: img(dessertIcon)   },
+  { value: 'Baking',    icon: img(bakingIcon)    },
+  { value: 'Drinks',    icon: img(drinksIcon)    },
 ]
 
 const typeIcon = (category) =>
-  TYPES.find(t => t.value.toLowerCase() === String(category).trim().toLowerCase())?.icon || '🍽️'
+  TYPES.find(t => t.value.toLowerCase() === String(category).trim().toLowerCase())?.icon || <Icon name="utensils" className="rc-icon" />
 
 const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s).trim())
 
@@ -70,7 +72,7 @@ function RecipeBody({ link }) {
   if (isUrl(text)) {
     return (
       <a className="rc-open-link" href={text} target="_blank" rel="noopener noreferrer">
-        Open recipe ↗
+        Open recipe <Icon name="external" size="1em" />
       </a>
     )
   }
@@ -111,7 +113,7 @@ function RecipeModal({ recipe, onClose, onSaved }) {
   // doesn't silently switch it to the first category in the list.
   const categoryOptions = TYPES.some(t => t.value === values.category)
     ? TYPES
-    : [...TYPES, { value: values.category, emoji: '🍽️' }]
+    : [...TYPES, { value: values.category }]
 
   async function handleSubmit() {
     if (!values.name.trim()) return
@@ -133,7 +135,9 @@ function RecipeModal({ recipe, onClose, onSaved }) {
   return (
     <div className="rc-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="rc-overlay-box">
-        <div className="rc-overlay-title">{editing ? '✏️ Edit Recipe' : '🍳 Add a Recipe'}</div>
+        <div className="rc-overlay-title">{editing
+          ? <><Icon name="pencil" size="1em" /> Edit Recipe</>
+          : <><Icon name="chefHat" size="1em" /> Add a Recipe</>}</div>
         <input
           className="rc-input"
           placeholder="Title, e.g. Apple Crisp"
@@ -143,7 +147,7 @@ function RecipeModal({ recipe, onClose, onSaved }) {
         />
         <div className="rc-overlay-row">
           <select className="rc-input" value={values.category} onChange={e => set('category', e.target.value)}>
-            {categoryOptions.map(t => <option key={t.value} value={t.value}>{t.emoji} {t.value}</option>)}
+            {categoryOptions.map(t => <option key={t.value} value={t.value}>{t.value}</option>)}
           </select>
           <input
             className="rc-input"
@@ -236,17 +240,20 @@ export default function Recipes() {
           <PanelHeader
             title="Find a Recipe"
             badge={status === 'ok' ? `${filtered.length} of ${recipes.length}` : null}
-            actions={<button className="add-btn" onClick={() => setAdding(true)}>+</button>}
+            actions={<button className="add-btn" aria-label="Add a recipe" onClick={() => setAdding(true)}><Icon name="plus" size="1em" /> Add</button>}
           />
 
           <div className="rc-filters">
-            <input
-              className="rc-input rc-search"
-              type="search"
-              placeholder="🔍 Search by title…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
+            <div className="rc-search-wrap">
+              <Icon name="search" size="1em" />
+              <input
+                className="rc-input rc-search"
+                type="search"
+                placeholder="Search by title…"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+              />
+            </div>
             <div className="rc-chips">
               <button className={`rc-chip${!type ? ' active' : ''}`} onClick={() => setType('')}>All</button>
               {TYPES.map(t => (
@@ -276,7 +283,9 @@ export default function Recipes() {
             {status === 'loading' && <div className="rc-empty">Loading…</div>}
             {status === 'error'   && <div className="rc-empty">Unavailable</div>}
             {status === 'ok' && !filtered.length && (
-              <div className="rc-empty">{recipes.length ? 'No recipes match those filters' : 'No recipes yet — tap + to add one'}</div>
+              recipes.length
+                ? <div className="rc-empty">No recipes match those filters</div>
+                : <EmptyState icon="note">No recipes yet — tap Add to save one</EmptyState>
             )}
             {status === 'ok' && filtered.map(r => (
               <button
@@ -305,23 +314,23 @@ export default function Recipes() {
                 title={<span className="rc-detail-title">{selected.name}</span>}
                 actions={
                   <>
-                    <button className="add-btn rc-back" onClick={() => setSelectedId(null)}>← Back</button>
-                    <button className="add-btn" title="Edit recipe" onClick={() => setEditing(selected)}>Edit</button>
-                    <button className="add-btn rc-delete" title="Remove recipe" onClick={() => handleDelete(selected)}>🗑</button>
+                    <button className="add-btn rc-back" onClick={() => setSelectedId(null)}><Icon name="back" size="1em" /> Back</button>
+                    <button className="add-btn" title="Edit recipe" onClick={() => setEditing(selected)}><Icon name="pencil" size="1em" /> Edit</button>
+                    <button className="add-btn rc-delete" title="Remove recipe" aria-label="Remove recipe" onClick={() => handleDelete(selected)}><Icon name="trash" size="1em" /></button>
                   </>
                 }
               />
               <div className="rc-detail-body">
                 <div className="rc-tags">
                   {selected.category   && <span className="rc-tag">{typeIcon(selected.category)} {selected.category}</span>}
-                  {selected.ingredient && <span className="rc-tag">🥕 {selected.ingredient}</span>}
+                  {selected.ingredient && <span className="rc-tag"><Icon name="carrot" size="1em" /> {selected.ingredient}</span>}
                 </div>
                 <RecipeBody link={selected.link} />
               </div>
             </>
           ) : (
             <div className="rc-placeholder">
-              <div className="rc-placeholder-icon">🍳</div>
+              <div className="rc-placeholder-icon"><Icon name="chefHat" size="1em" /></div>
               <div>Pick a recipe to see it here</div>
             </div>
           )}
