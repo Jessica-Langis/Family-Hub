@@ -3,6 +3,7 @@ import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, parsePersonEvent } from '../../pages/Home/homeUtils'
 import './NextUpPanel.css'
+import Icon from '../Icon/Icon'
 
 // ── Shared "Next Up" panel ──────────────────────────────────────────
 // Merges a kid's own manually-added events with any family-calendar event
@@ -98,7 +99,7 @@ export default function NextUpPanel({ name, script }) {
       <Panel>
         <PanelHeader
           title="Next Up"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+          actions={<button className="add-btn" onClick={() => setShowAdd(true)}><Icon name="plus" size="1em" /> Add</button>}
         />
         {loading
           ? <div className="next-up-hero"><span style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)' }}>Loading…</span></div>

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
 import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
+import Icon from '../../components/Icon/Icon'
+import EmptyState from '../../components/EmptyState/EmptyState'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, formatReminderDate } from '../Home/homeUtils'
 import './Tori.css'
@@ -235,14 +237,16 @@ function TodoPanel() {
                 onClick={toggleHideCompleted}
                 title={hideCompleted ? 'Completed tasks are hidden — click to show them' : 'Hide completed tasks'}
               >{hideCompleted ? `Show done${doneCount ? ` (${doneCount})` : ''}` : 'Hide done'}</button>
-              <button className="add-btn" onClick={openAdd}>+ add</button>
+              <button className="add-btn" onClick={openAdd}><Icon name="plus" size="1em" /> Add</button>
             </>
           }
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
           : visible.length === 0
-            ? <div className="chore-empty">All done!</div>
+            ? (merged.length === 0
+                ? <EmptyState icon="calendar">No tasks yet — tap Add to start one</EmptyState>
+                : <EmptyState icon="party">All done — nice work!</EmptyState>)
             : <div className="chore-list">
                 {visible.map((item, i) => {
                   const badge = item.dueDate ? choreBadgeCls(item.dueDate) : null
@@ -261,17 +265,17 @@ function TodoPanel() {
                           {item.kind === 'reminder' ? formatReminderDate(item.dueDate) : formatDateShort(item.dueDate)}
                         </span>
                       )}
-                      <div className="chore-item-actions">
-                        {item.kind === 'chore' && (
+                      {/* Edit and Delete live in the details pop-up (tap the row) */}
+                      {item.kind === 'chore' && (
+                        <div className="chore-item-actions">
                           <button
                             className={`chore-check-btn${item.done ? ' done' : ''}`}
                             title={item.done ? 'Mark not done' : 'Mark done'}
+                            aria-label={item.done ? 'Mark not done' : 'Mark done'}
                             onClick={() => toggleChore(item.id, item.done)}
-                          >✓</button>
-                        )}
-                        <button className="chore-edit-btn"   title="Edit"   onClick={() => openEdit(item)}>✏</button>
-                        <button className="chore-delete-btn" title="Delete" onClick={() => deleteItem(item)}>×</button>
-                      </div>
+                          ><Icon name="check" /></button>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
@@ -282,7 +286,7 @@ function TodoPanel() {
       {detail && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setDetail(null)}>
           <div className="overlay-box">
-            <button className="overlay-close" onClick={() => setDetail(null)}>✕</button>
+            <button className="overlay-close" aria-label="Close" onClick={() => setDetail(null)}><Icon name="x" /></button>
             <div className="overlay-title">{detail.name}</div>
             <div className="detail-row">
               <span className="detail-label">Type</span>
@@ -313,6 +317,7 @@ function TodoPanel() {
               </div>
             )}
             <div className="overlay-actions">
+              <button className="overlay-btn danger" onClick={() => deleteItem(detail)}><Icon name="trash" size="1em" /> Delete</button>
               <button className="overlay-btn cancel" onClick={() => setDetail(null)}>Close</button>
               <button className="overlay-btn submit" onClick={() => openEdit(detail)}>Edit</button>
             </div>

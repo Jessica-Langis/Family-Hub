@@ -1,12 +1,5 @@
+import { TABS } from '../../tabs'
 import './BottomNav.css'
-
-const TABS = [
-  { id: 'glance', icon: '👀',        label: 'At A Glance' },
-  { id: 'unwind', icon: '🛋️',        label: 'And Stuff'   },
-  { id: 'recipes', icon: '🍳',       label: 'Recipes'     },
-  { id: 'tori',   icon: '🤼‍♀️',     label: 'Tori'        },
-  { id: 'nova',   icon: '🚲',        label: 'Nova'        },
-]
 
 export default function BottomNav({ activeTab, onTabChange }) {
   return (
@@ -18,7 +11,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
           data-tab={tab.id}
           onClick={() => onTabChange(tab.id)}
         >
-          <span className="nav-icon">{tab.icon}</span>
+          <img className="nav-icon" src={tab.icon} alt="" />
           <span className="nav-label">{tab.label}</span>
         </button>
       ))}

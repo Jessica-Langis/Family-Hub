@@ -56,6 +56,23 @@ body {
   flex: 1;
   min-height: 0;
 }
+/* Soft fade when switching tabs. Opacity/transform only, so it doesn't
+   affect layout (or useAutoFit's measurements). */
+.page-slot.active { animation: page-in 0.2s ease-out; }
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Line icons (components/Icon) sit on the text baseline like a glyph */
+.icon { flex-shrink: 0; vertical-align: -0.15em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* ── ROW REFLOW GUARD (global) ──
    Every list row is "title + short fixed bits" (who, time, countdown,
@@ -97,6 +114,9 @@ button {
    SHARED ADD BUTTON
 ══════════════════════════════════════════ */
 .add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: none;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -160,17 +180,34 @@ button {
   color: var(--text);
   min-width: 0;
   overflow-wrap: break-word;
+  /* Line-through is always there but transparent, so checking a task
+     off fades the strike in (and the text down) instead of snapping */
+  text-decoration: line-through;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1.5px;
+  transition: color 0.35s ease, text-decoration-color 0.35s ease;
 }
 .chore-item-name.done {
-  text-decoration: line-through;
   color: var(--muted);
+  text-decoration-color: var(--muted);
 }
 
-.chore-item-who {
+/* ── Person name tag (components/PersonTag) — tinted in that person's
+   color from tokens.css. [data-person] sets --person for any element,
+   so calendar tags and bulletin names pick up the same colors. ── */
+[data-person]          { --person: var(--person-other); }
+[data-person="tori"]   { --person: var(--person-tori); }
+[data-person="nova"]   { --person: var(--person-nova); }
+[data-person="mom"]    { --person: var(--person-mom); }
+[data-person="dad"]    { --person: var(--person-dad); }
+
+.person-tag {
   font-size: var(--fs-xs);
-  color: var(--muted);
-  background: var(--surface2);
-  padding: 2px 7px;
+  font-weight: 600;
+  color: var(--person);
+  background: color-mix(in srgb, var(--person) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--person) 35%, transparent);
+  padding: 1px 8px;
   border-radius: 20px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -212,6 +249,26 @@ button {
   font-style: italic;
 }
 
+/* ── Empty state (components/EmptyState) — icon over a short, friendly
+   line, centered in whatever space the tile has left ── */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  min-height: 0;
+}
+.empty-state .icon {
+  font-size: var(--fs-2xl);
+  opacity: 0.6;
+}
+
 /* ── Chore row actions: checkmark, edit, delete (in that order) ──
    Sized for thumbs first — this app runs mostly on phones — so every
    button gets a real tap target instead of a tiny hover-only icon. */
@@ -242,13 +299,19 @@ button {
 .chore-check-btn {
   color: var(--muted);
   border-color: var(--border);
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
 }
 .chore-check-btn:hover { border-color: var(--accent); color: var(--accent); }
 .chore-check-btn.done {
   background: rgba(126, 200, 160, 0.18);
   border-color: rgba(126, 200, 160, 0.5);
   color: #7ec8a0;
+  animation: check-pop 0.3s ease;
+}
+@keyframes check-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
 }
 
 .chore-edit-btn {
@@ -340,6 +403,9 @@ button {
 
 .reminder-edit,
 .reminder-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   color: var(--muted);
@@ -729,6 +795,18 @@ button {
   color: #0f1117;
 }
 .overlay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Delete lives in the details pop-up now (not on every row) — kept to the
+   left, away from Edit/Close, and outlined rather than filled */
+.overlay-btn.danger {
+  background: none;
+  color: #e07070;
+  border: 1px solid rgba(224, 112, 112, 0.5);
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.overlay-btn.danger:hover { background: rgba(224, 112, 112, 0.12); }
 
 .overlay-close {
   position: absolute;

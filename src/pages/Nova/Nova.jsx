@@ -6,6 +6,7 @@ import { SCRIPTS } from '../../api/scripts'
 import { NOVA_JOKES, pickDailyIndex } from '../../data/hypeContent'
 import useAutoFit from '../../hooks/useAutoFit'
 import './Nova.css'
+import Icon from '../../components/Icon/Icon'
 
 // ── Error boundary ────────────────────────────────────────────
 class NovaErrorBoundary extends Component {
@@ -75,8 +76,8 @@ function JokePanel() {
     <div ref={fitRef} className="fun-fact-panel tile-joke fit-scope">
       <div className="fun-fact-header">
         <span className="fun-fact-label">Joke of the Day</span>
-        <button className="fact-shuffle-btn" title="New joke"
-          onClick={() => setIdx(i => (i + 1) % NOVA_JOKES.length)}>↻</button>
+        <button className="fact-shuffle-btn" title="New joke" aria-label="New joke"
+          onClick={() => setIdx(i => (i + 1) % NOVA_JOKES.length)}><Icon name="refresh" /></button>
       </div>
       <div className="fun-fact-text">{NOVA_JOKES[idx]}</div>
     </div>

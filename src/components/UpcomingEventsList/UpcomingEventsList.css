@@ -62,8 +62,7 @@
   background: var(--surface2);
   color: var(--muted);
 }
-.uel-person[data-person="tori"] { color: var(--accent4); }
-.uel-person[data-person="nova"] { color: var(--accent3); }
+.uel-person[data-person] { color: var(--person); }  /* person colors: tokens.css */
 
 .uel-title {
   flex: 1;

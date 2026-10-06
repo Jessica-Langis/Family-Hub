@@ -6,6 +6,7 @@ import Tori      from './pages/Tori/Tori'
 import Nova      from './pages/Nova/Nova'
 import Glance    from './pages/Glance/Glance'
 import Recipes   from './pages/Recipes/Recipes'
+import { tabById } from './tabs'
 
 const PAGES = {
   glance: Glance,
@@ -13,22 +14,6 @@ const PAGES = {
   recipes: Recipes,
   tori:   Tori,
   nova:   Nova,
-}
-
-const TAB_TITLES = {
-  glance: 'At A Glance',
-  unwind: '🛋️ And Stuff',
-  recipes: '🍳 Recipes',
-  tori:   'Tori',
-  nova:   'Nova',
-}
-
-const TAB_COLORS = {
-  glance: 'var(--accent6)',
-  unwind: 'var(--accent5)',
-  recipes: 'var(--accent)',
-  tori:   'var(--accent4)',
-  nova:   'var(--accent3)',
 }
 
 export default function App() {
@@ -49,7 +34,7 @@ export default function App() {
 
   return (
     <>
-      <TopBar title={TAB_TITLES[activeTab]} titleColor={TAB_COLORS[activeTab]} compact={activeTab === 'glance'} />
+      <TopBar tab={tabById(activeTab)} compact={activeTab === 'glance'} />
       <main className="main-content">
         {Object.keys(PAGES).map(key => {
           if (!visited.has(key)) return null

@@ -159,6 +159,8 @@
 }
 
 .fun-delete {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
   color: var(--muted);
@@ -261,6 +263,8 @@
   opacity: 0; transition: opacity 0.15s;
 }
 .quick-add-spinner.active { opacity: 1; }
+.quick-add-spinner.active .icon { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .grocery-grid {
   flex: 1; overflow-y: auto; min-height: 0;
@@ -283,6 +287,7 @@
 .grocery-item:hover { background: rgba(255,255,255,0.04); }
 .grocery-text { flex: 1; min-width: 0; overflow-wrap: break-word; }
 .grocery-delete {
+  display: inline-flex; align-items: center;
   background: none; border: none; color: var(--muted);
   font-size: var(--fs-lg); cursor: pointer; padding: 0 2px; line-height: 1;
   flex-shrink: 0; transition: color 0.15s;
@@ -372,6 +377,7 @@
   letter-spacing: 0.1em; color: rgba(232,184,109,0.75); margin-top: 4px;
 }
 .bulletin-dinner-who { color: rgba(100,200,180,0.7) !important; }
+.bulletin-who[data-person] { color: var(--person); }
 .bulletin-text {
   font-size: var(--fs-md); color: rgba(232,234,240,0.9); line-height: 1.5;
   font-family: 'DM Sans', sans-serif; word-break: break-word;

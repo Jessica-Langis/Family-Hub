@@ -258,10 +258,8 @@
   color: var(--accent6);
   flex-shrink: 0;
 }
-.glance-today-row-person[data-person="tori"],
-.glance-today-person[data-person="tori"] { color: var(--accent4); }
-.glance-today-row-person[data-person="nova"],
-.glance-today-person[data-person="nova"] { color: var(--accent3); }
+.glance-today-row-person[data-person],
+.glance-today-person[data-person] { color: var(--person); }  /* person colors: tokens.css */
 
 /* Center-stage row — the one closest still-relevant event (or "NOW"),
    called out with its own countdown headline instead of the plain
@@ -376,8 +374,7 @@
   color: var(--accent6);
   flex-shrink: 0;
 }
-.glance-upcoming-person[data-person="tori"] { color: var(--accent4); }
-.glance-upcoming-person[data-person="nova"] { color: var(--accent3); }
+.glance-upcoming-person[data-person] { color: var(--person); }
 
 .glance-upcoming-medal { flex-shrink: 0; }
 
@@ -405,7 +402,7 @@
   gap: 6px;
   flex-shrink: 0;
 }
-.gws-icon { font-size: var(--fs-lg); line-height: 1; }
+.gws-icon { width: calc(var(--fs-lg) * 1.25); height: calc(var(--fs-lg) * 1.25); }
 .gws-temp {
   font-size: var(--fs-sm);
   font-weight: 600;
@@ -537,6 +534,7 @@
   white-space: nowrap;
 }
 
+.bulletin-line-who[data-person] { color: var(--person); }
 .bulletin-line-who.dinner {
   color: var(--accent5);
 }

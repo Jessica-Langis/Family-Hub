@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, Component } from 'react'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { useWeather } from '../../hooks/useWeather'
 import useAutoFit from '../../hooks/useAutoFit'
+import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
   centerStageCountdown, isCenterStageStale, urgencyClass,
@@ -256,7 +257,7 @@ function WeatherStrip() {
   if (loading || !today) return null
   return (
     <span className="glance-weather-strip" title={today.condition}>
-      <span className="gws-icon">{today.icon}</span>
+      <WeatherIcon emoji={today.icon} className="gws-icon" />
       <span className="gws-temp">{today.temp}</span>
     </span>
   )

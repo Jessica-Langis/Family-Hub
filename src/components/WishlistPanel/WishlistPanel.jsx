@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import './WishlistPanel.css'
+import Icon from '../Icon/Icon'
+import EmptyState from '../EmptyState/EmptyState'
 
 // ── Normalize API response → array ───────────────────────────
 function toArr(d) {
@@ -90,20 +92,20 @@ export default function WishlistPanel({ type }) {
       <Panel className="wishlist-panel">
         <PanelHeader
           title="Wishlist"
-          actions={<button className="add-btn" onClick={() => setShowAdd(true)}>+ add</button>}
+          actions={<button className="add-btn" onClick={() => setShowAdd(true)}><Icon name="plus" size="1em" /> Add</button>}
         />
 
         {loading
           ? <div className="reminder-empty">Loading…</div>
           : items.length === 0
-            ? <div className="reminder-empty">Nothing on the list yet</div>
+            ? <EmptyState icon="gift">Nothing on the list yet — tap Add</EmptyState>
             : <div className="reminder-list">
                 {items.map(item => (
                   <div key={item.id} className="reminder-item">
                     <span className="reminder-dot" />
                     <span className="reminder-text">{item.text}</span>
-                    <button className="reminder-edit" onClick={() => openEdit(item)} title="Edit">✎</button>
-                    <button className="reminder-delete" onClick={() => deleteItem(item.id)} title="Remove">×</button>
+                    <button className="reminder-edit" onClick={() => openEdit(item)} title="Edit" aria-label="Edit"><Icon name="pencil" /></button>
+                    <button className="reminder-delete" onClick={() => deleteItem(item.id)} title="Remove" aria-label="Remove"><Icon name="x" /></button>
                   </div>
                 ))}
               </div>

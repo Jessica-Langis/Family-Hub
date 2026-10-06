@@ -12,6 +12,15 @@
   --text: #e8eaf0;
   --muted: #8891a8;
 
+  /* ── One color per person — every name tag, calendar tag and bulletin
+     "who" uses these (PersonTag / [data-person]) so a name reads as the
+     same color everywhere. Tori and Nova match their tab accents. ── */
+  --person-tori:  var(--accent4);
+  --person-nova:  var(--accent3);
+  --person-mom:   #c3a6f0;
+  --person-dad:   #f0a868;
+  --person-other: var(--accent6);
+
   /* ── Fluid type scale — THE way to size text anywhere in the app ──
      Every font-size should be one of these tokens (or a calc()/clamp()
      built on one), never a fixed rem/px. Each step grows with the screen

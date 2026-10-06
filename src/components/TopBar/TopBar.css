@@ -12,11 +12,20 @@
 }
 
 .topbar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.04em;
+}
+
+.topbar-title-icon {
+  width: 1.3em;
+  height: 1.3em;
+  flex-shrink: 0;
 }
 
 .clock-block { text-align: center; }
@@ -34,11 +43,15 @@
   margin-top: 2px;
 }
 
+/* Forecast boxes are all the same width (the widest day's) and the same
+   height — 1fr columns on a shrink-to-fit grid — so a two-line condition
+   like "Mostly Sunny" doesn't make its box taller than the others. */
 .weather-block {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 12px;
-  align-items: center;
-  justify-content: flex-end;
+  justify-self: end;
 }
 
 .weather-loading {
@@ -47,6 +60,9 @@
 }
 
 .weather-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   background: var(--surface2);
   border-radius: 8px;
@@ -61,18 +77,27 @@
   letter-spacing: 0.08em;
 }
 
-.weather-day .weather-icon { font-size: var(--fs-xl); margin-bottom: 2px; }
+.weather-day .weather-icon {
+  width: calc(var(--fs-xl) * 1.2);
+  height: calc(var(--fs-xl) * 1.2);
+  margin: 2px 0;
+}
 
 .weather-day .temp {
   font-size: var(--fs-lg);
   font-weight: 500;
   color: var(--accent2);
   margin: 4px 0 2px;
+  white-space: nowrap;
 }
 
 .weather-day .condition {
   font-size: var(--fs-xs);
   color: var(--muted);
+  /* Long forecasts ("Chance Rain Showers") wrap instead of widening
+     every box to match */
+  max-width: 7em;
+  line-height: 1.25;
 }
 
 /* ── Responsive: progressively hide weather days as viewport narrows ── */

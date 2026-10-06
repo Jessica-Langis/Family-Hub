@@ -9,6 +9,8 @@ import dessertIcon   from '../../assets/recipe-icons/dessert.png'
 import bakingIcon    from '../../assets/recipe-icons/baking.png'
 import drinksIcon    from '../../assets/recipe-icons/drinks.png'
 import './Recipes.css'
+import Icon from '../../components/Icon/Icon'
+import EmptyState from '../../components/EmptyState/EmptyState'
 
 // Backed by the MealIdeas sheet tab (A=Name B=Category C=Main Ingredient
 // D=Link). Column D holds either a URL to an online recipe or the full
@@ -236,7 +238,7 @@ export default function Recipes() {
           <PanelHeader
             title="Find a Recipe"
             badge={status === 'ok' ? `${filtered.length} of ${recipes.length}` : null}
-            actions={<button className="add-btn" onClick={() => setAdding(true)}>+</button>}
+            actions={<button className="add-btn" aria-label="Add a recipe" onClick={() => setAdding(true)}><Icon name="plus" size="1em" /> Add</button>}
           />
 
           <div className="rc-filters">
@@ -276,7 +278,9 @@ export default function Recipes() {
             {status === 'loading' && <div className="rc-empty">Loading…</div>}
             {status === 'error'   && <div className="rc-empty">Unavailable</div>}
             {status === 'ok' && !filtered.length && (
-              <div className="rc-empty">{recipes.length ? 'No recipes match those filters' : 'No recipes yet — tap + to add one'}</div>
+              recipes.length
+                ? <div className="rc-empty">No recipes match those filters</div>
+                : <EmptyState icon="note">No recipes yet — tap Add to save one</EmptyState>
             )}
             {status === 'ok' && filtered.map(r => (
               <button
@@ -305,9 +309,9 @@ export default function Recipes() {
                 title={<span className="rc-detail-title">{selected.name}</span>}
                 actions={
                   <>
-                    <button className="add-btn rc-back" onClick={() => setSelectedId(null)}>← Back</button>
-                    <button className="add-btn" title="Edit recipe" onClick={() => setEditing(selected)}>Edit</button>
-                    <button className="add-btn rc-delete" title="Remove recipe" onClick={() => handleDelete(selected)}>🗑</button>
+                    <button className="add-btn rc-back" onClick={() => setSelectedId(null)}><Icon name="back" size="1em" /> Back</button>
+                    <button className="add-btn" title="Edit recipe" onClick={() => setEditing(selected)}><Icon name="pencil" size="1em" /> Edit</button>
+                    <button className="add-btn rc-delete" title="Remove recipe" aria-label="Remove recipe" onClick={() => handleDelete(selected)}><Icon name="trash" size="1em" /></button>
                   </>
                 }
               />
