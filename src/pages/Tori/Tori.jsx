@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, Component } from 'react'
 import Panel, { PanelHeader } from '../../components/Panel/Panel'
 import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
 import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
-import CompletedFeed from '../../components/CompletedFeed/CompletedFeed'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, formatReminderDate } from '../Home/homeUtils'
 import './Tori.css'
@@ -59,16 +58,14 @@ const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
 
 // ── Main tab ──────────────────────────────────────────────────
 export default function Tori() {
-  const [refreshTick, setRefreshTick] = useState(0)
   return (
     <ToriErrorBoundary>
       <div className="tori-content">
         <div className="ta-nextup-col">
           <div className="ta-nextup"><NextUpPanel name="Tori" script={SCRIPTS.TORI} /></div>
-          <div className="ta-completed"><CompletedFeed matchWho="tori" refreshKey={refreshTick} /></div>
         </div>
         <div className="ta-todo-col">
-          <div className="ta-todo"><TodoPanel onChange={() => setRefreshTick(t => t + 1)} /></div>
+          <div className="ta-todo"><TodoPanel /></div>
           <div className="ta-wishlist"><WishlistPanel type="tori_wishlist" /></div>
         </div>
       </div>
@@ -83,7 +80,9 @@ export default function Tori() {
 // backends stay intact and this panel merges them client-side into one
 // sorted view with a single Add flow (a Task/Reminder toggle switches which
 // fields show — reminders have no difficulty/points, since they never did).
-function TodoPanel({ onChange }) {
+const HIDE_COMPLETED_KEY = 'tori_hide_completed'
+
+function TodoPanel() {
   const [chores, setChores]       = useState([])
   const [reminders, setReminders] = useState([])
   const [loading, setLoading]     = useState(true)
@@ -92,6 +91,17 @@ function TodoPanel({ onChange }) {
   const [detail, setDetail]       = useState(null)
   const [form, setForm] = useState({ kind: 'chore', name: '', dueDate: '', weight: 2, notes: '' })
   const [saving, setSaving]       = useState(false)
+  const [hideCompleted, setHideCompleted] = useState(() => {
+    try { return localStorage.getItem(HIDE_COMPLETED_KEY) !== 'false' } catch { return true }
+  })
+
+  function toggleHideCompleted() {
+    setHideCompleted(h => {
+      const next = !h
+      try { localStorage.setItem(HIDE_COMPLETED_KEY, String(next)) } catch { /* ignore */ }
+      return next
+    })
+  }
 
   const points = chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0)
 
@@ -127,6 +137,8 @@ function TodoPanel({ onChange }) {
     if (isNaN(db)) return -1
     return da - db
   })
+  const doneCount = merged.filter(i => i.done).length
+  const visible   = hideCompleted ? merged.filter(i => !i.done) : merged
 
   async function toggleChore(id, done) {
     setChores(cs => cs.map(c => c.id === id ? { ...c, done: !done } : c))
@@ -135,7 +147,6 @@ function TodoPanel({ onChange }) {
       fd.append('action', 'toggle'); fd.append('type', 'chores')
       fd.append('idx', String(id)); fd.append('done', String(!done))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      onChange?.()
     } catch (e) { console.error('toggle chore', e); loadChores() }
   }
 
@@ -191,7 +202,6 @@ function TodoPanel({ onChange }) {
         loadReminders()
       }
       setShowAdd(false)
-      onChange?.()
     } catch (e) { console.error('todo submit', e) }
     finally { setSaving(false) }
   }
@@ -209,7 +219,6 @@ function TodoPanel({ onChange }) {
         await apiFetch(SCRIPTS.TORI, { method: 'POST', body: fd })
         setReminders(rs => rs.filter(r => r.id !== item.id))
       }
-      onChange?.()
     } catch (e) { console.error('delete item', e) }
   }
 
@@ -219,14 +228,23 @@ function TodoPanel({ onChange }) {
         <PanelHeader
           title="To Do"
           badge={points > 0 ? `🏆 ${points} pts` : null}
-          actions={<button className="add-btn" onClick={openAdd}>+ add</button>}
+          actions={
+            <>
+              <button
+                className="add-btn"
+                onClick={toggleHideCompleted}
+                title={hideCompleted ? 'Completed tasks are hidden — click to show them' : 'Hide completed tasks'}
+              >{hideCompleted ? `Show done${doneCount ? ` (${doneCount})` : ''}` : 'Hide done'}</button>
+              <button className="add-btn" onClick={openAdd}>+ add</button>
+            </>
+          }
         />
         {loading
           ? <div className="chore-empty">Loading…</div>
-          : merged.length === 0
+          : visible.length === 0
             ? <div className="chore-empty">All done!</div>
             : <div className="chore-list">
-                {merged.map((item, i) => {
+                {visible.map((item, i) => {
                   const badge = item.dueDate ? choreBadgeCls(item.dueDate) : null
                   return (
                     <div key={`${item.kind}-${item.id ?? i}`} className="chore-item" style={{ cursor: 'pointer' }}

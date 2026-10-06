@@ -104,7 +104,7 @@ const mealStore = {
 
 // Ids start at 2 to match the real sheet, where row 1 is the header row.
 let mealIdeasStore = [
-  { id: 2, name: 'Simple Sandwich Bread', category: 'Breakfast', ingredient: 'Flour',
+  { id: 2, name: 'Simple Sandwich Bread', category: 'Baking', ingredient: 'Bread',
     link: `Ingredients:
 3 cups flour
 1 packet yeast
@@ -303,8 +303,18 @@ function handlePost(base, fields) {
         })
         return { status: 'ok' }
       }
+      if (action === 'update') {
+        const r = mealIdeasStore.find(r => r.id === Number(fields.idx))
+        if (r) {
+          r.name       = fields.name ?? r.name
+          r.category   = fields.category ?? r.category
+          r.ingredient = fields.ingredient ?? r.ingredient
+          r.link       = fields.link ?? r.link
+        }
+        return { status: 'ok' }
+      }
       if (action === 'delete') {
-        mealIdeasStore = mealIdeasStore.filter(r => r.id !== Number(fields.idx))
+        mealIdeasStore =mealIdeasStore.filter(r => r.id !== Number(fields.idx))
         return { status: 'ok' }
       }
     }
