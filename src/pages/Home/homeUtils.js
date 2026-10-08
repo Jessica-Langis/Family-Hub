@@ -25,13 +25,48 @@ export function formatDateShort(dateStr) {
 }
 
 // ── Person-tagged calendar events ──────────────────────────────
-// Matches summaries like "Nova - Basketball Tournament" or "Tori: Recital".
-// Returns the remainder after the name + separator, or null if no match.
+// Matches summaries like "Nova - Basketball Tournament", "Tori: Recital",
+// "Tori — Meet" (phones autocorrect "--" to an em dash), "Tori's Recital"
+// or plain "Tori Wrestling". The name must be a whole word, so "Toriyaki"
+// doesn't count. Returns the remainder after the name + separator, or null.
 export function parsePersonEvent(summary, name) {
   if (!summary || !name) return null
-  const re = new RegExp('^\\s*' + name + '\\s*[-:–]\\s*(.+)$', 'i')
+  const re = new RegExp('^\\s*' + name + "(?:['’]s)?\\b\\s*(?:[-:–—|]\\s*)?(.+)$", 'i')
   const m = String(summary).match(re)
   return m ? m[1].trim() : null
+}
+
+// Joint events like "Tori and Nova - Pizza Night" or "Nova & Tori: Dentist".
+// Returns the kid names the title opens with (2+), or null for anything
+// else — including single-kid titles, which parsePersonEvent handles.
+const KID_JOINER = '\\s*(?:,\\s*(?:and\\s+)?|&|\\+|\\band\\b)\\s*'
+export function parseJointEvent(summary) {
+  const names = KID_NAMES.join('|')
+  const re = new RegExp(`^\\s*((?:${names})(?:${KID_JOINER}(?:${names}))+)\\b`, 'i')
+  const m = String(summary || '').match(re)
+  if (!m) return null
+  const found = m[1].match(new RegExp(`\\b(?:${names})\\b`, 'gi'))
+  return KID_NAMES.filter(k => found.some(f => f.toLowerCase() === k.toLowerCase()))
+}
+
+// True if the kid's name appears anywhere in the title as a whole word
+// ("Wrestling Meet - Tori", "Pick up Tori", "Dentist (Tori & Nova)") —
+// "Victoria" or "Toriyaki" don't count.
+export function mentionsPerson(summary, name) {
+  if (!summary || !name) return false
+  return new RegExp(`\\b${name}\\b`, 'i').test(String(summary))
+}
+
+// Title to show on a kid's own tab for a family-calendar event, or null if
+// the event isn't theirs. An event is theirs if their name appears anywhere
+// in the title. Single-kid "Tori - Dentist" style titles drop the name
+// prefix ("Dentist"); everything else (joint events, name mid-title) keeps
+// the full title so it still reads naturally.
+export function personEventTitle(summary, name) {
+  if (!mentionsPerson(summary, name)) return null
+  const full = String(summary).trim()
+  if (parseJointEvent(full)) return full
+  return parsePersonEvent(full, name) || full
 }
 
 // ── Shared calendar-event shape helpers ────────────────────────
@@ -75,13 +110,15 @@ export const KID_NAMES = ['Tori', 'Nova']
 // most family-calendar entries don't, so expect null and render around it.
 export function classifyEvent(summary) {
   const raw = String(summary || '').trim()
-  for (const person of KID_NAMES) {
-    const stripped = parsePersonEvent(raw, person)
-    if (stripped) {
-      return { isSports: hasSportsKeyword(stripped), person, title: stripped }
-    }
-  }
-  return { isSports: hasSportsKeyword(raw), person: null, title: raw }
+  // A kid "owns" the event if their name appears anywhere in the title
+  // (same rule as personEventTitle). None, or more than one kid (a joint
+  // event), means no single badge — keep the full title.
+  const mentioned = KID_NAMES.filter(k => mentionsPerson(raw, k))
+  if (mentioned.length !== 1) return { isSports: hasSportsKeyword(raw), person: null, title: raw }
+  const person = mentioned[0]
+  // "Tori - Dentist" drops the prefix; "Pick up Tori" stays as written
+  const title = parsePersonEvent(raw, person) || raw
+  return { isSports: hasSportsKeyword(title), person, title }
 }
 
 // ── Urgency ────────────────────────────────────────────────────

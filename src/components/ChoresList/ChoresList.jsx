@@ -4,7 +4,7 @@ import Icon from '../Icon/Icon'
 import PersonTag from '../PersonTag/PersonTag'
 import EmptyState from '../EmptyState/EmptyState'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
+import { getDayDiff, formatDateShort, mentionsPerson } from '../../pages/Home/homeUtils'
 
 // ── Shared chores CRUD panel ──────────────────────────────────────
 // Used by Unwind (shared/family chores), Nova (Nova's chores), and — via
@@ -16,7 +16,8 @@ import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
 //
 // Props:
 //   title                    panel header text
-//   matchWho                 only show chores where who === this (case/space-insensitive)
+//   matchWho                 only show chores whose who names this person anywhere
+//                            ("Tori", "Tori & Nova", "tori (room)") — see isWho
 //   excludeWho                array — hide chores whose who matches any of these
 //   fixedWho                  if set, 'who' is hidden from the add form and always this value
 //   whoInputMode              'fixed' | 'freeform' — freeform shows a free-text who input (Unwind)
@@ -28,8 +29,10 @@ import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
 //   onChange                   called after any successful add/update/toggle/delete —
 //                               lets a sibling tile know to refresh
 
+// Same "name anywhere, whole word" rule the calendar events use, so a chore
+// assigned "Tori & Nova" shows on both kids' lists instead of neither.
 export function isWho(c, name) {
-  return (c.who || '').trim().toLowerCase() === String(name || '').trim().toLowerCase()
+  return mentionsPerson(c.who, String(name || '').trim())
 }
 
 function toArr(d) {
