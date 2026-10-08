@@ -45,6 +45,8 @@ let choresStore = [
   { id: 7, name: 'Unload dishwasher',        who: 'nova', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  weight: 1, notes: '', completedAt: hoursAgo(5) },
   { id: 8, name: 'Practice piano',           who: 'nova', frequency: '',         dueDate: daysFromToday(3),  done: false, weight: 2, notes: '30 minutes', completedAt: '' },
   { id: 9, name: 'Pack backpack for school', who: 'nova', frequency: 'Weekdays', dueDate: daysFromToday(0),  done: false, weight: 1, notes: '', completedAt: '' },
+  // Shared chore — "Tori & Nova" in Who shows on both kids' To Do lists
+  { id: 10, name: 'Tidy the playroom',       who: 'Tori & Nova', frequency: '', dueDate: daysFromToday(2),  done: false, weight: 2, notes: '', completedAt: '' },
 ]
 
 let bulletinStore = [
@@ -156,6 +158,8 @@ const CAL_TEMPLATES = [
   { offset: 0,  summary: 'Tori - Dentist Appointment',        isAllDay: false, startTime: '3:30 PM',  endTime: '4:15 PM',  location: 'Family Dental' },
   { offset: 1,  summary: 'Nova - Soccer Practice',            isAllDay: false, startTime: '5:00 PM',  endTime: '6:00 PM',  location: 'Lincoln Park' },
   { offset: 2,  summary: 'Family Movie Night',                isAllDay: true  },
+  // Name mid-title (no "Tori - " prefix) — still shows on Tori's Next Up
+  { offset: 3,  summary: 'Pick up Tori from practice',         isAllDay: false, startTime: '5:00 PM',  endTime: '5:30 PM',  location: 'Central High School' },
   { offset: 4,  summary: 'Tori - Wrestling Meet',             isAllDay: false, startTime: '6:00 PM',  endTime: '8:30 PM',  location: 'Central High School' },
   { offset: 7,  summary: 'Nova - Piano Recital',               isAllDay: false, startTime: '4:00 PM',  endTime: '5:00 PM',  location: 'Community Center' },
   { offset: 9,  summary: 'Tori - Regional Qualifier',          isAllDay: false, startTime: '9:00 AM',  endTime: '2:00 PM',  location: 'Central High School' },

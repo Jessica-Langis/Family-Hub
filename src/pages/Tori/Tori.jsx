@@ -4,6 +4,7 @@ import WishlistPanel from '../../components/WishlistPanel/WishlistPanel'
 import NextUpPanel from '../../components/NextUpPanel/NextUpPanel'
 import Icon from '../../components/Icon/Icon'
 import EmptyState from '../../components/EmptyState/EmptyState'
+import { isWho } from '../../components/ChoresList/ChoresList'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import { getDayDiff, formatDateShort, formatReminderDate } from '../Home/homeUtils'
 import './Tori.css'
@@ -15,10 +16,6 @@ function toArr(d) {
   if (d && Array.isArray(d.items))  return d.items
   if (d && Array.isArray(d.data))   return d.data
   return []
-}
-
-function isWho(c, name) {
-  return (c.who || '').trim().toLowerCase() === name
 }
 
 // ── Error boundary ────────────────────────────────────────────

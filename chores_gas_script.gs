@@ -833,22 +833,30 @@ function digestHasSportsKeyword(text) {
 }
 
 function digestParsePersonEvent(summary, name) {
-  var re = new RegExp('^\\s*' + name + '\\s*[-:\u2013]\\s*(.+)$', 'i');
+  var re = new RegExp('^\\s*' + name + "(?:['’]s)?\\b\\s*(?:[-:–—|]\\s*)?(.+)$", 'i');
   var m = String(summary || '').match(re);
   return m ? m[1].trim() : null;
 }
 
+// Kid's name anywhere in the title, as a whole word ("Pick up Tori",
+// "Meet - Tori") — see homeUtils.js's mentionsPerson.
+function digestMentionsPerson(summary, name) {
+  return new RegExp('\\b' + name + '\\b', 'i').test(String(summary || ''));
+}
+
 // Returns { isSports, person, title } — see homeUtils.js's classifyEvent.
+// Exactly one kid named anywhere → their badge; none or both (a joint
+// event) → no badge, full title.
 function digestClassifyEvent(summary) {
   var raw = String(summary || '').trim();
-  for (var i = 0; i < DIGEST_KID_NAMES.length; i++) {
-    var person = DIGEST_KID_NAMES[i];
-    var stripped = digestParsePersonEvent(raw, person);
-    if (stripped) {
-      return { isSports: digestHasSportsKeyword(stripped), person: person, title: stripped };
-    }
+  var mentioned = DIGEST_KID_NAMES.filter(function (k) { return digestMentionsPerson(raw, k); });
+  if (mentioned.length !== 1) {
+    return { isSports: digestHasSportsKeyword(raw), person: null, title: raw };
   }
-  return { isSports: digestHasSportsKeyword(raw), person: null, title: raw };
+  var person = mentioned[0];
+  // "Tori - Dentist" drops the prefix; "Pick up Tori" stays as written
+  var title = digestParsePersonEvent(raw, person) || raw;
+  return { isSports: digestHasSportsKeyword(title), person: person, title: title };
 }
 
 // Same accent hex values as src/styles/tokens.css, so the email's kid

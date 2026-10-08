@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort, parsePersonEvent } from '../../pages/Home/homeUtils'
+import { getDayDiff, formatDateShort, personEventTitle } from '../../pages/Home/homeUtils'
 import './NextUpPanel.css'
 import Icon from '../Icon/Icon'
 
@@ -55,7 +55,7 @@ export default function NextUpPanel({ name, script }) {
       const found = toArr(data)
         .flatMap(d => (d.events || []).map(ev => ({ summary: ev.summary, date: d.date, location: ev.location })))
         .map(ev => {
-          const title = parsePersonEvent(ev.summary, name)
+          const title = personEventTitle(ev.summary, name)
           return title ? { id: `cal-${ev.date}-${title}`, name: title, date: ev.date, location: ev.location, type: '' } : null
         })
         .filter(Boolean)
