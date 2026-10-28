@@ -76,7 +76,8 @@ function useGlanceEvents(calDays, tick) {
         const endTime = ev.isAllDay === false && ev.endTime ? ev.endTime : null
         if (isStale(d.date, time)) return
         const { isSports, person, title } = classifyEvent(evSummary(ev))
-        all.push({ date: d.date, time, endTime, title, person, isSports })
+        const location = typeof ev === 'string' ? '' : (ev.location || '')
+        all.push({ date: d.date, time, endTime, title, person, isSports, location })
       })
     })
 
@@ -165,7 +166,7 @@ class GlanceErrorBoundary extends Component {
 // stage, already-passed ones stay in the stack but dim out); right side
 // is a small teaser of what's coming after today, so the tile still has
 // something to show even on a light day.
-function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) {
+function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond, onOpen }) {
   const hasTimed = todayEvents.length > 0
   const fitRef = useAutoFit()
 
@@ -176,7 +177,7 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
         {todayAllDay.length > 0 && (
           <div className="glance-today-allday">
             {todayAllDay.map((ev, i) => (
-              <div key={i} className="glance-today-allday-row">
+              <div key={i} className="glance-today-allday-row glance-tappable" {...tapProps(() => onOpen(ev))}>
                 {ev.person && (
                   <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
                 )}
@@ -192,7 +193,8 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
             {todayEvents.map((ev, i) => (
               <div
                 key={i}
-                className={`glance-today-row${ev.isCenterStage ? ' is-center' : ''}${ev.isPast ? ' is-past' : ''}`}
+                className={`glance-today-row glance-tappable${ev.isCenterStage ? ' is-center' : ''}${ev.isPast ? ' is-past' : ''}`}
+                {...tapProps(() => onOpen(ev))}
               >
                 {ev.isCenterStage ? (
                   <>
@@ -234,7 +236,8 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
             {upcomingBeyond.map((ev, i) => (
               <div
                 key={i}
-                className={`glance-upcoming-row urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
+                className={`glance-upcoming-row glance-tappable urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
+                {...tapProps(() => onOpen(ev))}
               >
                 {ev.isSports && <span className="glance-upcoming-medal"><Icon name="medal" size="1em" /></span>}
                 {ev.person && (
@@ -244,6 +247,57 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond }) 
                 <span className="glance-upcoming-when">{countdownLabel(ev.date)}</span>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Event details ─────────────────────────────────────────────
+// Every event row on this page (Today, Coming Up, Next 7 Days) opens this
+// on tap, so the full title, time range and location are one touch away
+// even when the tile itself has had to shrink or clip them.
+function tapProps(open) {
+  return {
+    role: 'button',
+    tabIndex: 0,
+    onClick: open,
+    onKeyDown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open() } },
+  }
+}
+
+function EventDetailModal({ ev, onClose }) {
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const d = new Date(ev.date + 'T00:00:00')
+  const dateStr = !isNaN(d.getTime())
+    ? d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    : ev.date
+  const timeStr = ev.time ? `${ev.time}${ev.endTime ? ` – ${ev.endTime}` : ''}` : 'All day'
+
+  return (
+    <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="fun-overlay-box glance-event-modal" role="dialog" aria-modal="true" aria-label="Event details">
+        <button className="glance-event-modal-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
+        <div className="glance-event-modal-kicker">
+          <Icon name={ev.isSports ? 'medal' : 'calendar'} size="1em" /> {countdownLabel(ev.date)}
+        </div>
+        <div className="glance-event-modal-title">
+          {ev.person && (
+            <span className="glance-today-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+          )}
+          {ev.title}
+        </div>
+        <div className="glance-event-modal-line">{dateStr}</div>
+        <div className="glance-event-modal-line">{timeStr}</div>
+        {ev.location && (
+          <div className="glance-event-modal-line">
+            <Icon name="pin" size="1em" /> {ev.location}
           </div>
         )}
       </div>
@@ -265,7 +319,7 @@ function WeatherStrip() {
 }
 
 // ── Lookahead card — 7-day strip of everything ──────────────────────
-function LookaheadCard({ days }) {
+function LookaheadCard({ days, onOpen }) {
   const fitRef = useAutoFit()
   return (
     <div ref={fitRef} className="glance-lookahead-card fit-scope">
@@ -283,7 +337,7 @@ function LookaheadCard({ days }) {
               {d.events.length === 0
                 ? <span className="glance-look-none">—</span>
                 : d.events.map((ev, i) => (
-                    <span key={i} className={`glance-look-ev${ev.isSports ? ' is-sport' : ''}`}>
+                    <span key={i} className={`glance-look-ev glance-tappable${ev.isSports ? ' is-sport' : ''}`} {...tapProps(() => onOpen(ev))}>
                       {/* Show the name whenever we have one, sports or not —
                           a "Tori - Dentist" shouldn't render as just "Dentist". */}
                       {ev.person && (
@@ -314,6 +368,7 @@ export default function Glance() {
   // Pure re-render trigger — see useGlanceEvents' comment on why this
   // needs to tick faster than the hourly calendar refetch below.
   const [tick, setTick] = useState(0)
+  const [selected, setSelected] = useState(null)
 
   const loadAll = useCallback(async () => {
     try {
@@ -338,8 +393,8 @@ export default function Glance() {
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
-        <TodayTile todayAllDay={todayAllDay} todayEvents={todayEvents} todayOverflow={todayOverflow} upcomingBeyond={upcomingBeyond} />
-        <LookaheadCard days={lookahead} />
+        <TodayTile todayAllDay={todayAllDay} todayEvents={todayEvents} todayOverflow={todayOverflow} upcomingBeyond={upcomingBeyond} onOpen={setSelected} />
+        <LookaheadCard days={lookahead} onOpen={setSelected} />
         <div className="glance-col-bulletin">
           <BulletinPanel
             compact
@@ -349,6 +404,7 @@ export default function Glance() {
           />
         </div>
       </div>
+      {selected && <EventDetailModal ev={selected} onClose={() => setSelected(null)} />}
     </GlanceErrorBoundary>
   )
 }

@@ -642,3 +642,26 @@
     overflow: visible;
   }
 }
+
+/* ── Tappable events + details popup ── */
+.glance-tappable { cursor: pointer; }
+.glance-tappable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+.glance-event-modal { position: relative; width: min(420px, calc(100vw - 32px)); }
+.glance-event-modal-close {
+  position: absolute; top: 8px; right: 8px;
+  min-width: 40px; min-height: 40px;
+  background: none; border: none; color: var(--muted);
+  font-size: var(--fs-lg); cursor: pointer;
+}
+.glance-event-modal-kicker {
+  font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent5); font-weight: 700;
+}
+.glance-event-modal-title {
+  font-size: var(--fs-lg); font-weight: 700; color: var(--text);
+  line-height: 1.3; overflow-wrap: anywhere; padding-right: 32px;
+}
+.glance-event-modal-line {
+  font-size: var(--fs-md); color: var(--text); overflow-wrap: anywhere;
+}
