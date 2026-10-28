@@ -14,10 +14,12 @@ function toArr(d) {
   return []
 }
 
-// ── Wishlist tile — open-ended list, backed by tori_wishlist / ─
-// nova_wishlist types on the shared CHORES script (ToriWishlist /
-// NovaWishlist sheet tabs). Full add / edit / delete.
-export default function WishlistPanel({ type }) {
+// ── Wishlist tile — open-ended list, backed by the tori_wishlist /
+// nova_wishlist / mom_wishlist / dad_wishlist types on the shared CHORES
+// script (one sheet tab per person). Full add / edit / delete.
+// `person` (e.g. "Tori") titles the tile and colors it via data-person.
+export default function WishlistPanel({ type, person }) {
+  const title = person ? `${person}'s Wishlist` : 'Wishlist'
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -89,9 +91,9 @@ export default function WishlistPanel({ type }) {
 
   return (
     <>
-      <Panel className="wishlist-panel">
+      <Panel className="wishlist-panel" data-person={person?.toLowerCase()}>
         <PanelHeader
-          title="Wishlist"
+          title={title}
           actions={<button className="add-btn" onClick={() => setShowAdd(true)}><Icon name="plus" size="1em" /> Add</button>}
         />
 
@@ -115,7 +117,7 @@ export default function WishlistPanel({ type }) {
       {showAdd && (
         <div className="overlay" onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
           <div className="overlay-box">
-            <div className="overlay-title">Add to Wishlist</div>
+            <div className="overlay-title">Add to {title}</div>
             <input
               className="overlay-input"
               placeholder="What do you want?"

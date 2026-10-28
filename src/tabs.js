@@ -4,15 +4,13 @@
 import glanceIcon  from './assets/nav-icons/glance.png'
 import unwindIcon  from './assets/nav-icons/unwind.png'
 import recipesIcon from './assets/nav-icons/recipes.png'
-import toriIcon    from './assets/nav-icons/tori.png'
-import novaIcon    from './assets/nav-icons/nova.png'
+import wishlistIcon from './assets/nav-icons/wishlist.png'
 
 export const TABS = [
   { id: 'glance',  label: 'At A Glance', icon: glanceIcon,  color: 'var(--accent6)' },
   { id: 'unwind',  label: 'And Stuff',   icon: unwindIcon,  color: 'var(--accent5)' },
   { id: 'recipes', label: 'Recipes',     icon: recipesIcon, color: 'var(--accent)'  },
-  { id: 'tori',    label: 'Tori',        icon: toriIcon,    color: 'var(--accent4)' },
-  { id: 'nova',    label: 'Nova',        icon: novaIcon,    color: 'var(--accent3)' },
+  { id: 'wishlists', label: 'Wishlists', icon: wishlistIcon, color: 'var(--accent4)' },
 ]
 
 export const tabById = (id) => TABS.find(t => t.id === id)

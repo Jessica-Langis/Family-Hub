@@ -2,8 +2,7 @@ import { useState } from 'react'
 import TopBar    from './components/TopBar/TopBar'
 import BottomNav from './components/BottomNav/BottomNav'
 import Unwind    from './pages/Unwind/Unwind'
-import Tori      from './pages/Tori/Tori'
-import Nova      from './pages/Nova/Nova'
+import Wishlists from './pages/Wishlists/Wishlists'
 import Glance    from './pages/Glance/Glance'
 import Recipes   from './pages/Recipes/Recipes'
 import { tabById } from './tabs'
@@ -12,8 +11,7 @@ const PAGES = {
   glance: Glance,
   unwind: Unwind,
   recipes: Recipes,
-  tori:   Tori,
-  nova:   Nova,
+  wishlists: Wishlists,
 }
 
 export default function App() {

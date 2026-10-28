@@ -29,6 +29,8 @@
 //    WhereAmI         A=Name  B=Location  C=Date(start)  D=Time(note)  E=EndDate  F=Phone
 //    ToriWishlist     A=Item
 //    NovaWishlist     A=Item
+//    MomWishlist      A=Item  (created automatically on first add)
+//    DadWishlist      A=Item  (created automatically on first add)
 //    tori_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
 //    nova_this_week   A=GoalText  B=DateSaved  (row1=current, rows2-4=past)
 //    Sessions         A=Token  B=Email  C=IssuedAt  D=ExpiresAt  (create this
@@ -95,6 +97,19 @@ function setupProperties() {
 // ─────────────────────────────────────────────
 function getSheet(name) {
   return SpreadsheetApp.openById(SS_ID).getSheetByName(name);
+}
+// ── Wishlists — one sheet tab per person, A=Item, no header row ──
+var WISHLIST_SHEETS = {
+  tori_wishlist: 'ToriWishlist',
+  nova_wishlist: 'NovaWishlist',
+  mom_wishlist:  'MomWishlist',
+  dad_wishlist:  'DadWishlist'
+};
+// Creates the tab if it doesn't exist yet, so adding Mom/Dad lists
+// needs no manual sheet setup.
+function getWishlistSheet(type) {
+  var name = WISHLIST_SHEETS[type];
+  return getSheet(name) || SpreadsheetApp.openById(SS_ID).insertSheet(name);
 }
 function json(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
@@ -277,11 +292,9 @@ function doGet(e) {
   if (type === 'tori_this_week') return json(readThisWeek('tori_this_week'));
   if (type === 'nova_this_week') return json(readThisWeek('nova_this_week'));
 
-  // ── WISHLIST (TORI / NOVA) ──
-  if (type === 'tori_wishlist' || type === 'nova_wishlist') {
-    var sheetName = type === 'tori_wishlist' ? 'ToriWishlist' : 'NovaWishlist';
-    var sheet = getSheet(sheetName);
-    if (!sheet) return json({ error: sheetName + ' tab not found' });
+  // ── WISHLISTS (TORI / NOVA / MOM / DAD) ──
+  if (WISHLIST_SHEETS.hasOwnProperty(type)) {
+    var sheet = getWishlistSheet(type);
     var rows = sheet.getDataRange().getValues();
     var result = [];
     for (var i = 0; i < rows.length; i++) {
@@ -674,11 +687,9 @@ function doPost(e) {
     }
   }
 
-  // ── WISHLIST (TORI / NOVA) ──
-  if (type === 'tori_wishlist' || type === 'nova_wishlist') {
-    var sheetName = type === 'tori_wishlist' ? 'ToriWishlist' : 'NovaWishlist';
-    var sheet = getSheet(sheetName);
-    if (!sheet) return json({ error: sheetName + ' tab not found' });
+  // ── WISHLISTS (TORI / NOVA / MOM / DAD) ──
+  if (WISHLIST_SHEETS.hasOwnProperty(type)) {
+    var sheet = getWishlistSheet(type);
     if (action === 'add') {
       sheet.appendRow([p.text || '']);
       return json({ status: 'ok' });
