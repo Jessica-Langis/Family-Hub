@@ -96,6 +96,17 @@ The four items above (Today tile, hour/minute countdown, 20-min-past drop) are n
 
 - 2026-08-27: A small scrollbar was showing up inside the Today tile (right around the stack/Coming Up rows). Couldn't reproduce actual overflow in testing — checked `scrollHeight` vs `clientHeight` on every relevant element across 8 desktop sizes (1280×720 through 1920×1080) and a stress-tested "busy day" (5 today events + all-day banner, the `TODAY_CAP` max), all came back with 0px overflow. **Built — 2026-08-27:** fixed anyway by removing the possibility rather than chasing an exact repro — `.glance-today-stack` and `.glance-upcoming-list` in [Glance.css](src/pages/Glance/Glance.css) switched from `overflow-y: auto` to `overflow-y: hidden`. Both are already row-capped (`TODAY_CAP` / `UPCOMING_BEYOND_COUNT`, with a "+N more" indicator for the today stack), so content scrolling inside them was never actually the design — a stray scrollbar could only ever be a rounding artifact, not a real "more content" signal, and a wall-mounted kiosk isn't something anyone scrolls anyway.
 
+## Built — 2026-10-28
+
+- **Tap an event for details (At a Glance):** every event on the page (Today, Further Out, Next 7 Days) opens a popup with title, date, time range and location.
+- **Tori and Nova tabs → one Wishlists tab:** the kids rarely opened their pages. Their wishlists moved to a new Wishlists tab (2×2 grid) next to new Mom and Dad lists. The GAS script creates the `MomWishlist` / `DadWishlist` sheet tabs on first use. Tori's To Do tile, both Next Up tiles and Nova's joke went with the pages; kids' chores still show in And Stuff's To Do. Tori's personal reminders are still in the sheet but no longer shown anywhere.
+- **At a Glance review, items 1–4:**
+  1. Once nothing timed is left today, the Today tile spotlights **Tomorrow** (countdown in hours), with today's all-day items kept as an "Also today" line. If tomorrow is empty too it stays on today.
+  2. "Coming Up" duplicated the 7-day strip, so it became **Further Out**: the next 3 events after the 7-day window, with date and start time. Titles already in the strip (weekly repeats) are skipped; falls back to the next holiday past the window.
+  3. 7-day strip: name on its own line in the person's color, start time only, slightly larger text. Columns widen to fit their longest word (no more "Appointme / nt"); useAutoFit now also shrinks a tile's text when it overflows sideways, so all 7 columns fit at narrow widths. Tablets 1000–1100px keep all 7 days (they used to drop days 6–7, which hid events).
+  4. Each day in the strip shows its own forecast (icon, high, low); the duplicate weather in the strip header is gone. `useWeather` now always fetches 7 days and tags each with its date; the top bar trims to its own 5 (3 on phones).
+- **Next up from the review (to plan):** small-polish items — shrink the top bar on the kiosk, stop "Pick up Tori from practice" reading as Tori's sports event, tag Mom/Dad calendar events. Still open from the review, not yet scheduled: show when the calendar couldn't load ("Updated 4:12 PM" / stale warning) and refresh every 10–15 min instead of hourly.
+
 ## Declined / no action needed
 
 - Kiosk sleep/dim schedule + idle-state photo slideshow — not wanted.

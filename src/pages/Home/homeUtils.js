@@ -160,14 +160,15 @@ export function isStale(dateStr, timeStr) {
 // list). Only meaningful for a same-day event with a known start time;
 // anything else (a future day, or an all-day event with no clock time)
 // falls back to the same flat wording those other places use.
+// Tomorrow's events count too: once today is done, the Today tile
+// spotlights tomorrow, and "in 14 hours" says more than "TOMORROW" there.
 export function centerStageCountdown(dateStr, timeStr) {
   const d = getDayDiff(dateStr)
   if (isNaN(d)) return ''
-  if (d !== 0) return countdownLabel(dateStr) // center-stage is always today's own pick
-  if (!timeStr) return 'TODAY' // all-day event — no clock time to count down from
+  if (d < 0 || d > 1 || !timeStr) return countdownLabel(dateStr) // all-day: no clock time to count down from
 
   const start = new Date(`${dateStr} ${timeStr}`)
-  if (isNaN(start.getTime())) return 'TODAY'
+  if (isNaN(start.getTime())) return countdownLabel(dateStr)
 
   const minutes = Math.round((start - new Date()) / 60000)
   if (minutes <= 0) return 'NOW' // already started, but not stale yet — see isCenterStageStale

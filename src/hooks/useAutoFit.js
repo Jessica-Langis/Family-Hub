@@ -52,9 +52,12 @@ function clippersOf(el) {
 }
 
 // Strict (no 1px tolerance): a "fits by rounding" tile would grow a
-// scrollbar once restored, wrap a line, and genuinely overflow
+// scrollbar once restored, wrap a line, and genuinely overflow.
+// Width counts too: a grid whose columns are as wide as their longest
+// word (At a Glance's 7-day strip) can only fit a narrow tile by
+// shrinking the text, and it would otherwise just get cut off the side.
 function overflowsNow(el, clippers = clippersOf(el)) {
-  return el.scrollHeight > el.clientHeight ||
+  return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth ||
     clippers.some(c => c.scrollHeight > c.clientHeight)
 }
 

@@ -14,11 +14,14 @@ const POINTS_TTL_MS   = 30 * 24 * 60 * 60 * 1000
 // the fresh one comes in (stale-while-revalidate).
 const FORECAST_TTL_MS = 30 * 60 * 1000
 
+// Always fetches the full week (At a Glance shows a forecast per day in
+// its 7-day strip); the top bar trims to what it shows itself. "v2"
+// because each day now carries its date — older cached entries didn't.
+const FORECAST_DAYS = 7
+
 function forecastCacheKey() {
   const { lat, lon } = WEATHER_CONFIG
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-  const count    = isMobile ? 3 : 5
-  return `nws_forecast_${lat},${lon}_${count}`
+  return `nws_forecast_v2_${lat},${lon}`
 }
 
 function nwsToIcon(shortForecast) {
@@ -106,12 +109,10 @@ export function useWeather() {
           }
         }
 
-        const isMobile = window.innerWidth <= 768
-        const count    = isMobile ? 3 : 5
         const today    = new Date(); today.setHours(0, 0, 0, 0)
 
         const result = []
-        for (let i = 0; result.length < count && i < 8; i++) {
+        for (let i = 0; result.length < FORECAST_DAYS && i < 8; i++) {
           const d       = new Date(today)
           d.setDate(d.getDate() + i)
           const dateStr = d.toISOString().slice(0, 10)
@@ -123,7 +124,10 @@ export function useWeather() {
           const temp = `${hi} / ${lo}`
 
           result.push({
+            date:      dateStr,
             name:      i === 0 ? 'Today' : DAY_LABELS[d.getDay()],
+            high:      entry.high ?? null,
+            low:       entry.low  ?? null,
             icon:      entry.icon      ?? '🌡️',
             temp,
             condition: entry.condition ?? '',

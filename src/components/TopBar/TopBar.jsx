@@ -10,7 +10,8 @@ import './TopBar.css'
 export default function TopBar({ tab, compact = false }) {
   const { clock, date }      = useClock()
   const { days, loading }    = useWeather()
-  const visibleDays = compact ? days.slice(0, 1) : days
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+  const visibleDays = days.slice(0, compact ? 1 : isMobile ? 3 : 5)
 
   return (
     <div className="topbar">

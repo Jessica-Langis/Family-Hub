@@ -5,7 +5,7 @@ import useAutoFit from '../../hooks/useAutoFit'
 import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale, urgencyClass,
+  centerStageCountdown, isCenterStageStale,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -20,10 +20,10 @@ import Icon from '../../components/Icon/Icon'
 //                       then today's timed events stack on the left
 //                       (closest one gets the center-stage countdown,
 //                       already-passed ones stay in the stack but dim
-//                       out), next few events from beyond today on the
-//                       right so the tile is never empty on a light day
+//                       out), events from beyond the 7-day strip on the
+//                       right ("Further Out", see 2026-10-28 below)
 //   • Lookahead (bottom) compact 7-day strip of everything, sports
-//                       visually distinct, with today's weather inline
+//                       visually distinct, with each day's forecast
 //   • Bulletin (right)  compact strip, full height
 //
 // A 4th "Upcoming" tile (a flat list of everything after Today) used to
@@ -49,6 +49,19 @@ import Icon from '../../components/Icon/Icon'
 // Coming Up rows on the right, are sized at ~40% of that center-stage
 // title (via the --main-event-title-size custom property in Glance.css)
 // so everything visibly ranks off the one event that matters most.
+//
+// 2026-10-28: three changes from a review of the page as a walk-by screen.
+//   • Once nothing timed is left today (or there never was anything),
+//     the Today tile spotlights Tomorrow instead of a dimmed list of
+//     what already happened — evenings are when tomorrow matters. Today's
+//     all-day items stay up as a small "Also today" line.
+//   • "Coming Up" duplicated the 7-day strip right below it. It's now
+//     "Further Out": the next few events *after* the 7-day window, with
+//     their dates, so big things show up early. Recurring events already
+//     in the strip (weekly trash, practices) are skipped.
+//   • The 7-day strip shows each day's forecast, kid names in their own
+//     colors on their own line, and start times only, so titles get the
+//     whole column width instead of breaking mid-word.
 
 const LOOKAHEAD_DAYS = 7
 const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
@@ -56,18 +69,49 @@ const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 // Capped so the tile's height stays predictable even on a packed day —
 // same "+N more" pattern Bulletin already uses.
 const TODAY_CAP = 5
-// "Coming Up" (right side) — just enough to keep the tile from ever
+// "Further Out" (right side) — just enough to keep the tile from ever
 // reading empty, without turning into its own scrollable list.
-const UPCOMING_BEYOND_COUNT = 3
+const FURTHER_OUT_COUNT = 3
+
+// "5:00 PM" → "5 PM"; "5:30 PM" stays as is. Saves width in tight spots.
+const shortTime = t => String(t || '').replace(':00', '')
+
+// "Thu, Nov 5" for a yyyy-mm-dd string
+function shortDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00')
+  return isNaN(d.getTime())
+    ? dateStr
+    : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
+// One day's timed events → the stack TodayTile draws, with the closest
+// still-relevant one flagged as center stage — "relevant" meaning not yet
+// 20 min past its start (see isCenterStageStale).
+function buildStack(timed) {
+  const centerIdx = timed.findIndex(e => !isCenterStageStale(e.date, e.time))
+  return {
+    events: timed.slice(0, TODAY_CAP).map((e, i) => ({
+      ...e,
+      isCenterStage: i === centerIdx,
+      isPast: isCenterStageStale(e.date, e.time),
+      countdown: i === centerIdx ? centerStageCountdown(e.date, e.time) : null,
+    })),
+    overflow: Math.max(0, timed.length - TODAY_CAP),
+  }
+}
 
 // ── Flatten calendar days → one sorted, classified event list ───────
 // `tick` isn't read below — it's a plain re-render trigger (see Glance())
 // so the Today tile's minute-level countdown keeps advancing between the
-// hourly calendar refetches instead of sitting frozen for up to an hour.
+// calendar refetches instead of sitting frozen.
 function useGlanceEvents(calDays, tick) {
   return useMemo(() => {
     const today    = new Date(); today.setHours(0, 0, 0, 0)
     const todayStr = dateParts(today)
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = dateParts(tomorrow)
+    const cutoff   = new Date(today); cutoff.setDate(cutoff.getDate() + LOOKAHEAD_DAYS)
+    const cutoffStr = dateParts(cutoff)
 
     const all = []
     calDays.filter(d => d.date >= todayStr).forEach(d => {
@@ -87,36 +131,46 @@ function useGlanceEvents(calDays, tick) {
         : a.date.localeCompare(b.date)
     )
 
-    const todayRaw = all.filter(e => e.date === todayStr)
-    const laterRaw = all.filter(e => e.date !== todayStr)
+    const todayRaw    = all.filter(e => e.date === todayStr)
+    const tomorrowRaw = all.filter(e => e.date === tomorrowStr)
 
     // All-day events don't compete for the center-stage spot — they get
     // their own small banner above everything instead (see TodayTile),
     // so a same-day all-day entry (e.g. "Family Movie Night") can never
     // bump a still-upcoming timed event out of the spotlight.
     const todayAllDay = todayRaw.filter(e => !e.time)
-    const todayTimed  = todayRaw.filter(e => e.time)
 
-    // The closest still-relevant timed event today earns the center-stage
-    // slot — "relevant" meaning not yet 20 min past its start (see
-    // isCenterStageStale). If nothing timed is left today, nothing gets
-    // the center-stage treatment (the all-day banner still shows).
-    const centerIdx = todayTimed.findIndex(e => !isCenterStageStale(e.date, e.time))
+    // Spotlight today while something timed is still to come (or only
+    // just started); otherwise move on to tomorrow, as long as tomorrow
+    // has anything at all. With nothing tomorrow either, stay on today
+    // so the tile isn't blank.
+    const todayLeft  = todayRaw.some(e => e.time && !isCenterStageStale(e.date, e.time))
+    const isTomorrow = !todayLeft && tomorrowRaw.length > 0
+    const spotRaw    = isTomorrow ? tomorrowRaw : todayRaw
+    const stack      = buildStack(spotRaw.filter(e => e.time))
+    const spotlight  = {
+      label:     isTomorrow ? 'Tomorrow' : 'Today',
+      allDay:    spotRaw.filter(e => !e.time),
+      events:    stack.events,
+      overflow:  stack.overflow,
+      // Today's all-day items ("Garbage to street") still matter tonight
+      alsoToday: isTomorrow ? todayAllDay : [],
+    }
 
-    const todayEvents = todayTimed.slice(0, TODAY_CAP).map((e, i) => ({
-      ...e,
-      isCenterStage: i === centerIdx,
-      isPast: isCenterStageStale(e.date, e.time),
-      countdown: i === centerIdx ? centerStageCountdown(e.date, e.time) : null,
-    }))
-    const todayOverflow = Math.max(0, todayTimed.length - TODAY_CAP)
-
-    // "Coming Up" — next few events from tomorrow on, regardless of how
-    // many (if any) are left today, so the right side never goes blank.
-    let upcomingBeyond = laterRaw.slice(0, UPCOMING_BEYOND_COUNT)
-    if (upcomingBeyond.length === 0) {
-      const h = getNextUSHolidays(1)[0]
-      if (h) upcomingBeyond = [{ date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false }]
+    // "Further Out" — the next few events after the 7-day strip, one per
+    // title. A title that already shows in the strip is a recurring event
+    // the family can already see, so it's skipped.
+    const key = e => e.title.toLowerCase()
+    const inStrip = new Set(all.filter(e => e.date < cutoffStr).map(key))
+    const seen = new Set()
+    let furtherOut = all.filter(e => {
+      if (e.date < cutoffStr || inStrip.has(key(e)) || seen.has(key(e))) return false
+      seen.add(key(e))
+      return true
+    }).slice(0, FURTHER_OUT_COUNT)
+    if (furtherOut.length === 0) {
+      const h = getNextUSHolidays(4).find(h => dateParts(h.date) >= cutoffStr)
+      if (h) furtherOut = [{ date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false, location: '' }]
     }
 
     // 7-day strip — every day gets a column whether or not it has events.
@@ -133,7 +187,7 @@ function useGlanceEvents(calDays, tick) {
       }
     })
 
-    return { todayAllDay, todayEvents, todayOverflow, upcomingBeyond, lookahead }
+    return { spotlight, furtherOut, lookahead }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calDays, tick])
 }
@@ -162,21 +216,35 @@ class GlanceErrorBoundary extends Component {
 }
 
 // ── Today tile — replaces the old single-event Hero. Left side stacks
-// everything happening today (closest still-relevant one gets center
-// stage, already-passed ones stay in the stack but dim out); right side
-// is a small teaser of what's coming after today, so the tile still has
-// something to show even on a light day.
-function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond, onOpen }) {
-  const hasTimed = todayEvents.length > 0
+// everything happening today (or tomorrow, once today is done — closest
+// still-relevant one gets center stage, already-passed ones stay in the
+// stack but dim out); right side shows what's coming after the 7-day
+// strip, so the two tiles never repeat each other.
+function TodayTile({ spotlight, furtherOut, onOpen }) {
+  const { label, allDay, events, overflow, alsoToday } = spotlight
+  const hasTimed = events.length > 0
   const fitRef = useAutoFit()
 
   return (
     <div ref={fitRef} className="glance-today-card fit-scope">
       <div className="glance-today-left">
-        <span className="glance-card-label">Today</span>
-        {todayAllDay.length > 0 && (
+        <span className="glance-card-label">{label}</span>
+        {alsoToday.length > 0 && (
+          <div className="glance-today-also">
+            <span className="glance-today-also-label">Also today</span>
+            {alsoToday.map((ev, i) => (
+              <span key={i} className="glance-today-also-item glance-tappable" {...tapProps(() => onOpen(ev))}>
+                {ev.person && (
+                  <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+                )}
+                {ev.title}
+              </span>
+            ))}
+          </div>
+        )}
+        {allDay.length > 0 && (
           <div className="glance-today-allday">
-            {todayAllDay.map((ev, i) => (
+            {allDay.map((ev, i) => (
               <div key={i} className="glance-today-allday-row glance-tappable" {...tapProps(() => onOpen(ev))}>
                 {ev.person && (
                   <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
@@ -186,11 +254,11 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond, on
             ))}
           </div>
         )}
-        {!hasTimed && todayAllDay.length === 0 ? (
-          <div className="glance-card-empty"><span className="glance-empty-msg">Nothing today</span></div>
+        {!hasTimed && allDay.length === 0 ? (
+          <div className="glance-card-empty"><span className="glance-empty-msg">Nothing {label.toLowerCase()}</span></div>
         ) : !hasTimed ? null : (
           <div className="glance-today-stack">
-            {todayEvents.map((ev, i) => (
+            {events.map((ev, i) => (
               <div
                 key={i}
                 className={`glance-today-row glance-tappable${ev.isCenterStage ? ' is-center' : ''}${ev.isPast ? ' is-past' : ''}`}
@@ -218,8 +286,8 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond, on
                 )}
               </div>
             ))}
-            {todayOverflow > 0 && (
-              <div className="glance-today-more">+{todayOverflow} more today</div>
+            {overflow > 0 && (
+              <div className="glance-today-more">+{overflow} more {label.toLowerCase()}</div>
             )}
           </div>
         )}
@@ -228,23 +296,30 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond, on
       <div className="glance-today-divider" />
 
       <div className="glance-today-right">
-        <span className="glance-card-label">Coming Up</span>
-        {upcomingBeyond.length === 0 ? (
+        <span className="glance-card-label">Further Out</span>
+        {furtherOut.length === 0 ? (
           <div className="glance-card-empty"><span className="glance-empty-msg">Nothing else on the calendar</span></div>
         ) : (
           <div className="glance-upcoming-list">
-            {upcomingBeyond.map((ev, i) => (
+            {furtherOut.map((ev, i) => (
               <div
                 key={i}
-                className={`glance-upcoming-row glance-tappable urgency-${urgencyClass(ev.date)}${ev.isSports ? ' is-sport' : ''}`}
+                className={`glance-upcoming-row glance-tappable${ev.isSports ? ' is-sport' : ''}`}
                 {...tapProps(() => onOpen(ev))}
               >
-                {ev.isSports && <span className="glance-upcoming-medal"><Icon name="medal" size="1em" /></span>}
-                {ev.person && (
-                  <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
-                )}
-                <span className="glance-upcoming-title">{ev.title}</span>
-                <span className="glance-upcoming-when">{countdownLabel(ev.date)}</span>
+                {/* Medal and name ride inside the title so only title and
+                    date share the row — the date stays put on the right. */}
+                <span className="glance-upcoming-title">
+                  {ev.isSports && <span className="glance-upcoming-medal"><Icon name="medal" size="1em" /></span>}
+                  {ev.person && (
+                    <span className="glance-upcoming-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+                  )}
+                  {ev.title}
+                </span>
+                <span className="glance-upcoming-when">
+                  {shortDate(ev.date)}
+                  {ev.time && <span className="glance-upcoming-time">{shortTime(ev.time)}</span>}
+                </span>
               </div>
             ))}
           </div>
@@ -255,9 +330,9 @@ function TodayTile({ todayAllDay, todayEvents, todayOverflow, upcomingBeyond, on
 }
 
 // ── Event details ─────────────────────────────────────────────
-// Every event row on this page (Today, Coming Up, Next 7 Days) opens this
-// on tap, so the full title, time range and location are one touch away
-// even when the tile itself has had to shrink or clip them.
+// Every event row on this page (Today, Further Out, Next 7 Days) opens
+// this on tap, so the full title, time range and location are one touch
+// away even when the tile itself has had to shrink or clip them.
 function tapProps(open) {
   return {
     role: 'button',
@@ -305,15 +380,15 @@ function EventDetailModal({ ev, onClose }) {
   )
 }
 
-// ── Weather strip — compact, lives in the lookahead header ──────────
-function WeatherStrip() {
-  const { days, loading } = useWeather()
-  const today = days[0]
-  if (loading || !today) return null
+// ── Per-day forecast — sits under each day's name in the 7-day strip.
+// The NWS forecast covers about a week, so the last day can come up empty.
+function DayWeather({ day }) {
+  if (!day) return null
   return (
-    <span className="glance-weather-strip" title={today.condition}>
-      <WeatherIcon emoji={today.icon} className="gws-icon" />
-      <span className="gws-temp">{today.temp}</span>
+    <span className="glance-look-weather" title={day.condition}>
+      <WeatherIcon emoji={day.icon} className="glance-look-weather-icon" />
+      <span className="glance-look-weather-hi">{day.high != null ? `${day.high}°` : '—'}</span>
+      {day.low != null && <span className="glance-look-weather-lo">{day.low}°</span>}
     </span>
   )
 }
@@ -321,11 +396,12 @@ function WeatherStrip() {
 // ── Lookahead card — 7-day strip of everything ──────────────────────
 function LookaheadCard({ days, onOpen }) {
   const fitRef = useAutoFit()
+  const { days: forecast } = useWeather()
+  const forecastByDate = Object.fromEntries(forecast.filter(f => f.date).map(f => [f.date, f]))
   return (
     <div ref={fitRef} className="glance-lookahead-card fit-scope">
       <div className="glance-lookahead-head">
         <span className="glance-card-label">Next {LOOKAHEAD_DAYS} Days</span>
-        <WeatherStrip />
       </div>
       <div className="glance-lookahead-grid">
         {days.map(d => (
@@ -333,23 +409,23 @@ function LookaheadCard({ days, onOpen }) {
             <div className="glance-look-dayname">
               {d.label} <span className="glance-look-daynum">{d.dayNum}</span>
             </div>
+            <DayWeather day={forecastByDate[d.dateStr]} />
             <div className="glance-look-events">
               {d.events.length === 0
                 ? <span className="glance-look-none">—</span>
                 : d.events.map((ev, i) => (
                     <span key={i} className={`glance-look-ev glance-tappable${ev.isSports ? ' is-sport' : ''}`} {...tapProps(() => onOpen(ev))}>
                       {/* Show the name whenever we have one, sports or not —
-                          a "Tori - Dentist" shouldn't render as just "Dentist". */}
+                          a "Tori - Dentist" shouldn't render as just "Dentist".
+                          Its own line, so the title gets the full width. */}
                       {ev.person && (
-                        <span className="glance-look-ev-who">{ev.person}</span>
+                        <span className="glance-look-ev-who" data-person={ev.person.toLowerCase()}>{ev.person}</span>
                       )}
-                      {ev.title}
-                      {/* All-day events carry no time at all — only timed
-                          ones get a start (and end, when known) line. */}
+                      <span className="glance-look-ev-title">{ev.title}</span>
+                      {/* Start time only — the full range is one tap away in
+                          the details popup. All-day events have none. */}
                       {ev.time && (
-                        <span className="glance-look-ev-time">
-                          {ev.time}{ev.endTime ? ` – ${ev.endTime}` : ''}
-                        </span>
+                        <span className="glance-look-ev-time">{shortTime(ev.time)}</span>
                       )}
                     </span>
                   ))
@@ -388,12 +464,12 @@ export default function Glance() {
     return () => clearInterval(id)
   }, [])
 
-  const { todayAllDay, todayEvents, todayOverflow, upcomingBeyond, lookahead } = useGlanceEvents(calDays, tick)
+  const { spotlight, furtherOut, lookahead } = useGlanceEvents(calDays, tick)
 
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
-        <TodayTile todayAllDay={todayAllDay} todayEvents={todayEvents} todayOverflow={todayOverflow} upcomingBeyond={upcomingBeyond} onOpen={setSelected} />
+        <TodayTile spotlight={spotlight} furtherOut={furtherOut} onOpen={setSelected} />
         <LookaheadCard days={lookahead} onOpen={setSelected} />
         <div className="glance-col-bulletin">
           <BulletinPanel
