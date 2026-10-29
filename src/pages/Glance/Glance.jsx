@@ -62,6 +62,11 @@ import Icon from '../../components/Icon/Icon'
 //   • The 7-day strip shows each day's forecast, kid names in their own
 //     colors on their own line, and start times only, so titles get the
 //     whole column width instead of breaking mid-word.
+//   • The calendar refreshes every 15 min (was hourly) and right away when
+//     the screen wakes up. A small "Updated 4:12 PM" note in the 7-day
+//     header turns into a warning when loads fail or the data is over 2h
+//     old, and a failed load keeps the last good calendar on screen
+//     instead of wiping it to "Nothing today".
 
 const LOOKAHEAD_DAYS = 7
 const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
@@ -72,6 +77,12 @@ const TODAY_CAP = 5
 // "Further Out" (right side) — just enough to keep the tile from ever
 // reading empty, without turning into its own scrollable list.
 const FURTHER_OUT_COUNT = 3
+
+// Calendar refresh cadence. 15 min keeps a new event from a phone showing
+// up quickly; at ~100 calls a day it's far inside Apps Script's quotas.
+const REFRESH_MS = 15 * 60 * 1000
+// Older than this and the status note turns into a warning
+const STALE_MS = 2 * 60 * 60 * 1000
 
 // "5:00 PM" → "5 PM"; "5:30 PM" stays as is. Saves width in tight spots.
 const shortTime = t => String(t || '').replace(':00', '')
@@ -220,8 +231,10 @@ class GlanceErrorBoundary extends Component {
 // still-relevant one gets center stage, already-passed ones stay in the
 // stack but dim out); right side shows what's coming after the 7-day
 // strip, so the two tiles never repeat each other.
-function TodayTile({ spotlight, furtherOut, onOpen }) {
+function TodayTile({ spotlight, furtherOut, loaded, onOpen }) {
   const { label, allDay, events, overflow, alsoToday } = spotlight
+  // Before the first load lands, "Nothing today" would be a lie
+  const emptyMsg = msg => loaded ? msg : 'Loading calendar…'
   const hasTimed = events.length > 0
   const fitRef = useAutoFit()
 
@@ -255,7 +268,7 @@ function TodayTile({ spotlight, furtherOut, onOpen }) {
           </div>
         )}
         {!hasTimed && allDay.length === 0 ? (
-          <div className="glance-card-empty"><span className="glance-empty-msg">Nothing {label.toLowerCase()}</span></div>
+          <div className="glance-card-empty"><span className="glance-empty-msg">{emptyMsg(`Nothing ${label.toLowerCase()}`)}</span></div>
         ) : !hasTimed ? null : (
           <div className="glance-today-stack">
             {events.map((ev, i) => (
@@ -298,7 +311,7 @@ function TodayTile({ spotlight, furtherOut, onOpen }) {
       <div className="glance-today-right">
         <span className="glance-card-label">Further Out</span>
         {furtherOut.length === 0 ? (
-          <div className="glance-card-empty"><span className="glance-empty-msg">Nothing else on the calendar</span></div>
+          <div className="glance-card-empty"><span className="glance-empty-msg">{emptyMsg('Nothing else on the calendar')}</span></div>
         ) : (
           <div className="glance-upcoming-list">
             {furtherOut.map((ev, i) => (
@@ -393,8 +406,24 @@ function DayWeather({ day }) {
   )
 }
 
+// ── Calendar status — "Updated 4:12 PM", or a warning when the calendar
+// can't be reached. A kiosk viewer has no other way to tell that what
+// they're reading is out of date.
+function CalendarStatus({ lastUpdated, loadFailed }) {
+  const time = lastUpdated?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const stale = lastUpdated && Date.now() - lastUpdated.getTime() > STALE_MS
+  if (!lastUpdated && !loadFailed) return null
+  if (!lastUpdated) {
+    return <span className="glance-cal-status is-warn"><Icon name="alert" size="1em" /> Couldn't load the calendar</span>
+  }
+  if (loadFailed || stale) {
+    return <span className="glance-cal-status is-warn"><Icon name="alert" size="1em" /> Calendar not updating · last {time}</span>
+  }
+  return <span className="glance-cal-status">Updated {time}</span>
+}
+
 // ── Lookahead card — 7-day strip of everything ──────────────────────
-function LookaheadCard({ days, onOpen }) {
+function LookaheadCard({ days, status, onOpen }) {
   const fitRef = useAutoFit()
   const { days: forecast } = useWeather()
   const forecastByDate = Object.fromEntries(forecast.filter(f => f.date).map(f => [f.date, f]))
@@ -402,6 +431,7 @@ function LookaheadCard({ days, onOpen }) {
     <div ref={fitRef} className="glance-lookahead-card fit-scope">
       <div className="glance-lookahead-head">
         <span className="glance-card-label">Next {LOOKAHEAD_DAYS} Days</span>
+        <CalendarStatus {...status} />
       </div>
       <div className="glance-lookahead-grid">
         {days.map(d => (
@@ -442,22 +472,44 @@ function LookaheadCard({ days, onOpen }) {
 export default function Glance() {
   const [calDays, setCalDays] = useState([])
   // Pure re-render trigger — see useGlanceEvents' comment on why this
-  // needs to tick faster than the hourly calendar refetch below.
+  // needs to tick faster than the calendar refetch below.
   const [tick, setTick] = useState(0)
   const [selected, setSelected] = useState(null)
+  const [lastUpdated, setLastUpdated] = useState(null)  // Date of last good load
+  const [loadFailed, setLoadFailed] = useState(false)   // most recent load failed
 
+  // A failed load (network error, or the script answering with an error
+  // object instead of the day list) keeps the last good calendar on screen
+  // and flags it, rather than replacing it with an empty one.
   const loadAll = useCallback(async () => {
     try {
       const data = await apiFetch(SCRIPTS.CHORES + '?type=upcoming&days=60').then(r => r.json())
-      setCalDays(Array.isArray(data) ? data : [])
-    } catch (e) { console.error('glance calendar load', e) }
+      if (!Array.isArray(data)) throw new Error(data?.error || 'unexpected calendar response')
+      setCalDays(data)
+      setLastUpdated(new Date())
+      setLoadFailed(false)
+    } catch (e) {
+      console.error('glance calendar load', e)
+      setLoadFailed(true)
+    }
   }, [])
 
   useEffect(() => {
     loadAll()
-    const id = setInterval(loadAll, 60 * 60 * 1000)
+    const id = setInterval(loadAll, REFRESH_MS)
     return () => clearInterval(id)
   }, [loadAll])
+
+  // Tablets pause timers while the screen is asleep — catch up as soon
+  // as it wakes instead of waiting out the rest of the interval.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      if (!lastUpdated || Date.now() - lastUpdated.getTime() > REFRESH_MS) loadAll()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [loadAll, lastUpdated])
 
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 30 * 1000)
@@ -469,8 +521,8 @@ export default function Glance() {
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
-        <TodayTile spotlight={spotlight} furtherOut={furtherOut} onOpen={setSelected} />
-        <LookaheadCard days={lookahead} onOpen={setSelected} />
+        <TodayTile spotlight={spotlight} furtherOut={furtherOut} loaded={!!lastUpdated} onOpen={setSelected} />
+        <LookaheadCard days={lookahead} status={{ lastUpdated, loadFailed }} onOpen={setSelected} />
         <div className="glance-col-bulletin">
           <BulletinPanel
             compact

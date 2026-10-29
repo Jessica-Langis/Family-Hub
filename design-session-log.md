@@ -105,7 +105,12 @@ The four items above (Today tile, hour/minute countdown, 20-min-past drop) are n
   2. "Coming Up" duplicated the 7-day strip, so it became **Further Out**: the next 3 events after the 7-day window, with date and start time. Titles already in the strip (weekly repeats) are skipped; falls back to the next holiday past the window.
   3. 7-day strip: name on its own line in the person's color, start time only, slightly larger text. Columns widen to fit their longest word (no more "Appointme / nt"); useAutoFit now also shrinks a tile's text when it overflows sideways, so all 7 columns fit at narrow widths. Tablets 1000–1100px keep all 7 days (they used to drop days 6–7, which hid events).
   4. Each day in the strip shows its own forecast (icon, high, low); the duplicate weather in the strip header is gone. `useWeather` now always fetches 7 days and tags each with its date; the top bar trims to its own 5 (3 on phones).
-- **Next up from the review (to plan):** small-polish items — shrink the top bar on the kiosk, stop "Pick up Tori from practice" reading as Tori's sports event, tag Mom/Dad calendar events. Still open from the review, not yet scheduled: show when the calendar couldn't load ("Updated 4:12 PM" / stale warning) and refresh every 10–15 min instead of hourly.
+- **At a Glance review, item 5 — calendar freshness:** refreshes every 15 min (was hourly) and right away when the screen wakes after 15+ min. "Updated 4:12 PM" in the 7-day header turns into an amber "Calendar not updating · last …" when a load fails or data is 2h+ old. A failed load (network error, or the script returning an error object) now keeps the last good calendar instead of wiping it to "Nothing today"; before the first load the tiles say "Loading calendar…".
+- **Item 6 — polish:**
+  - Kiosk top bar is about half the height (136 → 73px at 1280×800): today's weather laid out sideways, tighter padding. Other tabs unchanged.
+  - Errands ("Pick up / Drop off / Drive / Take / Bring / Get …") never get the sports medal, even with a sports word in them; the person tag stays.
+  - Mom and Dad get name tags on calendar events, in their colors. Stripped titles are capitalized ("Mom's birthday" → MOM + "Birthday"). Same rules mirrored in the GAS digest (`DIGEST_PEOPLE`, `DIGEST_ERRAND_RE`, Mom/Dad colors) — redeploy the script for the email to pick them up.
+  - Removed `parseJointEvent` / `personEventTitle` / `KID_NAMES` from homeUtils.js — only the deleted kid pages used them.
 
 ## Declined / no action needed
 

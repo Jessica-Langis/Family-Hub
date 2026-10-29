@@ -100,6 +100,22 @@
   line-height: 1.25;
 }
 
+/* ── Compact (At a Glance) — one shorter row: today's weather sits
+   sideways (icon beside temp + condition, no day label — it's the only
+   day shown) so the bar's height goes to the events below. ── */
+.topbar.compact { padding: 6px 20px; }
+.topbar.compact .clock { font-size: clamp(1.5rem, 0.6rem + 2.6vmin + 0.4vw, 3rem); line-height: 1.1; }
+.topbar.compact .clock-date { margin-top: 0; }
+.topbar.compact .weather-day {
+  flex-direction: row;
+  gap: 8px;
+  padding: 6px 12px;
+  text-align: left;
+}
+.topbar.compact .day-name { display: none; }
+.topbar.compact .weather-day .weather-icon { margin: 0; }
+.topbar.compact .weather-day .temp { margin: 0; }
+
 /* ── Responsive: progressively hide weather days as viewport narrows ── */
 
 /* Below 900px: hide the 5th day */

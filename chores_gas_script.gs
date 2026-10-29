@@ -823,13 +823,13 @@ function listMyCalendars() {
 //  See the header comment at the top of this file for one-time setup.
 // ═══════════════════════════════════════════════════════════════
 
-// Mirrors src/pages/Home/homeUtils.js on the frontend (KID_NAMES,
-// SPORTS_KEYWORDS, parsePersonEvent, classifyEvent) so a "Tori - Dentist
+// Mirrors src/pages/Home/homeUtils.js on the frontend (EVENT_PEOPLE,
+// SPORTS_KEYWORDS, ERRAND_RE, parsePersonEvent, classifyEvent) so a "Tori - Dentist
 // Appointment" event reads the same way in the email as it does on the
 // At A Glance page — kid name pulled out as a badge, sport keyword
 // flagged. Kept in sync by hand; there's no code sharing between an
 // Apps Script project and the Vite frontend.
-var DIGEST_KID_NAMES = ['Tori', 'Nova'];
+var DIGEST_PEOPLE = ['Tori', 'Nova', 'Mom', 'Dad'];
 var DIGEST_SPORTS_KEYWORDS = [
   'tournament', 'meet', 'match', 'practice', 'wrestling', 'game',
   'scrimmage', 'tryout', 'competition', 'qualifier', 'regional',
@@ -839,8 +839,13 @@ var DIGEST_SPORTS_RE = new RegExp(
   '\\b(?:' + DIGEST_SPORTS_KEYWORDS.join('|') + ')(?:e?s)?\\b', 'i'
 );
 
+// Errands for a sports event ("Pick up Tori from practice") aren't the
+// event itself — see homeUtils.js's ERRAND_RE.
+var DIGEST_ERRAND_RE = /^\s*(?:pick[\s-]*up|drop[\s-]*off|drive|take|bring|get)\b/i;
+
 function digestHasSportsKeyword(text) {
-  return DIGEST_SPORTS_RE.test(String(text || ''));
+  var t = String(text || '');
+  return DIGEST_SPORTS_RE.test(t) && !DIGEST_ERRAND_RE.test(t);
 }
 
 function digestParsePersonEvent(summary, name) {
@@ -856,24 +861,25 @@ function digestMentionsPerson(summary, name) {
 }
 
 // Returns { isSports, person, title } — see homeUtils.js's classifyEvent.
-// Exactly one kid named anywhere → their badge; none or both (a joint
-// event) → no badge, full title.
+// Exactly one person named anywhere → their badge; none or several (a
+// joint event) → no badge, full title.
 function digestClassifyEvent(summary) {
   var raw = String(summary || '').trim();
-  var mentioned = DIGEST_KID_NAMES.filter(function (k) { return digestMentionsPerson(raw, k); });
+  var mentioned = DIGEST_PEOPLE.filter(function (k) { return digestMentionsPerson(raw, k); });
   if (mentioned.length !== 1) {
     return { isSports: digestHasSportsKeyword(raw), person: null, title: raw };
   }
   var person = mentioned[0];
-  // "Tori - Dentist" drops the prefix; "Pick up Tori" stays as written
-  var title = digestParsePersonEvent(raw, person) || raw;
-  return { isSports: digestHasSportsKeyword(title), person: person, title: title };
+  // "Tori - Dentist" drops the prefix; "Pick up Tori" stays as written;
+  // "Mom's birthday" → "Birthday"
+  var stripped = digestParsePersonEvent(raw, person);
+  var title = stripped ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : raw;
+  return { isSports: digestHasSportsKeyword(raw), person: person, title: title };
 }
 
-// Same accent hex values as src/styles/tokens.css, so the email's kid
-// badges match the app's colors (Tori = pink, Nova = sky blue) instead
-// of picking their own palette.
-var DIGEST_PERSON_COLOR = { Tori: '#f5b8ce', Nova: '#87ceeb' };
+// Same hex values as src/styles/tokens.css (--person-*), so the email's
+// name badges match the app's colors instead of picking their own palette.
+var DIGEST_PERSON_COLOR = { Tori: '#f5b8ce', Nova: '#87ceeb', Mom: '#c3a6f0', Dad: '#f0a868' };
 
 // App's actual dark palette (src/styles/tokens.css) — kept in sync by
 // hand since this GAS project can't import the frontend's CSS. This is

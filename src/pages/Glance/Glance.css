@@ -428,6 +428,14 @@
   flex-shrink: 0;
 }
 
+/* "Updated 4:12 PM" — quiet when all is well, amber when it isn't */
+.glance-cal-status {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-align: right;
+}
+.glance-cal-status.is-warn { color: var(--accent); font-weight: 700; }
+
 /* Per-day forecast under each day's name: icon, high, low */
 .glance-look-weather {
   display: flex;
