@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import {
-  evSummary, dateParts, classifyEvent, urgencyClass, countdownLabel, isStale,
+  evSummary, dateParts, classifyEvent, urgencyClass, countdownLabel, isStale, byDateThenTime,
 } from '../../pages/Home/homeUtils'
 import './UpcomingEventsList.css'
 import Icon from '../Icon/Icon'
@@ -31,11 +31,7 @@ function useUpcomingEvents(calDays) {
       })
     })
 
-    all.sort((a, b) =>
-      a.date === b.date
-        ? (a.time || '').localeCompare(b.time || '')
-        : a.date.localeCompare(b.date)
-    )
+    all.sort(byDateThenTime)
 
     return all.slice(0, EVENT_LIMIT)
   }, [calDays])

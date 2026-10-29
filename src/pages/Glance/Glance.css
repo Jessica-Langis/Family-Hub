@@ -193,6 +193,32 @@
   color: var(--text);
 }
 
+/* ── "Also today" — once the tile has moved on to Tomorrow, today's
+   all-day items (trash night, a birthday) stay up as one small line. ── */
+
+.glance-today-also {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.glance-today-also-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.glance-today-also-item { display: inline-flex; align-items: baseline; gap: 6px; color: var(--text); }
+
 /* ── Left: today's stack ── */
 
 .glance-today-stack {
@@ -248,6 +274,8 @@
   flex-shrink: 0;
   white-space: nowrap;
 }
+/* An event that has started and is still going reads "Now" */
+.glance-today-row-time.is-now { color: var(--accent); font-weight: 700; }
 
 .glance-today-row-person,
 .glance-today-person {
@@ -306,12 +334,8 @@
   flex-shrink: 0;
 }
 
-/* ── Right: "Coming Up" peek beyond today ──
-   Rows carry a `urgency-today/-tomorrow/-later` class (global.css) so
-   .glance-upcoming-when below picks up --urgency automatically — same
-   system the Lookahead grid and And Stuff's Upcoming Events list use,
-   so the soonest of these visibly outranks the rest instead of every
-   row reading identically muted. */
+/* ── Right: "Further Out" — events after the 7-day strip, each with its
+   date (and start time, when it has one) on the right. ── */
 
 .glance-upcoming-list {
   flex: 1;
@@ -359,11 +383,20 @@
 }
 
 .glance-upcoming-when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--urgency, var(--muted));
+  color: var(--accent2);
   flex-shrink: 0;
   white-space: nowrap;
+  text-align: right;
+}
+.glance-upcoming-time {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .glance-upcoming-person {
@@ -376,7 +409,8 @@
 }
 .glance-upcoming-person[data-person] { color: var(--person); }
 
-.glance-upcoming-medal { flex-shrink: 0; color: #f5c842; }
+.glance-upcoming-medal { color: #f5c842; margin-right: 6px; }
+.glance-upcoming-person { margin-right: 8px; }
 
 /* ══════════════════════════════════════════
    LOOKAHEAD CARD — 7-day strip, weather inline in the header
@@ -396,27 +430,43 @@
   flex-shrink: 0;
 }
 
-.glance-weather-strip {
-  display: inline-flex;
+/* "Updated 4:12 PM" — quiet when all is well, amber when it isn't */
+.glance-cal-status {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-align: right;
+}
+.glance-cal-status.is-warn { color: var(--accent); font-weight: 700; }
+
+/* Per-day forecast under each day's name: icon, high, low */
+.glance-look-weather {
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
-}
-.gws-icon { width: calc(var(--fs-lg) * 1.25); height: calc(var(--fs-lg) * 1.25); }
-.gws-temp {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--accent2);
   white-space: nowrap;
+  font-size: var(--fs-sm);
 }
+.glance-look-weather-icon { width: calc(var(--fs-md) * 1.3); height: calc(var(--fs-md) * 1.3); flex-shrink: 0; }
+.glance-look-weather-hi { font-weight: 700; color: var(--text); }
+.glance-look-weather-lo { color: var(--muted); }
 
 .glance-lookahead-grid {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* A column can widen to fit its longest word (others give up the
+     room) so a word like "Appointment" never splits mid-word. */
+  grid-template-columns: repeat(7, minmax(min-content, 1fr));
   gap: 8px;
 }
+/* Last resort, when even the smallest text can't fit every column's
+   longest word (useAutoFit sets data-fit-overflow): equal columns, and
+   long words break, rather than days getting cut off the right edge */
+.glance-lookahead-card[data-fit-overflow] .glance-lookahead-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.glance-lookahead-card[data-fit-overflow] .glance-look-ev-title { overflow-wrap: anywhere; }
 
 .glance-look-day {
   display: flex;
@@ -424,7 +474,7 @@
   gap: 5px;
   min-width: 0;
   min-height: 0;
-  padding: 8px 8px 6px;
+  padding: 8px 6px 6px;
   border-radius: 8px;
   background: var(--surface2);
   border: 1px solid transparent;
@@ -467,16 +517,25 @@
 }
 
 /* Regular event pill — no line-clamp: a long title wraps and grows the
-   pill (and its day's whole grid row) rather than being cut off. */
+   pill (and its day's whole grid row) rather than being cut off. Name,
+   title and time each get their own line. Titles wrap between words;
+   a single word too long for the column hyphenates rather than
+   splitting with no cue (the page is lang="en", which hyphens needs). */
 .glance-look-ev {
-  font-size: var(--fs-sm);
-  line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-md);
+  line-height: 1.25;
   color: var(--text);
-  padding: 3px 5px;
+  padding: 4px 5px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.04);
   border-left: 2px solid var(--muted);
-  word-break: break-word;
+  min-width: 0;
+}
+.glance-look-ev-title {
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* Sports events read differently at a distance — green edge + tint */
@@ -486,14 +545,15 @@
 }
 
 .glance-look-ev-who {
+  font-size: var(--fs-xs);
   font-weight: 700;
-  color: var(--accent6);
-  margin-right: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--person, var(--accent6));  /* person colors: tokens.css */
 }
 
 .glance-look-ev-time {
-  display: block;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   color: var(--muted);
   margin-top: 1px;
 }
@@ -556,29 +616,23 @@
 .bulletin-more-row:hover { text-decoration: underline; }
 
 /* ══════════════════════════════════════════
-   TABLET — lookahead drops to 5 columns so pills stay readable
-══════════════════════════════════════════ */
-
-@media (max-width: 1100px) {
-  .glance-lookahead-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-  /* Days 6-7 fall off rather than squeezing every column thinner */
-  .glance-look-day:nth-child(n + 6) { display: none; }
-}
-
-/* ══════════════════════════════════════════
    NARROW (tablet portrait, half-width windows, phones) — single column
-   stack. Below ~1000px the two-column kiosk layout leaves Coming Up and
-   the Bulletin too thin to read, so everything goes full width.
+   stack. Below ~1000px the two-column kiosk layout leaves Further Out
+   and the Bulletin too thin to read, so everything goes full width.
+   (Between 1000 and 1100px the 7-day strip used to drop days 6-7; that
+   hid real events, and Further Out now assumes all 7 days are on
+   screen, so it keeps all 7 and lets a column widen to fit its longest
+   word instead.)
 ══════════════════════════════════════════ */
 
 @media (max-width: 1000px) {
   .glance-content {
     grid-template-columns: 1fr;
     /* Same no-scroll split as the wide layout, one column: Today up to
-       45%, Lookahead and Bulletin share the rest */
-    grid-template-rows: fit-content(45%) minmax(0, 1fr) minmax(0, 1fr);
+       40%, Lookahead and Bulletin share the rest — Lookahead the larger
+       part, since seven columns of events need more height than the
+       Bulletin's short notes */
+    grid-template-rows: fit-content(40%) minmax(0, 1.5fr) minmax(0, 1fr);
     grid-template-areas:
       "today"
       "lookahead"
@@ -634,11 +688,33 @@
     align-items: baseline;
     gap: 10px;
   }
-  .glance-look-day:nth-child(n + 6) { display: flex; }
   .glance-look-dayname { width: 68px; flex-shrink: 0; }
   .glance-look-events {
     flex-direction: row;
     flex-wrap: wrap;
     overflow: visible;
   }
+}
+
+/* ── Tappable events + details popup ── */
+.glance-tappable { cursor: pointer; }
+.glance-tappable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+.glance-event-modal { position: relative; width: min(420px, calc(100vw - 32px)); }
+.glance-event-modal-close {
+  position: absolute; top: 8px; right: 8px;
+  min-width: 40px; min-height: 40px;
+  background: none; border: none; color: var(--muted);
+  font-size: var(--fs-lg); cursor: pointer;
+}
+.glance-event-modal-kicker {
+  font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent5); font-weight: 700;
+}
+.glance-event-modal-title {
+  font-size: var(--fs-lg); font-weight: 700; color: var(--text);
+  line-height: 1.3; overflow-wrap: anywhere; padding-right: 32px;
+}
+.glance-event-modal-line {
+  font-size: var(--fs-md); color: var(--text); overflow-wrap: anywhere;
 }

@@ -46,10 +46,8 @@
 /* Per-tab accent overrides */
 .nav-tab[data-tab="parentals"].active       { color: var(--accent2); }
 .nav-tab[data-tab="parentals"].active::after { background: var(--accent2); }
-.nav-tab[data-tab="tori"].active            { color: var(--accent4); }
-.nav-tab[data-tab="tori"].active::after     { background: var(--accent4); }
-.nav-tab[data-tab="nova"].active            { color: var(--accent3); }
-.nav-tab[data-tab="nova"].active::after     { background: var(--accent3); }
+.nav-tab[data-tab="wishlists"].active       { color: var(--accent4); }
+.nav-tab[data-tab="wishlists"].active::after { background: var(--accent4); }
 .nav-tab[data-tab="fun"].active             { color: var(--accent5); }
 .nav-tab[data-tab="fun"].active::after      { background: var(--accent5); }
 

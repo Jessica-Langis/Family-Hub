@@ -36,37 +36,12 @@ export function parsePersonEvent(summary, name) {
   return m ? m[1].trim() : null
 }
 
-// Joint events like "Tori and Nova - Pizza Night" or "Nova & Tori: Dentist".
-// Returns the kid names the title opens with (2+), or null for anything
-// else — including single-kid titles, which parsePersonEvent handles.
-const KID_JOINER = '\\s*(?:,\\s*(?:and\\s+)?|&|\\+|\\band\\b)\\s*'
-export function parseJointEvent(summary) {
-  const names = KID_NAMES.join('|')
-  const re = new RegExp(`^\\s*((?:${names})(?:${KID_JOINER}(?:${names}))+)\\b`, 'i')
-  const m = String(summary || '').match(re)
-  if (!m) return null
-  const found = m[1].match(new RegExp(`\\b(?:${names})\\b`, 'gi'))
-  return KID_NAMES.filter(k => found.some(f => f.toLowerCase() === k.toLowerCase()))
-}
-
-// True if the kid's name appears anywhere in the title as a whole word
+// True if the person's name appears anywhere in the title as a whole word
 // ("Wrestling Meet - Tori", "Pick up Tori", "Dentist (Tori & Nova)") —
 // "Victoria" or "Toriyaki" don't count.
 export function mentionsPerson(summary, name) {
   if (!summary || !name) return false
   return new RegExp(`\\b${name}\\b`, 'i').test(String(summary))
-}
-
-// Title to show on a kid's own tab for a family-calendar event, or null if
-// the event isn't theirs. An event is theirs if their name appears anywhere
-// in the title. Single-kid "Tori - Dentist" style titles drop the name
-// prefix ("Dentist"); everything else (joint events, name mid-title) keeps
-// the full title so it still reads naturally.
-export function personEventTitle(summary, name) {
-  if (!mentionsPerson(summary, name)) return null
-  const full = String(summary).trim()
-  if (parseJointEvent(full)) return full
-  return parsePersonEvent(full, name) || full
 }
 
 // ── Shared calendar-event shape helpers ────────────────────────
@@ -80,6 +55,20 @@ export function evSummary(ev) {
 export function dateParts(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
+
+// "9:30 AM" → 570, "12:15 PM" → 735, for sorting. Times are strings like
+// the script sends them, and sorting those as text puts "1:00 PM" before
+// "12:00 PM" and "10:00 AM" before "9:00 AM". No time (all-day) sorts first.
+export function timeToMinutes(t) {
+  const m = String(t || '').match(/^\s*(\d{1,2}):(\d{2})\s*([AP])M/i)
+  if (!m) return -1
+  const h = (+m[1] % 12) + (m[3].toUpperCase() === 'P' ? 12 : 0)
+  return h * 60 + +m[2]
+}
+
+// Same-day events by start time, days in order
+export const byDateThenTime = (a, b) =>
+  a.date === b.date ? timeToMinutes(a.time) - timeToMinutes(b.time) : a.date.localeCompare(b.date)
 
 // ── Sports event detection ─────────────────────────────────────
 // Frontend-only, so the Google Calendar needs no special tagging.
@@ -99,26 +88,38 @@ export const SPORTS_KEYWORDS = [
 // "meet"/"meets" but not "meeting", and "match" also catches "matches".
 const SPORTS_RE = new RegExp(`\\b(?:${SPORTS_KEYWORDS.join('|')})(?:e?s)?\\b`, 'i')
 
+// Errands *for* a sports event ("Pick up Tori from practice", "Drive
+// Nova to the game") are a parent's job, not the event itself — no medal.
+const ERRAND_RE = /^\s*(?:pick[\s-]*up|drop[\s-]*off|drive|take|bring|get)\b/i
+
 export function hasSportsKeyword(text) {
-  return SPORTS_RE.test(String(text || ''))
+  const t = String(text || '')
+  return SPORTS_RE.test(t) && !ERRAND_RE.test(t)
 }
 
-export const KID_NAMES = ['Tori', 'Nova']
+// Everyone whose name on a calendar event earns a colored name tag
+// (colors: --person-* in tokens.css). Mirrored in the GAS digest
+// (DIGEST_PEOPLE) — keep the two in sync.
+export const EVENT_PEOPLE = ['Tori', 'Nova', 'Mom', 'Dad']
 
 // Returns { isSports, person, title } for a raw calendar summary.
-// `person` is only non-null when the title actually carries a kid's name;
+// `person` is only non-null when the title actually carries a name;
 // most family-calendar entries don't, so expect null and render around it.
 export function classifyEvent(summary) {
   const raw = String(summary || '').trim()
-  // A kid "owns" the event if their name appears anywhere in the title
-  // (same rule as personEventTitle). None, or more than one kid (a joint
-  // event), means no single badge — keep the full title.
-  const mentioned = KID_NAMES.filter(k => mentionsPerson(raw, k))
+  // A person "owns" the event if their name appears anywhere in the
+  // title. None, or more than one (a joint event like "Mom & Tori -
+  // Shopping"), means no single tag — keep the full title.
+  const mentioned = EVENT_PEOPLE.filter(k => mentionsPerson(raw, k))
   if (mentioned.length !== 1) return { isSports: hasSportsKeyword(raw), person: null, title: raw }
   const person = mentioned[0]
-  // "Tori - Dentist" drops the prefix; "Pick up Tori" stays as written
-  const title = parsePersonEvent(raw, person) || raw
-  return { isSports: hasSportsKeyword(title), person, title }
+  // "Tori - Dentist" drops the prefix; "Pick up Tori" stays as written.
+  // "Mom's birthday" → "Birthday", so a stripped title still reads as one.
+  const stripped = parsePersonEvent(raw, person)
+  const title = stripped ? stripped[0].toUpperCase() + stripped.slice(1) : raw
+  // Errand check runs on both the full title ("Pick up Tori from
+  // practice") and the stripped one ("Tori - Pick up uniform for practice")
+  return { isSports: hasSportsKeyword(raw) && !ERRAND_RE.test(title), person, title }
 }
 
 // ── Urgency ────────────────────────────────────────────────────
@@ -160,16 +161,18 @@ export function isStale(dateStr, timeStr) {
 // list). Only meaningful for a same-day event with a known start time;
 // anything else (a future day, or an all-day event with no clock time)
 // falls back to the same flat wording those other places use.
+// Tomorrow's events count too: once today is done, the Today tile
+// spotlights tomorrow, and "in 14 hours" says more than "TOMORROW" there.
 export function centerStageCountdown(dateStr, timeStr) {
   const d = getDayDiff(dateStr)
   if (isNaN(d)) return ''
-  if (d !== 0) return countdownLabel(dateStr) // center-stage is always today's own pick
-  if (!timeStr) return 'TODAY' // all-day event — no clock time to count down from
+  if (d < 0 || d > 1 || !timeStr) return countdownLabel(dateStr) // all-day: no clock time to count down from
 
   const start = new Date(`${dateStr} ${timeStr}`)
-  if (isNaN(start.getTime())) return 'TODAY'
+  if (isNaN(start.getTime())) return countdownLabel(dateStr)
 
   const minutes = Math.round((start - new Date()) / 60000)
+  if (minutes >= 24 * 60) return countdownLabel(dateStr) // a day+ out: hours stop meaning much
   if (minutes <= 0) return 'NOW' // already started, but not stale yet — see isCenterStageStale
   if (minutes < 60) return `in ${minutes} min`
   const hours = Math.round(minutes / 60)

@@ -1,0 +1,30 @@
+/* ── 2 × 2 grid of wishlist tiles — fills the screen, never scrolls on
+   tablet/desktop; useAutoFit scales each tile's text to its share ── */
+.wishlists-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.wishlists-cell { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.wishlists-cell .panel { flex: 1; }
+
+/* Each tile picks up its person's color (data-person, see global.css) */
+.wishlist-panel[data-person] { border-top: 3px solid var(--person); }
+.wishlist-panel[data-person] .section-title { color: var(--person); }
+.wishlist-panel[data-person] .reminder-dot { background: var(--person); }
+
+/* Phones: one column, page scrolls, each tile sized to its list */
+@media (max-width: 640px) {
+  .wishlists-content {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: minmax(180px, auto);
+    height: auto;
+    overflow: visible;
+  }
+}

@@ -96,6 +96,32 @@ The four items above (Today tile, hour/minute countdown, 20-min-past drop) are n
 
 - 2026-08-27: A small scrollbar was showing up inside the Today tile (right around the stack/Coming Up rows). Couldn't reproduce actual overflow in testing — checked `scrollHeight` vs `clientHeight` on every relevant element across 8 desktop sizes (1280×720 through 1920×1080) and a stress-tested "busy day" (5 today events + all-day banner, the `TODAY_CAP` max), all came back with 0px overflow. **Built — 2026-08-27:** fixed anyway by removing the possibility rather than chasing an exact repro — `.glance-today-stack` and `.glance-upcoming-list` in [Glance.css](src/pages/Glance/Glance.css) switched from `overflow-y: auto` to `overflow-y: hidden`. Both are already row-capped (`TODAY_CAP` / `UPCOMING_BEYOND_COUNT`, with a "+N more" indicator for the today stack), so content scrolling inside them was never actually the design — a stray scrollbar could only ever be a rounding artifact, not a real "more content" signal, and a wall-mounted kiosk isn't something anyone scrolls anyway.
 
+## Built — 2026-10-28
+
+- **Tap an event for details (At a Glance):** every event on the page (Today, Further Out, Next 7 Days) opens a popup with title, date, time range and location.
+- **Tori and Nova tabs → one Wishlists tab:** the kids rarely opened their pages. Their wishlists moved to a new Wishlists tab (2×2 grid) next to new Mom and Dad lists. The GAS script creates the `MomWishlist` / `DadWishlist` sheet tabs on first use. Tori's To Do tile, both Next Up tiles and Nova's joke went with the pages; kids' chores still show in And Stuff's To Do. Tori's personal reminders are still in the sheet but no longer shown anywhere.
+- **At a Glance review, items 1–4:**
+  1. Once nothing timed is left today, the Today tile spotlights **Tomorrow** (countdown in hours), with today's all-day items kept as an "Also today" line. If tomorrow is empty too it stays on today.
+  2. "Coming Up" duplicated the 7-day strip, so it became **Further Out**: the next 3 events after the 7-day window, with date and start time. Titles already in the strip (weekly repeats) are skipped; falls back to the next holiday past the window.
+  3. 7-day strip: name on its own line in the person's color, start time only, slightly larger text. Columns widen to fit their longest word (no more "Appointme / nt"); useAutoFit now also shrinks a tile's text when it overflows sideways, so all 7 columns fit at narrow widths. Tablets 1000–1100px keep all 7 days (they used to drop days 6–7, which hid events).
+  4. Each day in the strip shows its own forecast (icon, high, low); the duplicate weather in the strip header is gone. `useWeather` now always fetches 7 days and tags each with its date; the top bar trims to its own 5 (3 on phones).
+- **At a Glance review, item 5 — calendar freshness:** refreshes every 15 min (was hourly) and right away when the screen wakes after 15+ min. "Updated 4:12 PM" in the 7-day header turns into an amber "Calendar not updating · last …" when a load fails or data is 2h+ old. A failed load (network error, or the script returning an error object) now keeps the last good calendar instead of wiping it to "Nothing today"; before the first load the tiles say "Loading calendar…".
+- **Item 6 — polish:**
+  - Kiosk top bar is about half the height (136 → 73px at 1280×800): today's weather laid out sideways, tighter padding. Other tabs unchanged.
+  - Errands ("Pick up / Drop off / Drive / Take / Bring / Get …") never get the sports medal, even with a sports word in them; the person tag stays.
+  - Mom and Dad get name tags on calendar events, in their colors. Stripped titles are capitalized ("Mom's birthday" → MOM + "Birthday"). Same rules mirrored in the GAS digest (`DIGEST_PEOPLE`, `DIGEST_ERRAND_RE`, Mom/Dad colors) — redeploy the script for the email to pick them up.
+  - Removed `parseJointEvent` / `personEventTitle` / `KID_NAMES` from homeUtils.js — only the deleted kid pages used them.
+- **Code review of the day's changes — all 10 findings fixed:**
+  - Today tile stays on Today while an event is still in progress (uses end times; "Now" in the row), and a day with no timed events only switches to Tomorrow at noon. Over 24h away, the big text is the start time instead of "in 28 hours". Events still going aren't dropped by the 2h rule either.
+  - Further Out keys on person + title, so "Nova - Tournament" isn't hidden by "Tori - Tournament".
+  - Errand rule also checks the title after the name ("Tori - Pick up … practice"); mirrored in the digest.
+  - Weather re-checks every 30 min (a kiosk stays open for days), shares one request between the top bar and the 7-day strip, and uses local dates.
+  - When even the smallest text can't fit every column's longest word, useAutoFit marks the tile (`data-fit-overflow`) and the 7-day strip falls back to equal columns with long words breaking, instead of cutting off days.
+  - On a packed day, finished events drop off the front so the next one can't hide behind "+N more".
+  - First load failing says "Couldn't load the calendar" (not "Loading…" forever); no holiday fallback before the calendar loads.
+  - Wishlist reads no longer create sheet tabs (only adds do), and two devices creating the same tab at once is handled.
+  - Found while testing: same-day events were sorted by time *as text* ("1:00 PM" before "12:00 PM", "10:00 AM" before "9:00 AM") on both At a Glance and And Stuff. New `timeToMinutes` / `byDateThenTime` in homeUtils.js.
+
 ## Declined / no action needed
 
 - Kiosk sleep/dim schedule + idle-state photo slideshow — not wanted.

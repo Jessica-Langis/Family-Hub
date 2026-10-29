@@ -14,11 +14,14 @@ const POINTS_TTL_MS   = 30 * 24 * 60 * 60 * 1000
 // the fresh one comes in (stale-while-revalidate).
 const FORECAST_TTL_MS = 30 * 60 * 1000
 
+// Always fetches the full week (At a Glance shows a forecast per day in
+// its 7-day strip); the top bar trims to what it shows itself. "v2"
+// because each day now carries its date — older cached entries didn't.
+const FORECAST_DAYS = 7
+
 function forecastCacheKey() {
   const { lat, lon } = WEATHER_CONFIG
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-  const count    = isMobile ? 3 : 5
-  return `nws_forecast_${lat},${lon}_${count}`
+  return `nws_forecast_v2_${lat},${lon}`
 }
 
 function nwsToIcon(shortForecast) {
@@ -41,105 +44,119 @@ function nwsToIcon(shortForecast) {
   return '🌡️'
 }
 
+// Local yyyy-mm-dd (toISOString would give the UTC date)
+const localDate = d =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+// One forecast request at a time for the whole app — the top bar and At a
+// Glance's 7-day strip both use this hook, and on a cold cache they'd
+// otherwise each hit NWS at the same moment.
+let inflight = null
+
+function getForecast() {
+  const cached = cacheGet(forecastCacheKey(), FORECAST_TTL_MS)
+  if (cached) return Promise.resolve(cached)
+  if (!inflight) inflight = fetchForecast().finally(() => { inflight = null })
+  return inflight
+}
+
+async function fetchForecast() {
+  const forecastKey = forecastCacheKey()
+  const { lat, lon } = WEATHER_CONFIG
+
+  // Step 1 — resolve the NWS grid for this lat/lon. This never
+  // changes for a fixed home location, so skip the round trip
+  // entirely once we've resolved it once.
+  const pointsKey = `nws_points_${lat},${lon}`
+  let forecastUrl = cacheGet(pointsKey, POINTS_TTL_MS)
+  if (!forecastUrl) {
+    const pointsRes = await fetch(
+      `https://api.weather.gov/points/${lat},${lon}`,
+      { headers: NWS_HEADERS }
+    )
+    if (!pointsRes.ok) throw new Error(`NWS points ${pointsRes.status}`)
+    const pointsData = await pointsRes.json()
+    forecastUrl = pointsData.properties?.forecast
+    if (!forecastUrl) throw new Error('No forecast URL from NWS')
+    cacheSet(pointsKey, forecastUrl)
+  }
+
+  // Step 2 — fetch the daily forecast periods
+  const fxRes  = await fetch(forecastUrl, { headers: NWS_HEADERS })
+  if (!fxRes.ok) throw new Error(`NWS forecast ${fxRes.status}`)
+  const fxData = await fxRes.json()
+  const periods = fxData.properties?.periods
+  if (!periods?.length) throw new Error('No forecast periods')
+
+  // Build date → { high, low, icon, condition } from periods
+  // NWS splits into daytime (high) and nighttime (low) half-day periods
+  const byDate = new Map()
+  for (const p of periods) {
+    const dateStr = p.startTime.slice(0, 10)
+    if (!byDate.has(dateStr)) byDate.set(dateStr, {})
+    const entry = byDate.get(dateStr)
+    if (p.isDaytime) {
+      entry.high      = p.temperature
+      entry.icon      = nwsToIcon(p.shortForecast)
+      entry.condition = p.shortForecast
+    } else {
+      entry.low = p.temperature
+      // If today's first period is overnight (afternoon already passed),
+      // use night period for icon fallback
+      if (entry.icon == null) {
+        entry.icon      = nwsToIcon(p.shortForecast)
+        entry.condition = p.shortForecast
+      }
+    }
+  }
+
+  const today    = new Date(); today.setHours(0, 0, 0, 0)
+
+  const result = []
+  for (let i = 0; result.length < FORECAST_DAYS && i < 8; i++) {
+    const d       = new Date(today)
+    d.setDate(d.getDate() + i)
+    const dateStr = localDate(d)
+    const entry   = byDate.get(dateStr)
+    if (!entry) continue
+
+    const hi   = entry.high != null ? `${entry.high}°` : '—'
+    const lo   = entry.low  != null ? `${entry.low}°`  : '—'
+    const temp = `${hi} / ${lo}`
+
+    result.push({
+      date:      dateStr,
+      name:      i === 0 ? 'Today' : DAY_LABELS[d.getDay()],
+      high:      entry.high ?? null,
+      low:       entry.low  ?? null,
+      icon:      entry.icon      ?? '🌡️',
+      temp,
+      condition: entry.condition ?? '',
+    })
+  }
+
+  cacheSet(forecastKey, result)
+  return result
+}
+
 export function useWeather() {
   const [days,    setDays]    = useState(() => cacheGet(forecastCacheKey()) || [])
   const [loading, setLoading] = useState(() => !cacheGet(forecastCacheKey()))
   const [error,   setError]   = useState(null)
 
   useEffect(() => {
-    async function load() {
-      // Fresh cached forecast? Skip the network entirely.
-      const forecastKey = forecastCacheKey()
-      const cached = cacheGet(forecastKey, FORECAST_TTL_MS)
-      if (cached) {
-        setDays(cached)
-        setLoading(false)
-        return
-      }
-
-      try {
-        const { lat, lon } = WEATHER_CONFIG
-
-        // Step 1 — resolve the NWS grid for this lat/lon. This never
-        // changes for a fixed home location, so skip the round trip
-        // entirely once we've resolved it once.
-        const pointsKey = `nws_points_${lat},${lon}`
-        let forecastUrl = cacheGet(pointsKey, POINTS_TTL_MS)
-        if (!forecastUrl) {
-          const pointsRes = await fetch(
-            `https://api.weather.gov/points/${lat},${lon}`,
-            { headers: NWS_HEADERS }
-          )
-          if (!pointsRes.ok) throw new Error(`NWS points ${pointsRes.status}`)
-          const pointsData = await pointsRes.json()
-          forecastUrl = pointsData.properties?.forecast
-          if (!forecastUrl) throw new Error('No forecast URL from NWS')
-          cacheSet(pointsKey, forecastUrl)
-        }
-
-        // Step 2 — fetch the daily forecast periods
-        const fxRes  = await fetch(forecastUrl, { headers: NWS_HEADERS })
-        if (!fxRes.ok) throw new Error(`NWS forecast ${fxRes.status}`)
-        const fxData = await fxRes.json()
-        const periods = fxData.properties?.periods
-        if (!periods?.length) throw new Error('No forecast periods')
-
-        // Build date → { high, low, icon, condition } from periods
-        // NWS splits into daytime (high) and nighttime (low) half-day periods
-        const byDate = new Map()
-        for (const p of periods) {
-          const dateStr = p.startTime.slice(0, 10)
-          if (!byDate.has(dateStr)) byDate.set(dateStr, {})
-          const entry = byDate.get(dateStr)
-          if (p.isDaytime) {
-            entry.high      = p.temperature
-            entry.icon      = nwsToIcon(p.shortForecast)
-            entry.condition = p.shortForecast
-          } else {
-            entry.low = p.temperature
-            // If today's first period is overnight (afternoon already passed),
-            // use night period for icon fallback
-            if (entry.icon == null) {
-              entry.icon      = nwsToIcon(p.shortForecast)
-              entry.condition = p.shortForecast
-            }
-          }
-        }
-
-        const isMobile = window.innerWidth <= 768
-        const count    = isMobile ? 3 : 5
-        const today    = new Date(); today.setHours(0, 0, 0, 0)
-
-        const result = []
-        for (let i = 0; result.length < count && i < 8; i++) {
-          const d       = new Date(today)
-          d.setDate(d.getDate() + i)
-          const dateStr = d.toISOString().slice(0, 10)
-          const entry   = byDate.get(dateStr)
-          if (!entry) continue
-
-          const hi   = entry.high != null ? `${entry.high}°` : '—'
-          const lo   = entry.low  != null ? `${entry.low}°`  : '—'
-          const temp = `${hi} / ${lo}`
-
-          result.push({
-            name:      i === 0 ? 'Today' : DAY_LABELS[d.getDay()],
-            icon:      entry.icon      ?? '🌡️',
-            temp,
-            condition: entry.condition ?? '',
-          })
-        }
-
-        setDays(result)
-        cacheSet(forecastKey, result)
-      } catch (e) {
-        setError(e.message)
-      } finally {
-        setLoading(false)
-      }
-    }
+    let alive = true
+    const load = () => getForecast()
+      .then(result => { if (alive) { setDays(result); setError(null) } })
+      .catch(e => { if (alive) setError(e.message) })
+      .finally(() => { if (alive) setLoading(false) })
 
     load()
+    // A wall kiosk stays open for days: re-check every FORECAST_TTL so the
+    // forecast (and which day is "Today") keeps up. Cheap when the cache
+    // is still fresh — getForecast doesn't touch the network then.
+    const id = setInterval(load, FORECAST_TTL_MS)
+    return () => { alive = false; clearInterval(id) }
   }, [])
 
   return { days, loading, error }

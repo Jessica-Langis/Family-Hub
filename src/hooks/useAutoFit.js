@@ -52,9 +52,12 @@ function clippersOf(el) {
 }
 
 // Strict (no 1px tolerance): a "fits by rounding" tile would grow a
-// scrollbar once restored, wrap a line, and genuinely overflow
+// scrollbar once restored, wrap a line, and genuinely overflow.
+// Width counts too: a grid whose columns are as wide as their longest
+// word (At a Glance's 7-day strip) can only fit a narrow tile by
+// shrinking the text, and it would otherwise just get cut off the side.
 function overflowsNow(el, clippers = clippersOf(el)) {
-  return el.scrollHeight > el.clientHeight ||
+  return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth ||
     clippers.some(c => c.scrollHeight > c.clientHeight)
 }
 
@@ -62,6 +65,9 @@ function fitTile(el) {
   if (!el.isConnected || el.clientHeight === 0) return  // hidden tab
   const setFit = (v) => el.style.setProperty('--fit', String(v))
 
+  // data-fit-overflow marks a tile that doesn't fit even at the floor, so
+  // its CSS can fall back to something cruder (e.g. breaking long words)
+  el.removeAttribute('data-fit-overflow')
   setFit(1)
   if (window.matchMedia(PHONE_QUERY).matches) return
 
@@ -102,6 +108,7 @@ function fitTile(el) {
     fit = Math.max(floor, fit - 0.01)
     setFit(fit)
   }
+  if (fit === floor && overflows()) el.setAttribute('data-fit-overflow', '')
 }
 
 export default function useAutoFit() {

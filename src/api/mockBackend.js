@@ -67,15 +67,21 @@ let booksStore = [
   { id: 2, title: 'Percy Jackson', author: 'Rick Riordan', category: '' },
 ]
 
-let toriWishlistStore = [
-  { id: 1, text: 'Nintendo Switch game — Mario Kart' },
-  { id: 2, text: 'New soccer cleats' },
-]
-
-let novaWishlistStore = [
-  { id: 1, text: 'Lego space set' },
-  { id: 2, text: 'Art supplies' },
-]
+// One list per person, keyed by the same type the app sends
+const wishlistStores = {
+  tori_wishlist: [
+    { id: 1, text: 'Nintendo Switch game — Mario Kart' },
+    { id: 2, text: 'New soccer cleats' },
+  ],
+  nova_wishlist: [
+    { id: 1, text: 'Lego space set' },
+    { id: 2, text: 'Art supplies' },
+  ],
+  mom_wishlist: [
+    { id: 1, text: 'Cozy reading blanket' },
+  ],
+  dad_wishlist: [],
+}
 
 let toriEventsStore = [
   { id: 1, name: 'Regional Wrestling Qualifier', type: 'Tournament', date: daysFromToday(9), location: 'Central High School' },
@@ -158,7 +164,7 @@ const CAL_TEMPLATES = [
   { offset: 0,  summary: 'Tori - Dentist Appointment',        isAllDay: false, startTime: '3:30 PM',  endTime: '4:15 PM',  location: 'Family Dental' },
   { offset: 1,  summary: 'Nova - Soccer Practice',            isAllDay: false, startTime: '5:00 PM',  endTime: '6:00 PM',  location: 'Lincoln Park' },
   { offset: 2,  summary: 'Family Movie Night',                isAllDay: true  },
-  // Name mid-title (no "Tori - " prefix) — still shows on Tori's Next Up
+  // Name mid-title (no "Tori - " prefix) — still tagged Tori; an errand, so no sports medal
   { offset: 3,  summary: 'Pick up Tori from practice',         isAllDay: false, startTime: '5:00 PM',  endTime: '5:30 PM',  location: 'Central High School' },
   { offset: 4,  summary: 'Tori - Wrestling Meet',             isAllDay: false, startTime: '6:00 PM',  endTime: '8:30 PM',  location: 'Central High School' },
   { offset: 7,  summary: 'Nova - Piano Recital',               isAllDay: false, startTime: '4:00 PM',  endTime: '5:00 PM',  location: 'Community Center' },
@@ -194,8 +200,7 @@ function handleGet(base, params) {
     if (type === 'bulletin')      return [...bulletinStore]
     if (type === 'movies')        return [...moviesStore]
     if (type === 'books')         return [...booksStore]
-    if (type === 'tori_wishlist') return [...toriWishlistStore]
-    if (type === 'nova_wishlist') return [...novaWishlistStore]
+    if (wishlistStores[type]) return [...wishlistStores[type]]
     if (type === 'mealideas')     return [...mealIdeasStore]
     if (type === 'upcoming')      return buildUpcoming(parseInt(params.get('days') || '31', 10))
     return { error: 'unknown mock type: ' + type }
@@ -323,9 +328,9 @@ function handlePost(base, fields) {
       }
     }
 
-    if (type === 'tori_wishlist' || type === 'nova_wishlist') {
-      const store = type === 'tori_wishlist' ? toriWishlistStore : novaWishlistStore
-      const setStore = (next) => { if (type === 'tori_wishlist') toriWishlistStore = next; else novaWishlistStore = next }
+    if (wishlistStores[type]) {
+      const store = wishlistStores[type]
+      const setStore = (next) => { wishlistStores[type] = next }
       if (action === 'add') {
         store.push({ id: nextIdFor(store), text: fields.text || '' })
         return { status: 'ok' }
