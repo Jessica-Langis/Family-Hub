@@ -65,6 +65,9 @@ function fitTile(el) {
   if (!el.isConnected || el.clientHeight === 0) return  // hidden tab
   const setFit = (v) => el.style.setProperty('--fit', String(v))
 
+  // data-fit-overflow marks a tile that doesn't fit even at the floor, so
+  // its CSS can fall back to something cruder (e.g. breaking long words)
+  el.removeAttribute('data-fit-overflow')
   setFit(1)
   if (window.matchMedia(PHONE_QUERY).matches) return
 
@@ -105,6 +108,7 @@ function fitTile(el) {
     fit = Math.max(floor, fit - 0.01)
     setFit(fit)
   }
+  if (fit === floor && overflows()) el.setAttribute('data-fit-overflow', '')
 }
 
 export default function useAutoFit() {

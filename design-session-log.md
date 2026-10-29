@@ -111,6 +111,16 @@ The four items above (Today tile, hour/minute countdown, 20-min-past drop) are n
   - Errands ("Pick up / Drop off / Drive / Take / Bring / Get …") never get the sports medal, even with a sports word in them; the person tag stays.
   - Mom and Dad get name tags on calendar events, in their colors. Stripped titles are capitalized ("Mom's birthday" → MOM + "Birthday"). Same rules mirrored in the GAS digest (`DIGEST_PEOPLE`, `DIGEST_ERRAND_RE`, Mom/Dad colors) — redeploy the script for the email to pick them up.
   - Removed `parseJointEvent` / `personEventTitle` / `KID_NAMES` from homeUtils.js — only the deleted kid pages used them.
+- **Code review of the day's changes — all 10 findings fixed:**
+  - Today tile stays on Today while an event is still in progress (uses end times; "Now" in the row), and a day with no timed events only switches to Tomorrow at noon. Over 24h away, the big text is the start time instead of "in 28 hours". Events still going aren't dropped by the 2h rule either.
+  - Further Out keys on person + title, so "Nova - Tournament" isn't hidden by "Tori - Tournament".
+  - Errand rule also checks the title after the name ("Tori - Pick up … practice"); mirrored in the digest.
+  - Weather re-checks every 30 min (a kiosk stays open for days), shares one request between the top bar and the 7-day strip, and uses local dates.
+  - When even the smallest text can't fit every column's longest word, useAutoFit marks the tile (`data-fit-overflow`) and the 7-day strip falls back to equal columns with long words breaking, instead of cutting off days.
+  - On a packed day, finished events drop off the front so the next one can't hide behind "+N more".
+  - First load failing says "Couldn't load the calendar" (not "Loading…" forever); no holiday fallback before the calendar loads.
+  - Wishlist reads no longer create sheet tabs (only adds do), and two devices creating the same tab at once is handled.
+  - Found while testing: same-day events were sorted by time *as text* ("1:00 PM" before "12:00 PM", "10:00 AM" before "9:00 AM") on both At a Glance and And Stuff. New `timeToMinutes` / `byDateThenTime` in homeUtils.js.
 
 ## Declined / no action needed
 

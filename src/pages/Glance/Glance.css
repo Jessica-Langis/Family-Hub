@@ -274,6 +274,8 @@
   flex-shrink: 0;
   white-space: nowrap;
 }
+/* An event that has started and is still going reads "Now" */
+.glance-today-row-time.is-now { color: var(--accent); font-weight: 700; }
 
 .glance-today-row-person,
 .glance-today-person {
@@ -458,6 +460,13 @@
   grid-template-columns: repeat(7, minmax(min-content, 1fr));
   gap: 8px;
 }
+/* Last resort, when even the smallest text can't fit every column's
+   longest word (useAutoFit sets data-fit-overflow): equal columns, and
+   long words break, rather than days getting cut off the right edge */
+.glance-lookahead-card[data-fit-overflow] .glance-lookahead-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.glance-lookahead-card[data-fit-overflow] .glance-look-ev-title { overflow-wrap: anywhere; }
 
 .glance-look-day {
   display: flex;

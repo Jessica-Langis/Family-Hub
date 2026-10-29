@@ -5,7 +5,7 @@ import useAutoFit from '../../hooks/useAutoFit'
 import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale,
+  centerStageCountdown, isCenterStageStale, byDateThenTime,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -51,10 +51,12 @@ import Icon from '../../components/Icon/Icon'
 // so everything visibly ranks off the one event that matters most.
 //
 // 2026-10-28: three changes from a review of the page as a walk-by screen.
-//   • Once nothing timed is left today (or there never was anything),
-//     the Today tile spotlights Tomorrow instead of a dimmed list of
-//     what already happened — evenings are when tomorrow matters. Today's
-//     all-day items stay up as a small "Also today" line.
+//   • Once today's timed events are all over (using their end times, so
+//     a long game still in progress keeps today up), the Today tile
+//     spotlights Tomorrow instead of a dimmed list of what already
+//     happened — evenings are when tomorrow matters. A day with no timed
+//     events at all switches at noon. Today's all-day items stay up as a
+//     small "Also today" line.
 //   • "Coming Up" duplicated the 7-day strip right below it. It's now
 //     "Further Out": the next few events *after* the 7-day window, with
 //     their dates, so big things show up early. Recurring events already
@@ -95,19 +97,46 @@ function shortDate(dateStr) {
     : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
+// True once a timed event has finished. Uses its end time when the
+// calendar gives one (an event running past midnight ends the next day);
+// otherwise falls back to isStale's 2h-after-start rule.
+function isOver(e) {
+  if (!e.time) return false
+  if (!e.endTime) return isStale(e.date, e.time)
+  const start = new Date(`${e.date} ${e.time}`)
+  const end   = new Date(`${e.date} ${e.endTime}`)
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return isStale(e.date, e.time)
+  if (end < start) end.setDate(end.getDate() + 1)
+  return new Date() >= end
+}
+const isInProgress = e => !!e.time && isCenterStageStale(e.date, e.time) && !isOver(e)
+
 // One day's timed events → the stack TodayTile draws, with the closest
 // still-relevant one flagged as center stage — "relevant" meaning not yet
-// 20 min past its start (see isCenterStageStale).
+// 20 min past its start (see isCenterStageStale). On a packed day, events
+// that are already over drop off the front first, so the next one can't
+// end up hidden behind "+N more".
 function buildStack(timed) {
-  const centerIdx = timed.findIndex(e => !isCenterStageStale(e.date, e.time))
+  let visible = timed
+  while (visible.length > TODAY_CAP && isOver(visible[0])) visible = visible.slice(1)
+  const centerIdx = visible.findIndex(e => !isCenterStageStale(e.date, e.time))
   return {
-    events: timed.slice(0, TODAY_CAP).map((e, i) => ({
-      ...e,
-      isCenterStage: i === centerIdx,
-      isPast: isCenterStageStale(e.date, e.time),
-      countdown: i === centerIdx ? centerStageCountdown(e.date, e.time) : null,
-    })),
-    overflow: Math.max(0, timed.length - TODAY_CAP),
+    events: visible.slice(0, TODAY_CAP).map((e, i) => {
+      let countdown = i === centerIdx ? centerStageCountdown(e.date, e.time) : null
+      // More than a day out, the hours count stops meaning much — show
+      // the start time big instead ("5:00 PM" under a "Tomorrow" label)
+      const timeAsCountdown = countdown === 'TOMORROW'
+      if (timeAsCountdown) countdown = e.time
+      return {
+        ...e,
+        isCenterStage: i === centerIdx,
+        isPast: isOver(e),
+        inProgress: isInProgress(e),
+        countdown,
+        timeAsCountdown,
+      }
+    }),
+    overflow: Math.max(0, visible.length - TODAY_CAP),
   }
 }
 
@@ -115,7 +144,7 @@ function buildStack(timed) {
 // `tick` isn't read below — it's a plain re-render trigger (see Glance())
 // so the Today tile's minute-level countdown keeps advancing between the
 // calendar refetches instead of sitting frozen.
-function useGlanceEvents(calDays, tick) {
+function useGlanceEvents(calDays, loaded, tick) {
   return useMemo(() => {
     const today    = new Date(); today.setHours(0, 0, 0, 0)
     const todayStr = dateParts(today)
@@ -129,18 +158,16 @@ function useGlanceEvents(calDays, tick) {
       ;(d.events || []).forEach(ev => {
         const time = ev.isAllDay === false && ev.startTime ? ev.startTime : null
         const endTime = ev.isAllDay === false && ev.endTime ? ev.endTime : null
-        if (isStale(d.date, time)) return
+        // Drop a timed event 2h after its start — unless it's still
+        // going (a 3-hour meet stays up until it ends)
+        if (isStale(d.date, time) && isOver({ date: d.date, time, endTime })) return
         const { isSports, person, title } = classifyEvent(evSummary(ev))
         const location = typeof ev === 'string' ? '' : (ev.location || '')
         all.push({ date: d.date, time, endTime, title, person, isSports, location })
       })
     })
 
-    all.sort((a, b) =>
-      a.date === b.date
-        ? (a.time || '').localeCompare(b.time || '')
-        : a.date.localeCompare(b.date)
-    )
+    all.sort(byDateThenTime)
 
     const todayRaw    = all.filter(e => e.date === todayStr)
     const tomorrowRaw = all.filter(e => e.date === tomorrowStr)
@@ -151,12 +178,14 @@ function useGlanceEvents(calDays, tick) {
     // bump a still-upcoming timed event out of the spotlight.
     const todayAllDay = todayRaw.filter(e => !e.time)
 
-    // Spotlight today while something timed is still to come (or only
-    // just started); otherwise move on to tomorrow, as long as tomorrow
-    // has anything at all. With nothing tomorrow either, stay on today
-    // so the tile isn't blank.
-    const todayLeft  = todayRaw.some(e => e.time && !isCenterStageStale(e.date, e.time))
-    const isTomorrow = !todayLeft && tomorrowRaw.length > 0
+    // Spotlight today while something timed is still to come or still
+    // going; once today's timed events are all over, move on to tomorrow
+    // (if it has anything). A day with no timed events at all stays on
+    // today until noon, so the morning doesn't open on tomorrow.
+    const todayTimed = todayRaw.filter(e => e.time)
+    const todayLeft  = todayTimed.some(e => !isOver(e))
+    const dayIsDone  = todayTimed.length > 0 || new Date().getHours() >= 12
+    const isTomorrow = !todayLeft && dayIsDone && tomorrowRaw.length > 0
     const spotRaw    = isTomorrow ? tomorrowRaw : todayRaw
     const stack      = buildStack(spotRaw.filter(e => e.time))
     const spotlight  = {
@@ -170,8 +199,10 @@ function useGlanceEvents(calDays, tick) {
 
     // "Further Out" — the next few events after the 7-day strip, one per
     // title. A title that already shows in the strip is a recurring event
-    // the family can already see, so it's skipped.
-    const key = e => e.title.toLowerCase()
+    // the family can already see, so it's skipped. The person is part of
+    // the key — "Tori - Tournament" and "Nova - Tournament" both have the
+    // title "Tournament" but aren't the same event.
+    const key = e => `${e.person || ''}|${e.title}`.toLowerCase()
     const inStrip = new Set(all.filter(e => e.date < cutoffStr).map(key))
     const seen = new Set()
     let furtherOut = all.filter(e => {
@@ -179,7 +210,9 @@ function useGlanceEvents(calDays, tick) {
       seen.add(key(e))
       return true
     }).slice(0, FURTHER_OUT_COUNT)
-    if (furtherOut.length === 0) {
+    // Holiday fallback only once the calendar has loaded — before that,
+    // an empty list just means "not here yet"
+    if (furtherOut.length === 0 && loaded) {
       const h = getNextUSHolidays(4).find(h => dateParts(h.date) >= cutoffStr)
       if (h) furtherOut = [{ date: dateParts(h.date), time: null, title: h.name, person: null, isSports: false, location: '' }]
     }
@@ -200,7 +233,7 @@ function useGlanceEvents(calDays, tick) {
 
     return { spotlight, furtherOut, lookahead }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calDays, tick])
+  }, [calDays, loaded, tick])
 }
 
 // ── Error Boundary ────────────────────────────────────────────
@@ -231,10 +264,10 @@ class GlanceErrorBoundary extends Component {
 // still-relevant one gets center stage, already-passed ones stay in the
 // stack but dim out); right side shows what's coming after the 7-day
 // strip, so the two tiles never repeat each other.
-function TodayTile({ spotlight, furtherOut, loaded, onOpen }) {
+function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
   const { label, allDay, events, overflow, alsoToday } = spotlight
   // Before the first load lands, "Nothing today" would be a lie
-  const emptyMsg = msg => loaded ? msg : 'Loading calendar…'
+  const emptyMsg = msg => loaded ? msg : loadFailed ? "Couldn't load the calendar" : 'Loading calendar…'
   const hasTimed = events.length > 0
   const fitRef = useAutoFit()
 
@@ -286,7 +319,7 @@ function TodayTile({ spotlight, furtherOut, loaded, onOpen }) {
                       )}
                       {ev.title}
                     </div>
-                    {ev.time && <div className="glance-today-center-time">{ev.time}</div>}
+                    {ev.time && !ev.timeAsCountdown && <div className="glance-today-center-time">{ev.time}</div>}
                   </>
                 ) : (
                   <>
@@ -294,7 +327,9 @@ function TodayTile({ spotlight, furtherOut, loaded, onOpen }) {
                       <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
                     )}
                     <span className="glance-today-row-title">{ev.title}</span>
-                    <span className="glance-today-row-time">{ev.time || 'All day'}</span>
+                    <span className={`glance-today-row-time${ev.inProgress ? ' is-now' : ''}`}>
+                      {ev.inProgress ? 'Now' : (ev.time || 'All day')}
+                    </span>
                   </>
                 )}
               </div>
@@ -516,12 +551,12 @@ export default function Glance() {
     return () => clearInterval(id)
   }, [])
 
-  const { spotlight, furtherOut, lookahead } = useGlanceEvents(calDays, tick)
+  const { spotlight, furtherOut, lookahead } = useGlanceEvents(calDays, !!lastUpdated, tick)
 
   return (
     <GlanceErrorBoundary>
       <div className="glance-content">
-        <TodayTile spotlight={spotlight} furtherOut={furtherOut} loaded={!!lastUpdated} onOpen={setSelected} />
+        <TodayTile spotlight={spotlight} furtherOut={furtherOut} loaded={!!lastUpdated} loadFailed={loadFailed} onOpen={setSelected} />
         <LookaheadCard days={lookahead} status={{ lastUpdated, loadFailed }} onOpen={setSelected} />
         <div className="glance-col-bulletin">
           <BulletinPanel

@@ -105,11 +105,21 @@ var WISHLIST_SHEETS = {
   mom_wishlist:  'MomWishlist',
   dad_wishlist:  'DadWishlist'
 };
-// Creates the tab if it doesn't exist yet, so adding Mom/Dad lists
-// needs no manual sheet setup.
-function getWishlistSheet(type) {
+// Creates the tab on first add, so Mom/Dad lists need no manual sheet
+// setup. Reads never create it (a missing tab is just an empty list). If
+// two devices add at the same moment, the second insertSheet throws
+// because the tab now exists — fall back to the one that was created.
+function getOrCreateWishlistSheet(type) {
   var name = WISHLIST_SHEETS[type];
-  return getSheet(name) || SpreadsheetApp.openById(SS_ID).insertSheet(name);
+  var sheet = getSheet(name);
+  if (sheet) return sheet;
+  try {
+    return SpreadsheetApp.openById(SS_ID).insertSheet(name);
+  } catch (err) {
+    sheet = getSheet(name);
+    if (sheet) return sheet;
+    throw err;
+  }
 }
 function json(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
@@ -294,7 +304,8 @@ function doGet(e) {
 
   // ── WISHLISTS (TORI / NOVA / MOM / DAD) ──
   if (WISHLIST_SHEETS.hasOwnProperty(type)) {
-    var sheet = getWishlistSheet(type);
+    var sheet = getSheet(WISHLIST_SHEETS[type]);
+    if (!sheet) return json([]);
     var rows = sheet.getDataRange().getValues();
     var result = [];
     for (var i = 0; i < rows.length; i++) {
@@ -689,7 +700,8 @@ function doPost(e) {
 
   // ── WISHLISTS (TORI / NOVA / MOM / DAD) ──
   if (WISHLIST_SHEETS.hasOwnProperty(type)) {
-    var sheet = getWishlistSheet(type);
+    var sheet = action === 'add' ? getOrCreateWishlistSheet(type) : getSheet(WISHLIST_SHEETS[type]);
+    if (!sheet) return json({ error: WISHLIST_SHEETS[type] + ' tab not found' });
     if (action === 'add') {
       sheet.appendRow([p.text || '']);
       return json({ status: 'ok' });
@@ -874,7 +886,8 @@ function digestClassifyEvent(summary) {
   // "Mom's birthday" → "Birthday"
   var stripped = digestParsePersonEvent(raw, person);
   var title = stripped ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : raw;
-  return { isSports: digestHasSportsKeyword(raw), person: person, title: title };
+  // Errand check on both the full and the stripped title — see homeUtils.js
+  return { isSports: digestHasSportsKeyword(raw) && !DIGEST_ERRAND_RE.test(title), person: person, title: title };
 }
 
 // Same hex values as src/styles/tokens.css (--person-*), so the email's

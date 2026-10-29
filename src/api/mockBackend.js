@@ -164,7 +164,7 @@ const CAL_TEMPLATES = [
   { offset: 0,  summary: 'Tori - Dentist Appointment',        isAllDay: false, startTime: '3:30 PM',  endTime: '4:15 PM',  location: 'Family Dental' },
   { offset: 1,  summary: 'Nova - Soccer Practice',            isAllDay: false, startTime: '5:00 PM',  endTime: '6:00 PM',  location: 'Lincoln Park' },
   { offset: 2,  summary: 'Family Movie Night',                isAllDay: true  },
-  // Name mid-title (no "Tori - " prefix) — still shows on Tori's Next Up
+  // Name mid-title (no "Tori - " prefix) — still tagged Tori; an errand, so no sports medal
   { offset: 3,  summary: 'Pick up Tori from practice',         isAllDay: false, startTime: '5:00 PM',  endTime: '5:30 PM',  location: 'Central High School' },
   { offset: 4,  summary: 'Tori - Wrestling Meet',             isAllDay: false, startTime: '6:00 PM',  endTime: '8:30 PM',  location: 'Central High School' },
   { offset: 7,  summary: 'Nova - Piano Recital',               isAllDay: false, startTime: '4:00 PM',  endTime: '5:00 PM',  location: 'Community Center' },

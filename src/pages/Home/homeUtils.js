@@ -56,6 +56,20 @@ export function dateParts(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+// "9:30 AM" → 570, "12:15 PM" → 735, for sorting. Times are strings like
+// the script sends them, and sorting those as text puts "1:00 PM" before
+// "12:00 PM" and "10:00 AM" before "9:00 AM". No time (all-day) sorts first.
+export function timeToMinutes(t) {
+  const m = String(t || '').match(/^\s*(\d{1,2}):(\d{2})\s*([AP])M/i)
+  if (!m) return -1
+  const h = (+m[1] % 12) + (m[3].toUpperCase() === 'P' ? 12 : 0)
+  return h * 60 + +m[2]
+}
+
+// Same-day events by start time, days in order
+export const byDateThenTime = (a, b) =>
+  a.date === b.date ? timeToMinutes(a.time) - timeToMinutes(b.time) : a.date.localeCompare(b.date)
+
 // ── Sports event detection ─────────────────────────────────────
 // Frontend-only, so the Google Calendar needs no special tagging.
 //
@@ -103,9 +117,9 @@ export function classifyEvent(summary) {
   // "Mom's birthday" → "Birthday", so a stripped title still reads as one.
   const stripped = parsePersonEvent(raw, person)
   const title = stripped ? stripped[0].toUpperCase() + stripped.slice(1) : raw
-  // Sports check runs on the full title so an errand prefix ("Pick up
-  // Tori from practice") is still seen
-  return { isSports: hasSportsKeyword(raw), person, title }
+  // Errand check runs on both the full title ("Pick up Tori from
+  // practice") and the stripped one ("Tori - Pick up uniform for practice")
+  return { isSports: hasSportsKeyword(raw) && !ERRAND_RE.test(title), person, title }
 }
 
 // ── Urgency ────────────────────────────────────────────────────
@@ -158,6 +172,7 @@ export function centerStageCountdown(dateStr, timeStr) {
   if (isNaN(start.getTime())) return countdownLabel(dateStr)
 
   const minutes = Math.round((start - new Date()) / 60000)
+  if (minutes >= 24 * 60) return countdownLabel(dateStr) // a day+ out: hours stop meaning much
   if (minutes <= 0) return 'NOW' // already started, but not stale yet — see isCenterStageStale
   if (minutes < 60) return `in ${minutes} min`
   const hours = Math.round(minutes / 60)
