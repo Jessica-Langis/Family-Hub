@@ -1,3 +1,7 @@
+// ── Calendar & date helpers ──────────────────────────────────────
+// Shared by every page: date formatting, countdown wording, calendar
+// event classification (who it's for, sports or not) and US holidays.
+
 // ── Date helpers ────────────────────────────────────────────
 export const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 export const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
@@ -49,9 +53,7 @@ export function mentionsPerson(summary, name) {
 }
 
 // ── Shared calendar-event shape helpers ────────────────────────
-// Calendar payloads come back either as bare strings or as objects, so
-// every consumer needs these two. They used to be redefined in Glance,
-// TwoWeekCalendar and Unwind independently.
+// Calendar payloads come back either as bare strings or as objects.
 export function evSummary(ev) {
   return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
 }
@@ -103,8 +105,8 @@ export function hasSportsKeyword(text) {
 }
 
 // Everyone whose name on a calendar event earns a colored name tag
-// (colors: --person-* in tokens.css). Mirrored in the GAS digest
-// (DIGEST_PEOPLE) — keep the two in sync.
+// (colors: --person-* in tokens.css). PersonTag uses the same list.
+// Mirrored in the GAS digest (DIGEST_PEOPLE) — keep the two in sync.
 export const EVENT_PEOPLE = ['Tori', 'Nova', 'Mom', 'Dad']
 
 // Returns { isSports, person, title } for a raw calendar summary.
@@ -137,9 +139,8 @@ export function urgencyClass(dateStr) {
   return 'later'
 }
 
-// "TODAY" / "TOMORROW" / "N DAYS" — shared between At a Glance's Hero tile
-// and And Stuff's Upcoming Events list so the two can't drift out of sync
-// on wording.
+// "TODAY" / "TOMORROW" / "N DAYS" — the day-level countdown wording used
+// across the app (event pop-ups, Further Out, Upcoming Events).
 export function countdownLabel(dateStr) {
   const d = getDayDiff(dateStr)
   if (isNaN(d)) return ''

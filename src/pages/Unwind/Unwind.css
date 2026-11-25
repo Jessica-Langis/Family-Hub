@@ -175,11 +175,7 @@
 }
 .fun-delete:hover { color: #e07070; }
 
-/* Chore row checkmark/edit/delete icons now live in global.css
-   (.chore-check-btn / .chore-edit-btn / .chore-delete-btn) so the same
-   thumb-sized buttons are shared across And Stuff, Tori, and Nova. */
-
-/* ── Grocery (moved from Home) ── */
+/* ── Grocery ── */
 .quick-add-spinner {
   font-size: var(--fs-sm); color: var(--muted);
   min-width: 14px; text-align: center;

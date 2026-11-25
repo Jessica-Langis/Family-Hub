@@ -239,9 +239,8 @@ button {
   opacity: 0.6;
 }
 
-/* ── Chore row actions: checkmark, edit, delete (in that order) ──
-   Sized for thumbs first — this app runs mostly on phones — so every
-   button gets a real tap target instead of a tiny hover-only icon. */
+/* ── Chore row check button — a real tap target for fingers, not a tiny
+   hover-only icon (edit and delete live in the details pop-up) ── */
 .chore-item-actions {
   display: flex;
   align-items: center;
@@ -592,8 +591,8 @@ button {
 .fun-overlay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ══════════════════════════════════════════
-   URGENCY TINTS — shared by At a Glance's Hero tile and And Stuff's
-   Upcoming Events list. today = warm amber · tomorrow = blue · 2+ days = muted
+   URGENCY TINTS — And Stuff's Upcoming Events list.
+   today = warm amber · tomorrow = blue · 2+ days = muted
    ══════════════════════════════════════════ */
 .urgency-today    { --urgency: var(--accent);  }
 .urgency-tomorrow { --urgency: var(--accent2); }

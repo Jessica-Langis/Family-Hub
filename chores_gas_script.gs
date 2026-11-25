@@ -826,7 +826,7 @@ function listMyCalendars() {
 //  See the header comment at the top of this file for one-time setup.
 // ═══════════════════════════════════════════════════════════════
 
-// Mirrors src/pages/Home/homeUtils.js on the frontend (EVENT_PEOPLE,
+// Mirrors src/utils/calendar.js on the frontend (EVENT_PEOPLE,
 // SPORTS_KEYWORDS, ERRAND_RE, parsePersonEvent, classifyEvent) so a "Tori - Dentist
 // Appointment" event reads the same way in the email as it does on the
 // At A Glance page — kid name pulled out as a badge, sport keyword
@@ -843,7 +843,7 @@ var DIGEST_SPORTS_RE = new RegExp(
 );
 
 // Errands for a sports event ("Pick up Tori from practice") aren't the
-// event itself — see homeUtils.js's ERRAND_RE.
+// event itself — see calendar.js's ERRAND_RE.
 var DIGEST_ERRAND_RE = /^\s*(?:pick[\s-]*up|drop[\s-]*off|drive|take|bring|get)\b/i;
 
 function digestHasSportsKeyword(text) {
@@ -858,12 +858,12 @@ function digestParsePersonEvent(summary, name) {
 }
 
 // Kid's name anywhere in the title, as a whole word ("Pick up Tori",
-// "Meet - Tori") — see homeUtils.js's mentionsPerson.
+// "Meet - Tori") — see calendar.js's mentionsPerson.
 function digestMentionsPerson(summary, name) {
   return new RegExp('\\b' + name + '\\b', 'i').test(String(summary || ''));
 }
 
-// Returns { isSports, person, title } — see homeUtils.js's classifyEvent.
+// Returns { isSports, person, title } — see calendar.js's classifyEvent.
 // Exactly one person named anywhere → their badge; none or several (a
 // joint event) → no badge, full title.
 function digestClassifyEvent(summary) {
@@ -877,7 +877,7 @@ function digestClassifyEvent(summary) {
   // "Mom's birthday" → "Birthday"
   var stripped = digestParsePersonEvent(raw, person);
   var title = stripped ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : raw;
-  // Errand check on both the full and the stripped title — see homeUtils.js
+  // Errand check on both the full and the stripped title — see calendar.js
   return { isSports: digestHasSportsKeyword(raw) && !DIGEST_ERRAND_RE.test(title), person: person, title: title };
 }
 
@@ -895,7 +895,7 @@ var DIGEST_COLORS = {
   surface: '#181c27',
   border:  '#2a3045',
   accent:  '#e8b86d',
-  accent6: '#88c9a8', // sports green — matches the Lookahead grid's sport pills
+  accent6: '#88c9a8', // sports green — matches the 7-day strip's sport pills
   text:    '#e8eaf0',
   muted:   '#8891a8'
 };
@@ -971,7 +971,7 @@ function getDigestFamilyReminders() {
 }
 
 // One <tr> per event — time, kid badge, sport medal (with the same
-// green accent-edge treatment the Lookahead grid and Coming Up rows use
+// green accent-edge treatment the 7-day strip and Further Out rows use
 // for sports), title, location. The last row in a section drops its
 // bottom border, matching .glance-today-row:last-child in the app.
 function digestEventRowHtml(ev, i, arr) {

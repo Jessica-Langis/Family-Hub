@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { WEATHER_CONFIG } from '../api/scripts'
 import { cacheGet, cacheSet } from '../utils/cache'
-import { dateParts, DAY_ABBR } from '../pages/Home/homeUtils'
+import { dateParts, DAY_ABBR } from '../utils/calendar'
 
 const NWS_HEADERS = { 'User-Agent': 'FamilyHubApp (family-hub)' }
 

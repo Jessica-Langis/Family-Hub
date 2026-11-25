@@ -5,7 +5,7 @@ import FitList from '../FitList/FitList'
 import PersonTag from '../PersonTag/PersonTag'
 import EmptyState from '../EmptyState/EmptyState'
 import { SCRIPTS, apiFetch, toArr } from '../../api/scripts'
-import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
+import { getDayDiff, formatDateShort } from '../../utils/calendar'
 
 // ── To Do panel (And Stuff) ───────────────────────────────────────
 // The family's shared to-do list, backed by the Chores sheet: add, edit,

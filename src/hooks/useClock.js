@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MONTHS, DAY_NAMES } from '../pages/Home/homeUtils'
+import { MONTHS, DAY_NAMES } from '../utils/calendar'
 
 function formatTime(now) {
   const h    = now.getHours()

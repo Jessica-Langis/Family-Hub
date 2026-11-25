@@ -8,7 +8,7 @@
 // calendar, or network. Wired in from apiFetch() in scripts.js, which is
 // the only caller; nothing else should import this directly.
 
-import { dateParts } from '../pages/Home/homeUtils'
+import { dateParts } from '../utils/calendar'
 
 function daysFromToday(offset) {
   const d = new Date()
