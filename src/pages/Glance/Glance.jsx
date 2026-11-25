@@ -5,7 +5,7 @@ import useAutoFit from '../../hooks/useAutoFit'
 import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale, byDateThenTime, shortTime, countdownWhen,
+  centerStageCountdown, isCenterStageStale, byDateThenTime, shortTime, countdownWhen, DAY_ABBR,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -72,7 +72,6 @@ import FitList from '../../components/FitList/FitList'
 //     instead of wiping it to "Nothing today".
 
 const LOOKAHEAD_DAYS = 7
-const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
 // Capped so the tile's height stays predictable even on a packed day —
 // same "+N more" pattern Bulletin already uses.

@@ -1,19 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
-import { SCRIPTS, apiFetch } from '../../api/scripts'
+import { SCRIPTS, apiFetch, toArr } from '../../api/scripts'
 import './WishlistPanel.css'
 import Icon from '../Icon/Icon'
 import FitList from '../FitList/FitList'
 import EmptyState from '../EmptyState/EmptyState'
-
-// ── Normalize API response → array ───────────────────────────
-function toArr(d) {
-  if (Array.isArray(d)) return d
-  if (d && Array.isArray(d.result)) return d.result
-  if (d && Array.isArray(d.items))  return d.items
-  if (d && Array.isArray(d.data))   return d.data
-  return []
-}
 
 // ── Wishlist tile — open-ended list, backed by the tori_wishlist /
 // nova_wishlist / mom_wishlist / dad_wishlist types on the shared CHORES

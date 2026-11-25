@@ -4,7 +4,7 @@ import Icon from '../Icon/Icon'
 import FitList from '../FitList/FitList'
 import PersonTag from '../PersonTag/PersonTag'
 import EmptyState from '../EmptyState/EmptyState'
-import { SCRIPTS, apiFetch } from '../../api/scripts'
+import { SCRIPTS, apiFetch, toArr } from '../../api/scripts'
 import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
 
 // ── To Do panel (And Stuff) ───────────────────────────────────────
@@ -19,14 +19,6 @@ import { getDayDiff, formatDateShort } from '../../pages/Home/homeUtils'
 //   whoLabel                 details popup: label for the assigned person
 //   frequencyOptions         [{ value, label }] for the repeat-schedule picker
 //   hideCompletedStorageKey  localStorage key for the Show done / Hide done toggle
-
-function toArr(d) {
-  if (Array.isArray(d)) return d
-  if (d && Array.isArray(d.result)) return d.result
-  if (d && Array.isArray(d.items))  return d.items
-  if (d && Array.isArray(d.data))   return d.data
-  return []
-}
 
 function choreBadgeCls(dateStr) {
   const diff = getDayDiff(dateStr)

@@ -4,6 +4,7 @@ import { SCRIPTS, apiFetch } from '../../../api/scripts'
 import Icon from '../../../components/Icon/Icon'
 import FitList from '../../../components/FitList/FitList'
 import { personKey } from '../../../components/PersonTag/PersonTag'
+import { DAY_NAMES } from '../homeUtils'
 
 // Color a note's author in their person color — only for family members
 // it knows, so anyone else keeps the default bulletin color
@@ -163,8 +164,7 @@ export default function BulletinPanel({ style }) {
       const items = await bRes.json()
       const meals = await mRes.json()
       setBulletins(Array.isArray(items) ? items : [])
-      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-      setDinner(meals[dayNames[new Date().getDay()]] || null)
+      setDinner(meals[DAY_NAMES[new Date().getDay()]] || null)
     } catch { /* silent */ }
   }
 

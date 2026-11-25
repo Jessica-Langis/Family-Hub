@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-
-const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+import { MONTHS, DAY_NAMES } from '../pages/Home/homeUtils'
 
 function formatTime(now) {
   const h    = now.getHours()
@@ -10,7 +8,7 @@ function formatTime(now) {
   const h12  = (h % 12) || 12
   return {
     clock: `${h12}:${mins} ${ampm}`,
-    date:  `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`,
+    date:  `${DAY_NAMES[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`,
   }
 }
 

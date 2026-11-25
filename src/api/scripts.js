@@ -78,6 +78,17 @@ export function clearStoredSession() {
   localStorage.removeItem(SESSION_KEY)
 }
 
+// ── Response → array ──
+// List endpoints answer with a bare array, but older script versions
+// wrapped it ({ result | items | data: [...] }). Anything else is empty.
+export function toArr(d) {
+  if (Array.isArray(d)) return d
+  if (d && Array.isArray(d.result)) return d.result
+  if (d && Array.isArray(d.items))  return d.items
+  if (d && Array.isArray(d.data))   return d.data
+  return []
+}
+
 // ── Shared fetch wrapper ──
 // GAS web apps occasionally hang instead of erroring — without a timeout a
 // stuck request just leaves the UI spinning forever with no way to recover.

@@ -8,13 +8,13 @@
 // calendar, or network. Wired in from apiFetch() in scripts.js, which is
 // the only caller; nothing else should import this directly.
 
-function pad2(n) { return String(n).padStart(2, '0') }
+import { dateParts } from '../pages/Home/homeUtils'
 
 function daysFromToday(offset) {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   d.setDate(d.getDate() + offset)
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+  return dateParts(d)
 }
 
 function shortDate(offset) {

@@ -1,5 +1,9 @@
 // ── Date helpers ────────────────────────────────────────────
-export const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+export const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+export const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+export const DAY_ABBR  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+
+const pad2 = n => String(n).padStart(2, '0')
 
 export function normalizeDate(dateStr) {
   if (!dateStr) return null
@@ -52,8 +56,9 @@ export function evSummary(ev) {
   return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
 }
 
+// Local yyyy-mm-dd for a Date (toISOString would give the UTC date)
 export function dateParts(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
 // "9:30 AM" → 570, "12:15 PM" → 735, for sorting. Times are strings like
@@ -155,7 +160,7 @@ export function countdownWhen(dateStr, timeStr) {
   const parts = [label]
   if (getDayDiff(dateStr) >= 2) {
     const d = normalizeDate(dateStr)
-    if (d) parts.push(`${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`)
+    if (d) parts.push(`${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}`)
   }
   if (timeStr) parts.push(shortTime(timeStr))
   return parts.filter(Boolean)
