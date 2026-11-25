@@ -563,11 +563,7 @@ export default function Glance() {
         <TodayTile spotlight={spotlight} furtherOut={furtherOut} loaded={!!lastUpdated} loadFailed={loadFailed} onOpen={setSelected} />
         <LookaheadCard days={lookahead} status={{ lastUpdated, loadFailed }} onOpen={setSelected} />
         <div className="glance-col-bulletin">
-          <BulletinPanel
-            compact
-            bodyClassName="bulletin-strip-compact"
-            style={{ height: '100%' }}
-          />
+          <BulletinPanel style={{ height: '100%' }} />
         </div>
       </div>
       {selected && <EventDetailModal ev={selected} onClose={() => setSelected(null)} />}

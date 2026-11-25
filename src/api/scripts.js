@@ -19,20 +19,10 @@ export const SCRIPTS = MOCK_MODE ? {
   GROCERY: 'mock://grocery',
   CHORES:  'mock://chores',
   MEAL:    'mock://meal',
-  TORI:    'mock://tori',
-  NOVA:    'mock://nova',
 } : {
   GROCERY: import.meta.env.VITE_SCRIPT_GROCERY || '',
   CHORES:  import.meta.env.VITE_SCRIPT_CHORES  || '',
   MEAL:    import.meta.env.VITE_SCRIPT_MEAL    || '',
-  TORI:    import.meta.env.VITE_SCRIPT_TORI    || '',
-  NOVA:    import.meta.env.VITE_SCRIPT_NOVA    || '',
-}
-
-// ── Google Calendar ──
-export const CALENDAR = {
-  FAMILY_EMBED: import.meta.env.VITE_CALENDAR_EMBED_URL || '',
-  FAMILY_ICS:   import.meta.env.VITE_CALENDAR_ICS_URL   || '',
 }
 
 // ── Weather config (Open-Meteo, no key required) ──

@@ -212,18 +212,6 @@ export function isCenterStageStale(dateStr, timeStr) {
   return minutesPast >= 20
 }
 
-export function formatReminderDate(dateStr) {
-  if (!dateStr?.trim()) return ''
-  const today = new Date(); today.setHours(0,0,0,0)
-  const parsed = normalizeDate(dateStr)
-  if (!parsed) return ''
-  const diff = Math.round((parsed - today) / 86400000)
-  if (diff === 0)  return 'Today'
-  if (diff === 1)  return 'Tomorrow'
-  if (diff < 0)   return `${Math.abs(diff)}d ago`
-  return `${MONTHS[parsed.getMonth()]} ${parsed.getDate()}`
-}
-
 // ── US Holidays ──────────────────────────────────────────────
 const US_HOLIDAYS = [
   { name: "New Year's Day",            month: 1,  day: 1  },

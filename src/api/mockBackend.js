@@ -1,7 +1,7 @@
 // ── Local-only mock backend (VITE_SKIP_AUTH dev mode) ────────────────
 // Stands in for every Google Apps Script endpoint the app normally talks
-// to (chores, bulletin, movies/books, wishlists, Tori/Nova events &
-// reminders, meals, grocery, and the calendar's "upcoming" feed), so
+// to (chores, bulletin, movies/books, wishlists, recipes, meals, grocery,
+// and the calendar's "upcoming" feed), so
 // layout/framework work can happen fully offline with data that looks
 // real instead of empty panels. Everything below lives in memory only —
 // it resets on every page reload and never touches a real spreadsheet,
@@ -82,23 +82,6 @@ const wishlistStores = {
   ],
   dad_wishlist: [],
 }
-
-let toriEventsStore = [
-  { id: 1, name: 'Regional Wrestling Qualifier', type: 'Tournament', date: daysFromToday(9), location: 'Central High School' },
-]
-
-let toriRemindersStore = [
-  { id: 1, text: 'Turn in permission slip', date: daysFromToday(2) },
-  { id: 2, text: 'Return library books',    date: daysFromToday(6) },
-]
-
-let novaEventsStore = [
-  { id: 1, name: 'Spring Piano Recital', type: 'Recital', date: daysFromToday(12), location: 'Community Center' },
-]
-
-let novaRemindersStore = [
-  { id: 1, text: 'Bring show-and-tell item', date: daysFromToday(1) },
-]
 
 const mealStore = {
   Sunday:    'Roast chicken & veggies',
@@ -203,18 +186,6 @@ function handleGet(base, params) {
     if (wishlistStores[type]) return [...wishlistStores[type]]
     if (type === 'mealideas')     return [...mealIdeasStore]
     if (type === 'upcoming')      return buildUpcoming(parseInt(params.get('days') || '31', 10))
-    return { error: 'unknown mock type: ' + type }
-  }
-
-  if (base === 'mock://tori') {
-    if (type === 'events')    return [...toriEventsStore]
-    if (type === 'reminders') return [...toriRemindersStore]
-    return { error: 'unknown mock type: ' + type }
-  }
-
-  if (base === 'mock://nova') {
-    if (type === 'events')    return [...novaEventsStore]
-    if (type === 'reminders') return [...novaRemindersStore]
     return { error: 'unknown mock type: ' + type }
   }
 
@@ -338,39 +309,6 @@ function handlePost(base, fields) {
       if (action === 'update') {
         const item = store.find(i => i.id === Number(fields.idx))
         if (item) item.text = fields.text || ''
-        return { status: 'ok' }
-      }
-      if (action === 'delete') {
-        setStore(store.filter(i => i.id !== Number(fields.idx)))
-        return { status: 'ok' }
-      }
-    }
-  }
-
-  if (base === 'mock://tori' || base === 'mock://nova') {
-    const isTori = base === 'mock://tori'
-    if (type === 'events') {
-      const store = isTori ? toriEventsStore : novaEventsStore
-      const setStore = (next) => { if (isTori) toriEventsStore = next; else novaEventsStore = next }
-      if (action === 'add') {
-        store.push({ id: nextIdFor(store), name: fields.name || '', type: fields.evtType || '', date: fields.date || '', location: fields.location || '' })
-        return { status: 'ok' }
-      }
-      if (action === 'delete') {
-        setStore(store.filter(i => i.id !== Number(fields.idx)))
-        return { status: 'ok' }
-      }
-    }
-    if (type === 'reminders') {
-      const store = isTori ? toriRemindersStore : novaRemindersStore
-      const setStore = (next) => { if (isTori) toriRemindersStore = next; else novaRemindersStore = next }
-      if (action === 'add') {
-        store.push({ id: nextIdFor(store), text: fields.text || '', date: fields.date || '' })
-        return { status: 'ok' }
-      }
-      if (action === 'update') {
-        const item = store.find(i => i.id === Number(fields.idx))
-        if (item) { item.text = fields.text || ''; item.date = fields.date || '' }
         return { status: 'ok' }
       }
       if (action === 'delete') {

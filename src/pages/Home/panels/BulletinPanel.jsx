@@ -12,48 +12,7 @@ const whoColorKey = (who, isDinner) => {
   return isDinner || k === 'other' ? undefined : k
 }
 
-const BULLETIN_FONTS = ['dancing','caveat','pacifico','satisfy','kalam','patrick']
-function bulletinFont(row) {
-  return BULLETIN_FONTS[Math.abs(row || 0) % BULLETIN_FONTS.length]
-}
-
 const NOTE_COLORS = ['amber','rose','teal','blue','lavender']
-
-function BulletinNote({ item, isDinner, onDelete, onOpen }) {
-  const color = isDinner ? 'teal' : (item.color || 'amber')
-  const font  = isDinner ? 'dancing' : bulletinFont(item.row)
-
-  let dateStr = ''
-  if (item.date) {
-    const d = new Date(item.date)
-    if (!isNaN(d.getTime())) {
-      dateStr = `${d.getMonth()+1}/${d.getDate()}`
-    }
-  }
-
-  return (
-    <div
-      className="bulletin-item"
-      data-color={color}
-      data-font={font}
-      onClick={() => onOpen && onOpen({ item, isDinner })}
-      style={{ cursor: onOpen ? 'pointer' : undefined }}
-    >
-      {!isDinner && onDelete && (
-        <button className="bulletin-delete" aria-label="Remove note" onClick={e => { e.stopPropagation(); onDelete(item.row) }}><Icon name="x" /></button>
-      )}
-      <div className="bulletin-inner">
-        <div className={`bulletin-who${isDinner ? ' bulletin-dinner-who' : ''}`} data-person={whoColorKey(item.who, isDinner)}>
-          {isDinner ? "Tonight's Dinner" : (item.who || 'Someone')}
-        </div>
-        <div className={`bulletin-text${isDinner && !item.text ? ' empty-dinner' : ''}`}>
-          {isDinner ? (item.text || 'Nothing planned yet') : (item.text || '')}
-        </div>
-        {dateStr && <div className="bulletin-date">{dateStr}</div>}
-      </div>
-    </div>
-  )
-}
 
 // ── Note detail popup (matches the calendar day-detail modal style) ──
 // Also the only place a note can be deleted. Delete lives here rather than
@@ -203,7 +162,7 @@ function AllNotesModal({ dinner, bulletins, onClose, onOpenNote }) {
   )
 }
 
-export default function BulletinPanel({ bodyClassName, limit = 4, style, compact = false }) {
+export default function BulletinPanel({ style }) {
   const [bulletins, setBulletins] = useState([])
   const [dinner,    setDinner]    = useState(null)
   const [showAdd,   setShowAdd]   = useState(false)
@@ -243,34 +202,19 @@ export default function BulletinPanel({ bodyClassName, limit = 4, style, compact
           <button className="add-btn" onClick={() => setShowAdd(true)}><Icon name="plus" size="1em" /> Post</button>
         }
       />
-      {compact ? (
-        // Every note, trimmed to what fits the tile — the rest sit behind
-        // "+N more", which opens the All Notes popup
-        <FitList className={bodyClassName || 'bulletin-strip-compact'} onMore={() => setShowAll(true)}>
-          <BulletinLine item={{ text: dinner }} isDinner onOpen={setOpened} />
-          {bulletins.map((b, i) => (
-            <BulletinLine key={i} item={b} onOpen={setOpened} />
-          ))}
-          {bulletins.length === 0 && (
-            <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)', padding: '4px 0' }}>
-              Nothing posted yet — be the first!
-            </div>
-          )}
-        </FitList>
-      ) : (
-        <div className={bodyClassName || 'home-bulletin-strip corkboard-body'}>
-          {/* Tonight's dinner always first */}
-          <BulletinNote item={{ text: dinner }} isDinner onOpen={setOpened} />
-          {bulletins.slice(0, limit).map((b, i) => (
-            <BulletinNote key={i} item={b} onDelete={deleteNote} onOpen={setOpened} />
-          ))}
-          {bulletins.length === 0 && (
-            <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)', padding: '4px 0' }}>
-              Nothing posted yet — be the first!
-            </div>
-          )}
-        </div>
-      )}
+      {/* Every note, trimmed to what fits the tile — the rest sit behind
+          "+N more", which opens the All Notes popup */}
+      <FitList className="bulletin-strip-compact" onMore={() => setShowAll(true)}>
+        <BulletinLine item={{ text: dinner }} isDinner onOpen={setOpened} />
+        {bulletins.map((b, i) => (
+          <BulletinLine key={i} item={b} onOpen={setOpened} />
+        ))}
+        {bulletins.length === 0 && (
+          <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)', padding: '4px 0' }}>
+            Nothing posted yet — be the first!
+          </div>
+        )}
+      </FitList>
       {showAdd && (
         <AddNoteModal onClose={() => setShowAdd(false)} onAdded={load} />
       )}
