@@ -10,6 +10,7 @@ import bakingIcon    from '../../assets/recipe-icons/baking.png'
 import drinksIcon    from '../../assets/recipe-icons/drinks.png'
 import './Recipes.css'
 import Icon from '../../components/Icon/Icon'
+import FitList from '../../components/FitList/FitList'
 import EmptyState from '../../components/EmptyState/EmptyState'
 
 // Backed by the MealIdeas sheet tab (A=Name B=Category C=Main Ingredient
@@ -279,7 +280,7 @@ export default function Recipes() {
             </div>
           </div>
 
-          <div className="rc-list">
+          <FitList className="rc-list" title="Recipes" closeOnPick>
             {status === 'loading' && <div className="rc-empty">Loading…</div>}
             {status === 'error'   && <div className="rc-empty">Unavailable</div>}
             {status === 'ok' && !filtered.length && (
@@ -302,7 +303,7 @@ export default function Recipes() {
                 </span>
               </button>
             ))}
-          </div>
+          </FitList>
         </Panel>
       </div>
 

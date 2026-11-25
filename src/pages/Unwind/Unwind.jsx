@@ -6,6 +6,7 @@ import ChoresList          from '../../components/ChoresList/ChoresList'
 import UpcomingEventsList  from '../../components/UpcomingEventsList/UpcomingEventsList'
 import './Unwind.css'
 import Icon from '../../components/Icon/Icon'
+import FitList from '../../components/FitList/FitList'
 import EmptyState from '../../components/EmptyState/EmptyState'
 
 const FREQUENCY_OPTIONS = [
@@ -41,15 +42,15 @@ function FunItem({ item, titleKey, subKey, onDelete }) {
   )
 }
 
-function FunList({ items, status, titleKey, subKey, onDelete, emptyIcon, emptyText }) {
+function FunList({ items, status, titleKey, subKey, onDelete, emptyIcon, emptyText, title }) {
   if (status === 'loading') return <div className="fun-empty">Loading…</div>
   if (status === 'error')   return <div className="fun-empty">Unavailable</div>
   if (!items.length)        return <EmptyState icon={emptyIcon}>{emptyText}</EmptyState>
 
   return (
-    <div className="fun-list">
+    <FitList className="fun-list" title={title}>
       {items.map(item => <FunItem key={item.id} item={item} titleKey={titleKey} subKey={subKey} onDelete={onDelete} />)}
-    </div>
+    </FitList>
   )
 }
 
@@ -153,9 +154,9 @@ function ReadWatchPanel({ movies, books, status, onDelete, onAdd }) {
         }
       />
       {isWatch
-        ? <FunList items={movies} status={status.movies} titleKey="title" subKey="mediaType" onDelete={id => onDelete('movies', id)}
+        ? <FunList items={movies} status={status.movies} titleKey="title" subKey="mediaType" onDelete={id => onDelete('movies', id)} title="Watch List"
             emptyIcon="film" emptyText="Nothing to watch yet — tap + to add a show or movie" />
-        : <FunList items={books}  status={status.books}  titleKey="title" subKey="author"    onDelete={id => onDelete('books',  id)}
+        : <FunList items={books}  status={status.books}  titleKey="title" subKey="author"    onDelete={id => onDelete('books',  id)} title="Reading List"
             emptyIcon="book" emptyText="No books yet — tap + to add one" />
       }
     </Panel>

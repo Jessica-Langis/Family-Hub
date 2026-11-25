@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Panel, { PanelHeader } from '../../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../../api/scripts'
 import Icon from '../../../components/Icon/Icon'
+import FitList from '../../../components/FitList/FitList'
 import { personKey } from '../../../components/PersonTag/PersonTag'
 
 // Color a note's author in their person color — only for family members
@@ -243,9 +244,11 @@ export default function BulletinPanel({ bodyClassName, limit = 4, style, compact
         }
       />
       {compact ? (
-        <div className={bodyClassName || 'bulletin-strip-compact'}>
+        // Every note, trimmed to what fits the tile — the rest sit behind
+        // "+N more", which opens the All Notes popup
+        <FitList className={bodyClassName || 'bulletin-strip-compact'} onMore={() => setShowAll(true)}>
           <BulletinLine item={{ text: dinner }} isDinner onOpen={setOpened} />
-          {bulletins.slice(0, limit).map((b, i) => (
+          {bulletins.map((b, i) => (
             <BulletinLine key={i} item={b} onOpen={setOpened} />
           ))}
           {bulletins.length === 0 && (
@@ -253,12 +256,7 @@ export default function BulletinPanel({ bodyClassName, limit = 4, style, compact
               Nothing posted yet — be the first!
             </div>
           )}
-          {bulletins.length > limit && (
-            <div className="bulletin-more-row" onClick={() => setShowAll(true)}>
-              +{bulletins.length - limit} more — tap to see all
-            </div>
-          )}
-        </div>
+        </FitList>
       ) : (
         <div className={bodyClassName || 'home-bulletin-strip corkboard-body'}>
           {/* Tonight's dinner always first */}

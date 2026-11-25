@@ -20,7 +20,11 @@
 
 .glance-content {
   display: grid;
-  grid-template-columns: 1fr 0.43fr;
+  /* minmax(0, …): column widths must not depend on what's inside the
+     tiles. Otherwise one tile shrinking its text (or trimming a row)
+     changes the other column's width, which refits that tile, which
+     moves the columns back — the two never settle. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.43fr);
   /* The page never scrolls. Today takes the height its content needs,
      up to 55% of the page (fit-content), and Lookahead fills the rest.
      If either tile's content is more than its share, useAutoFit scales
@@ -80,10 +84,10 @@
      throughout this file fall back to viewport units with no query
      container in scope — still capped by each clamp's own max.
      Each card's height is set by the page grid; useAutoFit scales its
-     text to fit, and it only scrolls if even the smallest readable size
-     won't fit. */
-  overflow-x: hidden;
-  overflow-y: auto;
+     text to fit, and if even the smallest readable size won't fit it
+     trims rows behind "+N more" (FitList) — the card itself never
+     scrolls, which is awkward on a touchscreen. */
+  overflow: hidden;
 }
 
 .glance-card-empty {
@@ -325,13 +329,6 @@
 .glance-today-center-time {
   font-size: var(--fs-sm);
   color: var(--muted);
-}
-
-.glance-today-more {
-  font-size: var(--fs-sm);
-  color: var(--accent2);
-  padding-top: 4px;
-  flex-shrink: 0;
 }
 
 /* ── Right: "Further Out" — events after the 7-day strip, each with its
@@ -610,25 +607,21 @@
   overflow-wrap: break-word;
 }
 
-.bulletin-more-row {
-  font-size: var(--fs-sm);
-  color: var(--accent2);
-  padding: 8px 0 2px;
-  cursor: pointer;
-}
-.bulletin-more-row:hover { text-decoration: underline; }
 
 /* ══════════════════════════════════════════
    NARROW (tablet portrait, half-width windows, phones) — single column
-   stack. Below ~1000px the two-column kiosk layout leaves Further Out
-   and the Bulletin too thin to read, so everything goes full width.
+   stack. Below ~1000px *in portrait* the two-column kiosk layout leaves
+   Further Out and the Bulletin too thin to read, so everything goes full
+   width. A short landscape screen (a laptop window, a 1024×600 tablet)
+   keeps two columns: stacking three tiles there left each one ~100px
+   tall, too short to show anything.
    (Between 1000 and 1100px the 7-day strip used to drop days 6-7; that
    hid real events, and Further Out now assumes all 7 days are on
    screen, so it keeps all 7 and lets a column widen to fit its longest
    word instead.)
 ══════════════════════════════════════════ */
 
-@media (max-width: 1000px) {
+@media (max-width: 1000px) and (orientation: portrait), (max-width: 640px) {
   .glance-content {
     grid-template-columns: 1fr;
     /* Same no-scroll split as the wide layout, one column: Today up to
@@ -720,4 +713,16 @@
 }
 .glance-event-modal-line {
   font-size: var(--fs-md); color: var(--text); overflow-wrap: anywhere;
+}
+
+/* "+N more" inside a 7-day strip column — the strip's columns are narrow
+   and short, so the button is a slim line rather than a full tap-height
+   bar (it would otherwise be taller than the event it stands in for).
+   The whole line is still the tap target. */
+.glance-look-events > .fit-more {
+  min-height: 0;
+  margin-top: 0;
+  padding: 3px 4px;
+  font-size: var(--fs-xs);
+  white-space: nowrap;
 }

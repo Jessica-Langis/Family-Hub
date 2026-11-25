@@ -116,6 +116,35 @@
 .topbar.compact .weather-day .weather-icon { margin: 0; }
 .topbar.compact .weather-day .temp { margin: 0; }
 
+/* ── Short screens (laptop windows, 1024×600 tablets) — every pixel of
+   height the bar takes comes out of the tiles below. The 5-day forecast
+   drops its condition text (tap-and-hold / hover shows it) and puts the
+   icon beside the temperature, so the bar is one short row. ── */
+@media (max-height: 760px) and (min-width: 641px) {
+  .topbar { padding-top: 6px; padding-bottom: 6px; }
+  .topbar .clock { font-size: clamp(1.5rem, 0.6rem + 2.6vmin + 0.4vw, 3rem); line-height: 1.1; }
+  .topbar .clock-date { margin-top: 0; }
+  .weather-day {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: "name name" "icon text";
+    align-items: center;
+    column-gap: 6px;
+    padding: 4px 10px;
+  }
+  .weather-day .day-name { grid-area: name; }
+  .weather-day .weather-icon { grid-area: icon; margin: 0; width: var(--fs-xl); height: var(--fs-xl); }
+  .weather-day .weather-text { grid-area: text; }
+  .weather-day .temp { margin: 0; font-size: var(--fs-md); }
+  .weather-day .condition { display: none; }
+  /* Fewer days when the screen is narrow too, so the boxes never get
+     cut off at the right edge */
+  .weather-day:nth-child(n+5) { display: none; }
+  /* At a Glance's single day keeps its condition — it has the room */
+  .topbar.compact .weather-day { display: flex; }
+  .topbar.compact .weather-day .condition { display: block; }
+}
+
 /* ── Responsive: progressively hide weather days as viewport narrows ── */
 
 /* Below 900px: hide the 5th day */
@@ -150,4 +179,13 @@
 @media (max-width: 420px) {
   .topbar { grid-template-columns: 1fr auto; row-gap: 2px; }
   .topbar-title { grid-column: 1 / -1; }
+}
+
+/* Short and wide enough for all five days */
+@media (max-height: 760px) and (min-width: 1200px) {
+  .weather-day:nth-child(5) { display: grid; }
+}
+/* Short and narrow: three days */
+@media (max-height: 760px) and (max-width: 1050px) and (min-width: 641px) {
+  .weather-day:nth-child(4) { display: none; }
 }

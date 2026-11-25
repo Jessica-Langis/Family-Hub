@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import Icon from '../Icon/Icon'
+import FitList from '../FitList/FitList'
 import PersonTag from '../PersonTag/PersonTag'
 import EmptyState from '../EmptyState/EmptyState'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
@@ -234,7 +235,7 @@ export default function ChoresList({
             ? (chores.length === 0
                 ? <EmptyState icon="calendar">No tasks yet — tap Add to start one</EmptyState>
                 : <EmptyState icon="party">All done — nice work!</EmptyState>)
-            : <div className="chore-list">
+            : <FitList className="chore-list" title={title}>
                 {visibleChores.map((c, i) => {
                   const badge = c.dueDate ? choreBadgeCls(c.dueDate) : null
                   return (
@@ -262,7 +263,7 @@ export default function ChoresList({
                     </div>
                   )
                 })}
-              </div>
+              </FitList>
         }
       </Panel>
 

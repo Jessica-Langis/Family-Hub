@@ -3,7 +3,7 @@
    until something's picked, then the recipe (with a Back button). */
 .recipes-content {
   display: grid;
-  grid-template-columns: minmax(280px, 2fr) 3fr;
+  grid-template-columns: minmax(280px, 2fr) minmax(0, 3fr);
   /* The page never scrolls: rows split the screen, and useAutoFit scales
      each tile's text to fit its share (see tokens.css). */
   grid-template-rows: minmax(0, 1fr);

@@ -7,8 +7,9 @@ import { useLayoutEffect, useRef } from 'react'
 // tokens in tokens.css multiply by --fit inside any `.fit-scope`.
 //
 // It never shrinks text below a readability floor (MIN_*_PX). A tile that
-// still doesn't fit at the floor keeps the floor size and scrolls — the
-// one case where a tile is allowed to scroll.
+// still doesn't fit at the floor hides rows from the end of its lists
+// behind a "+N more" button (see FitList) — tiles never scroll, since
+// scrolling inside a tile is awkward on a touchscreen.
 //
 // Phones are skipped: there the page stacks tiles and scrolls instead,
 // so text always stays full size.
@@ -61,15 +62,86 @@ function overflowsNow(el, clippers = clippersOf(el)) {
     clippers.some(c => c.scrollHeight > c.clientHeight)
 }
 
+// ── Trimming lists (FitList) ──────────────────────────────────────────
+// When even the smallest readable text doesn't fit, rows are hidden from
+// the end of the tile's lists (`[data-fit-list]`, see FitList.jsx) and the
+// list's "+N more" button (`[data-fit-more]`) is shown in their place, so
+// a tile never needs a scrollbar. Hidden rows get `data-fit-hidden`; the
+// count goes back to the list as a `fittrim` event so React can label the
+// button. Attributes, not classes, so a React re-render can't wipe them.
+const visibleRows = list => [...list.children].filter(c =>
+  !c.hasAttribute('data-fit-more') && !c.hasAttribute('data-fit-hidden'))
+
+function resetTrim(lists) {
+  lists.forEach(list => {
+    list.querySelectorAll(':scope > [data-fit-hidden]').forEach(r => r.removeAttribute('data-fit-hidden'))
+    list.querySelector(':scope > [data-fit-more]')?.removeAttribute('data-shown')
+  })
+}
+
+// How far down a list's visible content reaches — the tallest list is the
+// one holding the tile's height up (e.g. the busiest day in the 7-day strip)
+const contentBottom = list => {
+  const rows = visibleRows(list)
+  return rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : 0
+}
+
+function trimLists(lists, overflows) {
+  const hidden = new Map(lists.map(l => [l, 0]))
+  while (overflows()) {
+    const candidates = lists.filter(l => visibleRows(l).length > 0)
+    if (!candidates.length) break
+    // A list that overflows its own box goes first; otherwise the one
+    // reaching furthest down
+    const own = candidates.filter(l => l.scrollHeight > l.clientHeight + 1)
+    const pool = own.length ? own : candidates
+    const list = pool.reduce((a, b) => contentBottom(b) > contentBottom(a) ? b : a)
+    const rows = visibleRows(list)
+    rows[rows.length - 1].setAttribute('data-fit-hidden', '')
+    list.querySelector(':scope > [data-fit-more]')?.setAttribute('data-shown', '')
+    hidden.set(list, hidden.get(list) + 1)
+  }
+
+  // Refill: trimming one row at a time from whichever list is tallest can
+  // overshoot (a list loses a row that would have fit once a neighbour
+  // shrank). Put rows back, in order, wherever they still fit.
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const list of lists) {
+      const next = list.querySelector(':scope > [data-fit-hidden]')
+      if (!next) continue
+      next.removeAttribute('data-fit-hidden')
+      const more = list.querySelector(':scope > [data-fit-more]')
+      const last = hidden.get(list) === 1
+      if (last) more?.removeAttribute('data-shown')
+      if (overflows()) {
+        next.setAttribute('data-fit-hidden', '')
+        if (last) more?.setAttribute('data-shown', '')
+      } else {
+        hidden.set(list, hidden.get(list) - 1)
+        changed = true
+      }
+    }
+  }
+  return hidden
+}
+
+function reportTrim(lists, hidden) {
+  lists.forEach(list => list.dispatchEvent(new CustomEvent('fittrim', { detail: hidden?.get(list) || 0 })))
+}
+
 function fitTile(el) {
   if (!el.isConnected || el.clientHeight === 0) return  // hidden tab
   const setFit = (v) => el.style.setProperty('--fit', String(v))
+  const lists = [...el.querySelectorAll('[data-fit-list]')]
 
   // data-fit-overflow marks a tile that doesn't fit even at the floor, so
   // its CSS can fall back to something cruder (e.g. breaking long words)
   el.removeAttribute('data-fit-overflow')
+  resetTrim(lists)
   setFit(1)
-  if (window.matchMedia(PHONE_QUERY).matches) return
+  if (window.matchMedia(PHONE_QUERY).matches) { reportTrim(lists); return }
 
   const clippers = clippersOf(el)
   const overflows = () => overflowsNow(el, clippers)
@@ -87,7 +159,7 @@ function fitTile(el) {
   if (overflows()) {
     setFit(floor)
     if (overflows()) {
-      fit = floor  // doesn't fit even at the floor — this tile scrolls
+      fit = floor  // doesn't fit even at the floor — lists get trimmed below
     } else {
       let lo = floor, hi = 1
       for (let i = 0; i < SEARCH_STEPS; i++) {
@@ -108,6 +180,9 @@ function fitTile(el) {
     fit = Math.max(floor, fit - 0.01)
     setFit(fit)
   }
+  // Still too much at the floor: hide list rows behind "+N more"
+  const hidden = fit === floor && overflows() ? trimLists(lists, overflows) : null
+  reportTrim(lists, hidden)
   if (fit === floor && overflows()) el.setAttribute('data-fit-overflow', '')
 }
 
@@ -151,7 +226,14 @@ export default function useAutoFit() {
       verifying = true
       verify(0)
     }
-    const schedule = () => {
+    // Safety valve: a tile whose own fit keeps changing its size (and so
+    // re-triggering itself) stops refitting after a burst, rather than
+    // spinning every frame. A real resize starts it again.
+    let burst = 0, burstStart = 0
+    const schedule = (fromResize) => {
+      const now = performance.now()
+      if (fromResize === true || now - burstStart > 1000) { burst = 0; burstStart = now }
+      if (++burst > 30) return
       cancelAnimationFrame(raf)
       cancelAnimationFrame(verifyRaf)
       raf = requestAnimationFrame(run)
@@ -171,7 +253,8 @@ export default function useAutoFit() {
     // Images (recipe icons) change height when they load; load doesn't
     // bubble, so listen in the capture phase
     el.addEventListener('load', schedule, true)
-    window.addEventListener('resize', schedule)
+    const onResize = () => schedule(true)
+    window.addEventListener('resize', onResize)
     document.fonts?.ready.then(schedule)
     schedule()
 
@@ -181,7 +264,7 @@ export default function useAutoFit() {
       ro.disconnect()
       mo.disconnect()
       el.removeEventListener('load', schedule, true)
-      window.removeEventListener('resize', schedule)
+      window.removeEventListener('resize', onResize)
     }
   }, [])
 
