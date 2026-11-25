@@ -335,7 +335,7 @@
 }
 
 /* ── Right: "Further Out" — events after the 7-day strip, each with its
-   date (and start time, when it has one) on the right. ── */
+   countdown, date and start time (when it has one) on the right. ── */
 
 .glance-upcoming-list {
   flex: 1;
@@ -382,20 +382,23 @@
   overflow-wrap: break-word;
 }
 
+/* One line: "7 DAYS – Wed, Dec 2 – 4 PM" — countdown in the accent,
+   date and time quieter after it. */
 .glance-upcoming-when {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
   font-size: var(--fs-sm);
-  font-weight: 700;
-  color: var(--accent2);
   flex-shrink: 0;
   white-space: nowrap;
   text-align: right;
 }
+.glance-upcoming-countdown {
+  font-weight: 700;
+  color: var(--accent2);
+}
 .glance-upcoming-time {
-  font-size: var(--fs-xs);
   font-weight: 500;
+  color: var(--text);
+}
+.glance-upcoming-sep {
   color: var(--muted);
 }
 

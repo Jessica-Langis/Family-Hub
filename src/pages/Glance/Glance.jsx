@@ -97,6 +97,17 @@ function shortDate(dateStr) {
     : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
+// Further Out's "when" line: "7 DAYS – Wed, Dec 2 – 4 PM". Today and
+// tomorrow keep their TODAY / TOMORROW label in place of the date, since a
+// date there just makes people work out which day it is.
+function upcomingWhen(ev) {
+  const label = countdownLabel(ev.date)
+  const parts = [label]
+  if (label !== 'TODAY' && label !== 'TOMORROW') parts.push(shortDate(ev.date))
+  if (ev.time) parts.push(shortTime(ev.time))
+  return parts.filter(Boolean)
+}
+
 // True once a timed event has finished. Uses its end time when the
 // calendar gives one (an event running past midnight ends the next day);
 // otherwise falls back to isStale's 2h-after-start rule.
@@ -365,8 +376,11 @@ function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
                   {ev.title}
                 </span>
                 <span className="glance-upcoming-when">
-                  {shortDate(ev.date)}
-                  {ev.time && <span className="glance-upcoming-time">{shortTime(ev.time)}</span>}
+                  {upcomingWhen(ev).map((part, j) => (
+                    <span key={j} className={j === 0 ? 'glance-upcoming-countdown' : 'glance-upcoming-time'}>
+                      {j > 0 && <span className="glance-upcoming-sep"> – </span>}{part}
+                    </span>
+                  ))}
                 </span>
               </div>
             ))}
