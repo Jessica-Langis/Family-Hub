@@ -81,7 +81,7 @@ body {
    title being squeezed into a letter-per-line column. Add new row/title
    classes here rather than re-solving this per component. */
 .glance-today-row, .glance-upcoming-row, .bulletin-line, .uel-row,
-.chore-item, .reminder-item, .countdown-item, .hw-item, .fun-item, .rc-item {
+.chore-item, .reminder-item, .fun-item, .rc-item {
   flex-wrap: wrap;
 }
 /* row > title (two classes) so this outranks each component's own
@@ -89,7 +89,6 @@ body {
 .glance-today-row > .glance-today-row-title, .glance-upcoming-row > .glance-upcoming-title,
 .bulletin-line > .bulletin-line-text, .uel-row > .uel-title,
 .chore-item > .chore-item-name, .reminder-item > .reminder-text,
-.countdown-item > .countdown-item-body, .hw-item > .hw-item-body,
 .fun-item > .fun-item-body, .rc-item > .rc-item-body {
   flex: 1 1 8em;
 }
@@ -213,39 +212,6 @@ button {
   flex-shrink: 0;
 }
 
-.chore-item-weight {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-  font-size: var(--fs-xs);
-  color: #f5c842;
-  flex-shrink: 0;
-}
-/* Reminder bell sits in the same slot as the stars, in a quieter color */
-.chore-item-weight[title="Reminder"] { color: var(--accent2); }
-
-.weight-picker {
-  display: flex;
-  gap: 6px;
-}
-
-.weight-btn {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  padding: 6px 0;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-.weight-btn.active {
-  color: var(--text);
-  border-color: var(--accent);
-  background: var(--surface);
-}
-
 .chore-empty {
   padding: 8px 14px;
   color: var(--muted);
@@ -273,9 +239,8 @@ button {
   opacity: 0.6;
 }
 
-/* ── Chore row actions: checkmark, edit, delete (in that order) ──
-   Sized for thumbs first — this app runs mostly on phones — so every
-   button gets a real tap target instead of a tiny hover-only icon. */
+/* ── Chore row check button — a real tap target for fingers, not a tiny
+   hover-only icon (edit and delete live in the details pop-up) ── */
 .chore-item-actions {
   display: flex;
   align-items: center;
@@ -283,9 +248,7 @@ button {
   flex-shrink: 0;
 }
 
-.chore-check-btn,
-.chore-edit-btn,
-.chore-delete-btn {
+.chore-check-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -317,18 +280,6 @@ button {
   45%  { transform: scale(1.18); }
   100% { transform: scale(1); }
 }
-
-.chore-edit-btn {
-  color: var(--muted);
-  font-size: var(--fs-md);
-}
-.chore-edit-btn:hover { color: var(--accent2); border-color: var(--accent2); }
-
-.chore-delete-btn {
-  color: var(--muted);
-  font-size: var(--fs-lg);
-}
-.chore-delete-btn:hover { color: #e07070; border-color: #e07070; }
 
 /* ── Chore / detail popup rows (name : value pairs) ── */
 .detail-row {
@@ -399,12 +350,6 @@ button {
   overflow-wrap: break-word;
 }
 
-.reminder-date {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
 .reminder-edit,
 .reminder-delete {
   display: inline-flex;
@@ -431,259 +376,6 @@ button {
 }
 
 /* ══════════════════════════════════════════
-   COUNTDOWN LIST (events)
-══════════════════════════════════════════ */
-.countdown-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 6px 14px 10px;
-  overflow-y: auto;
-}
-
-.countdown-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: var(--fs-md);
-  color: var(--text);
-}
-.countdown-item:last-child { border-bottom: none; }
-
-.countdown-item-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--accent2);
-}
-
-.countdown-item-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.countdown-item-name {
-  font-size: var(--fs-md);
-  color: var(--text);
-  overflow-wrap: break-word;
-  min-width: 0;
-}
-
-.countdown-item-sub {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
-
-.countdown-empty {
-  padding: 8px 14px;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  font-style: italic;
-}
-
-/* Meal-plan grid/editor CSS removed along with WhatForDinnerPanel — see
-   Unwind.jsx. Tonight's dinner display still lives in the Bulletin Board
-   (.bulletin-line-who.dinner in Glance.css), but nothing writes to it
-   until a replacement "what's for dinner" feature is built. */
-
-/* ══════════════════════════════════════════
-   HOMEWORK
-══════════════════════════════════════════ */
-.homework-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 6px 14px 10px;
-  overflow-y: auto;
-}
-
-.hw-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: var(--fs-md);
-  color: var(--text);
-}
-.hw-item:last-child { border-bottom: none; }
-
-.hw-item input[type="checkbox"] {
-  accent-color: var(--accent3);
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.hw-item-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.hw-item-task {
-  font-size: var(--fs-md);
-  color: var(--text);
-  overflow-wrap: break-word;
-  min-width: 0;
-}
-.hw-item-task.done { text-decoration: line-through; color: var(--muted); }
-
-.hw-item-sub {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
-
-.hw-delete {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: var(--fs-md);
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-.hw-delete:hover { color: #e07070; }
-
-.hw-empty {
-  padding: 8px 14px;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  font-style: italic;
-}
-
-/* ══════════════════════════════════════════
-   NEXT UP HERO
-══════════════════════════════════════════ */
-.next-up-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  gap: 4px;
-  flex: 1;
-}
-
-.next-up-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 8px;
-  padding: 8px 14px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.next-up-empty {
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  font-style: italic;
-  text-align: center;
-  padding: 12px 0;
-}
-
-/* ══════════════════════════════════════════
-   COUNTDOWN HERO (name-tagged calendar event)
-══════════════════════════════════════════ */
-.countdown-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  gap: 2px;
-  flex: 1;
-  text-align: center;
-}
-
-.countdown-hero-num {
-  font-size: var(--fs-2xl);
-  font-weight: 800;
-  line-height: 1;
-  color: var(--accent);
-}
-
-.countdown-hero-unit {
-  font-size: var(--fs-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-
-.countdown-hero-title {
-  font-size: var(--fs-md);
-  font-weight: 600;
-  color: var(--text);
-}
-
-.countdown-hero-date {
-  font-size: var(--fs-sm);
-  color: var(--muted);
-}
-
-.next-up-name {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  color: var(--accent4);
-  text-align: center;
-  max-width: 100%;
-  overflow-wrap: break-word;
-  min-width: 0;
-}
-
-.next-up-type {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  text-align: center;
-}
-
-.next-up-date {
-  font-size: var(--fs-sm);
-  color: var(--text);
-  text-align: center;
-}
-
-.next-up-loc {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  text-align: center;
-}
-
-/* ══════════════════════════════════════════
-   FUN FACT / JOKE / COOL FACT TILES
-══════════════════════════════════════════ */
-.fun-fact-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  gap: 6px;
-  flex: 1;
-  overflow: hidden;
-}
-
-.fun-fact-label {
-  font-size: var(--fs-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
-
-.fun-fact-text {
-  font-size: var(--fs-sm);
-  color: var(--text);
-  text-align: center;
-  line-height: 1.5;
-}
-
-/* ══════════════════════════════════════════
    QUICK ADD (inline input strip)
 ══════════════════════════════════════════ */
 .quick-add-wrap {
@@ -706,16 +398,6 @@ button {
 }
 .quick-add-input:focus { outline: none; border-color: var(--accent); }
 
-.quick-add-btn {
-  background: var(--accent);
-  color: #0f1117;
-  border: none;
-  border-radius: 6px;
-  font-size: var(--fs-sm);
-  padding: 5px 12px;
-  cursor: pointer;
-}
-.quick-add-btn:hover { opacity: 0.85; }
 
 /* ══════════════════════════════════════════
    GENERIC MODAL OVERLAY
@@ -749,7 +431,7 @@ button {
   margin-bottom: 4px;
 }
 
-.overlay-input, .overlay-select {
+.overlay-input {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -759,17 +441,9 @@ button {
   font-family: inherit;
   width: 100%;
 }
-.overlay-input:focus, .overlay-select:focus {
+.overlay-input:focus {
   outline: none;
   border-color: var(--accent);
-}
-.overlay-select option { background: var(--surface2); }
-
-.overlay-status {
-  font-size: var(--fs-sm);
-  color: var(--accent3);
-  min-height: 1rem;
-  text-align: center;
 }
 
 .overlay-actions {
@@ -831,8 +505,94 @@ button {
 .overlay-close:hover { color: var(--text); }
 
 /* ══════════════════════════════════════════
-   URGENCY TINTS — shared by At a Glance's Hero tile and And Stuff's
-   Upcoming Events list. today = warm amber · tomorrow = blue · 2+ days = muted
+   ACCENT POP-UP — same shape as the generic overlay above, with a pink
+   title. Used by Watch/Read's add form, the Bulletin pop-ups and At a
+   Glance's event details, so it lives here rather than in one page's
+   stylesheet.
+══════════════════════════════════════════ */
+.fun-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.fun-overlay-box {
+  /* Anchors the corner close button (.overlay-close) to the box */
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px 20px;
+  width: min(360px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fun-overlay-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--accent5);
+  margin-bottom: 4px;
+}
+
+.fun-overlay-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: var(--fs-md);
+  color: var(--text);
+  font-family: inherit;
+  width: 100%;
+}
+.fun-overlay-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.fun-overlay-status {
+  font-size: var(--fs-sm);
+  color: var(--accent3);
+  min-height: 1rem;
+  text-align: center;
+}
+
+.fun-overlay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.fun-overlay-btn {
+  padding: 7px 18px;
+  border-radius: 7px;
+  font-size: var(--fs-md);
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.fun-overlay-btn:hover { opacity: 0.85; }
+.fun-overlay-btn.cancel {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.fun-overlay-btn.submit {
+  background: var(--accent);
+  color: #0f1117;
+}
+.fun-overlay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════
+   URGENCY TINTS — And Stuff's Upcoming Events list.
+   today = warm amber · tomorrow = blue · 2+ days = muted
    ══════════════════════════════════════════ */
 .urgency-today    { --urgency: var(--accent);  }
 .urgency-tomorrow { --urgency: var(--accent2); }
@@ -887,8 +647,6 @@ button.fun-delete,
 button.grocery-delete,
 button.reminder-edit,
 button.reminder-delete,
-button.bulletin-delete,
-button.fact-shuffle-btn,
 button.overlay-close {
   min-width: var(--tap);
   min-height: var(--tap);
@@ -913,7 +671,6 @@ button.overlay-close {
 button.overlay-btn,
 button.fun-overlay-btn,
 button.rc-btn,
-button.weight-btn,
 .overlay-input,
 .fun-overlay-input,
 .rc-input,

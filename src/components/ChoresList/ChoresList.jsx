@@ -4,45 +4,21 @@ import Icon from '../Icon/Icon'
 import FitList from '../FitList/FitList'
 import PersonTag from '../PersonTag/PersonTag'
 import EmptyState from '../EmptyState/EmptyState'
-import { SCRIPTS, apiFetch } from '../../api/scripts'
-import { getDayDiff, formatDateShort, mentionsPerson } from '../../pages/Home/homeUtils'
+import { SCRIPTS, apiFetch, toArr } from '../../api/scripts'
+import { getDayDiff, formatDateShort } from '../../utils/calendar'
 
-// ── Shared chores CRUD panel ──────────────────────────────────────
-// Used by Unwind (shared/family chores), Nova (Nova's chores), and — via
-// its list-rendering pieces — mirrored by Tori's merged To Do/Reminders
-// panel. Consolidates what used to be three near-identical copies of this
-// same ~150-line component, one per page. That duplication is why the
-// notes field silently failed to save for a while: the bug had to be
-// fixed (or missed) three times instead of once.
+// ── To Do panel (And Stuff) ───────────────────────────────────────
+// The family's shared to-do list, backed by the Chores sheet: add, edit,
+// check off and delete, with a repeat schedule and a toggle that hides
+// finished items.
 //
 // Props:
 //   title                    panel header text
-//   matchWho                 only show chores whose who names this person anywhere
-//                            ("Tori", "Tori & Nova", "tori (room)") — see isWho
-//   excludeWho                array — hide chores whose who matches any of these
-//   fixedWho                  if set, 'who' is hidden from the add form and always this value
-//   whoInputMode              'fixed' | 'freeform' — freeform shows a free-text who input (Unwind)
-//   showFrequency              show/collect a frequency field (Unwind only)
-//   showWeight                 show the 1-3 difficulty/points picker (Tori/Nova)
-//   showPoints                 show the points badge in the header (Tori/Nova)
-//   showHideCompletedToggle    show the Show done / Hide done toggle (Unwind, Nova)
-//   hideCompletedStorageKey    localStorage key for that toggle's state
-//   onChange                   called after any successful add/update/toggle/delete —
-//                               lets a sibling tile know to refresh
-
-// Same "name anywhere, whole word" rule the calendar events use, so a chore
-// assigned "Tori & Nova" shows on both kids' lists instead of neither.
-export function isWho(c, name) {
-  return mentionsPerson(c.who, String(name || '').trim())
-}
-
-function toArr(d) {
-  if (Array.isArray(d)) return d
-  if (d && Array.isArray(d.result)) return d.result
-  if (d && Array.isArray(d.items))  return d.items
-  if (d && Array.isArray(d.data))   return d.data
-  return []
-}
+//   namePlaceholder          add form: placeholder for the task name
+//   whoPlaceholder           add form: placeholder for who it's assigned to
+//   whoLabel                 details popup: label for the assigned person
+//   frequencyOptions         [{ value, label }] for the repeat-schedule picker
+//   hideCompletedStorageKey  localStorage key for the Show done / Hide done toggle
 
 function choreBadgeCls(dateStr) {
   const diff = getDayDiff(dateStr)
@@ -53,34 +29,23 @@ function choreBadgeCls(dateStr) {
   return 'upcoming'
 }
 
-const WEIGHT_LABELS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' }
-
 export default function ChoresList({
   title = 'To Do',
-  matchWho = null,
-  excludeWho = null,
-  fixedWho = null,
-  whoInputMode = fixedWho ? 'fixed' : 'freeform',
-  showFrequency = false,
-  frequencyOptions = null, // if provided, renders a <select> instead of free text
-  showWeight = true,
-  showPoints = true,
-  showHideCompletedToggle = false,
+  frequencyOptions = [],
   hideCompletedStorageKey = 'chores_hide_completed',
   namePlaceholder = 'Task',
   whoPlaceholder = 'Who? (e.g. Mom, Dad, Everyone)',
   whoLabel = 'Who',
-  onChange,
 }) {
   const [chores, setChores]       = useState([])
   const [loading, setLoading]     = useState(true)
   const [showAdd, setShowAdd]     = useState(false)
   const [editChore, setEditChore] = useState(null)
   const [detail, setDetail]       = useState(null)
-  const [form, setForm] = useState({ name: '', who: fixedWho || '', frequency: '', dueDate: '', weight: 2, notes: '' })
+  const [form, setForm] = useState({ name: '', who: '', frequency: '', dueDate: '', notes: '' })
   const [saving, setSaving] = useState(false)
   const [hideCompleted, setHideCompleted] = useState(
-    () => showHideCompletedToggle && localStorage.getItem(hideCompletedStorageKey) !== 'false'
+    () => localStorage.getItem(hideCompletedStorageKey) !== 'false'
   )
 
   function toggleHideCompleted() {
@@ -91,39 +56,27 @@ export default function ChoresList({
     })
   }
 
-  const points = showPoints ? chores.reduce((sum, c) => sum + (c.done ? (c.weight || 1) : 0), 0) : 0
   const doneCount = chores.filter(c => c.done).length
-  const visibleChores =(showHideCompletedToggle && hideCompleted) ? chores.filter(c => !c.done) : chores
-
-  // Depend on a joined string, not the array reference itself — a caller
-  // passing an inline array literal (e.g. excludeWho={['tori','nova']})
-  // would otherwise get a new reference every render, making this
-  // useCallback (and the effect below) refire and refetch on every
-  // unrelated re-render of the parent page.
-  const excludeWhoKey = excludeWho ? excludeWho.join(',') : ''
+  const visibleChores = hideCompleted ? chores.filter(c => !c.done) : chores
 
   const load = useCallback(async () => {
     try {
       const res  = await apiFetch(`${SCRIPTS.CHORES}?type=chores`)
       const data = await res.json()
-      let filtered = toArr(data)
-      if (matchWho)   filtered = filtered.filter(c => isWho(c, matchWho))
-      if (excludeWho) filtered = filtered.filter(c => !excludeWho.some(name => isWho(c, name)))
-      filtered = filtered.sort((a, b) => {
+      const sorted = toArr(data).sort((a, b) => {
         const da = getDayDiff(a.dueDate), db = getDayDiff(b.dueDate)
         if (isNaN(da) && isNaN(db)) return 0
         if (isNaN(da)) return 1
         if (isNaN(db)) return -1
         return da - db
       })
-      setChores(filtered)
+      setChores(sorted)
     } catch (e) {
       console.error('chores load', e)
     } finally {
       setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchWho, excludeWhoKey])
+  }, [])
 
   useEffect(() => { load() }, [load])
 
@@ -137,7 +90,6 @@ export default function ChoresList({
       fd.append('idx', String(id))
       fd.append('done', String(!done))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      onChange?.()
     } catch (e) {
       console.error('toggle chore', e)
       setChores(chores)
@@ -146,7 +98,7 @@ export default function ChoresList({
 
   function openAdd() {
     setEditChore(null)
-    setForm({ name: '', who: fixedWho || '', frequency: '', dueDate: '', weight: 2, notes: '' })
+    setForm({ name: '', who: '', frequency: '', dueDate: '', notes: '' })
     setShowAdd(true)
   }
 
@@ -155,10 +107,9 @@ export default function ChoresList({
     setEditChore({ ...chore })
     setForm({
       name:      chore.name      || '',
-      who:       chore.who       || fixedWho || '',
+      who:       chore.who       || '',
       frequency: chore.frequency || '',
       dueDate:   chore.dueDate   || '',
-      weight:    chore.weight    || 2,
       notes:     chore.notes     || '',
     })
     setShowAdd(true)
@@ -171,10 +122,9 @@ export default function ChoresList({
       const fd = new FormData()
       fd.append('type', 'chores')
       fd.append('name', form.name.trim())
-      fd.append('who', (fixedWho || form.who || '').trim())
-      if (showFrequency) fd.append('frequency', form.frequency)
+      fd.append('who', form.who.trim())
+      fd.append('frequency', form.frequency)
       fd.append('dueDate', form.dueDate)
-      if (showWeight) fd.append('weight', String(form.weight))
       fd.append('notes', form.notes.trim())
       if (editChore !== null) {
         fd.append('action', 'update')
@@ -185,7 +135,6 @@ export default function ChoresList({
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
       setShowAdd(false)
       load()
-      onChange?.()
     } catch (e) {
       console.error('chore submit', e)
     } finally {
@@ -203,7 +152,6 @@ export default function ChoresList({
       fd.append('type', 'chores')
       fd.append('idx', String(id))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
-      onChange?.()
     } catch (e) {
       console.error('delete chore', e)
       setChores(prev)
@@ -215,16 +163,13 @@ export default function ChoresList({
       <Panel>
         <PanelHeader
           title={title}
-          badge={showPoints && points > 0 ? <><Icon name="trophy" size="1em" /> {points} pts</> : null}
           actions={
             <>
-              {showHideCompletedToggle && (
-                <button
-                  className="add-btn"
-                  onClick={toggleHideCompleted}
-                  title={hideCompleted ? 'Completed tasks are hidden — click to show them' : 'Hide completed tasks'}
-                >{hideCompleted ? `Show done${doneCount ? ` (${doneCount})` : ''}` : 'Hide done'}</button>
-              )}
+              <button
+                className="add-btn"
+                onClick={toggleHideCompleted}
+                title={hideCompleted ? 'Completed tasks are hidden — click to show them' : 'Hide completed tasks'}
+              >{hideCompleted ? `Show done${doneCount ? ` (${doneCount})` : ''}` : 'Hide done'}</button>
               <button className="add-btn" onClick={openAdd}><Icon name="plus" size="1em" /> Add</button>
             </>
           }
@@ -242,12 +187,7 @@ export default function ChoresList({
                     <div key={c.id ?? i} className="chore-item" style={{ cursor: 'pointer' }}
                       onClick={e => { if (!e.target.closest('.chore-item-actions')) setDetail(c) }}>
                       <span className={`chore-item-name${c.done ? ' done' : ''}`}>{c.name}</span>
-                      {whoInputMode === 'freeform' && <PersonTag name={c.who} />}
-                      {showWeight && (
-                        <span className="chore-item-weight" title={WEIGHT_LABELS[c.weight || 1]}>
-                          {Array.from({ length: c.weight || 1 }, (_, i) => <Icon key={i} name="star" size="0.95em" filled />)}
-                        </span>
-                      )}
+                      <PersonTag name={c.who} />
                       {badge && (
                         <span className={`countdown-badge ${badge}`}>{formatDateShort(c.dueDate)}</span>
                       )}
@@ -276,24 +216,18 @@ export default function ChoresList({
               <span className="detail-label">Status</span>
               <span className="detail-value">{detail.done ? <><Icon name="check" size="1em" /> Done</> : 'Not done'}</span>
             </div>
-            {whoInputMode === 'freeform' && detail.who && (
+            {detail.who && (
               <div className="detail-row">
                 <span className="detail-label">{whoLabel}</span>
                 <span className="detail-value"><PersonTag name={detail.who} /></span>
               </div>
             )}
-            {showFrequency && detail.frequency && (
+            {detail.frequency && (
               <div className="detail-row">
                 <span className="detail-label">Frequency</span>
                 <span className="detail-value">
-                  {frequencyOptions?.find(o => o.value === detail.frequency)?.label || detail.frequency}
+                  {frequencyOptions.find(o => o.value === detail.frequency)?.label || detail.frequency}
                 </span>
-              </div>
-            )}
-            {showWeight && (
-              <div className="detail-row">
-                <span className="detail-label">Difficulty</span>
-                <span className="detail-value">{WEIGHT_LABELS[detail.weight || 1]}</span>
               </div>
             )}
             {detail.dueDate && (
@@ -322,36 +256,16 @@ export default function ChoresList({
             <input className="overlay-input" placeholder={namePlaceholder} value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus
               onKeyDown={e => e.key === 'Enter' && submitForm()} />
-            {whoInputMode === 'freeform' && (
-              <input className="overlay-input" placeholder={whoPlaceholder} value={form.who}
-                onChange={e => setForm(f => ({ ...f, who: e.target.value }))} />
-            )}
-            {showFrequency && (
-              frequencyOptions ? (
-                <select className="overlay-input" value={form.frequency}
-                  onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}>
-                  {frequencyOptions.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              ) : (
-                <input className="overlay-input" placeholder="Frequency (e.g. Weekly)" value={form.frequency}
-                  onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))} />
-              )
-            )}
+            <input className="overlay-input" placeholder={whoPlaceholder} value={form.who}
+              onChange={e => setForm(f => ({ ...f, who: e.target.value }))} />
+            <select className="overlay-input" value={form.frequency}
+              onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}>
+              {frequencyOptions.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
             <input className="overlay-input" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
-            {showWeight && (
-              <div className="weight-picker">
-                {[1, 2, 3].map(w => (
-                  <button key={w} type="button"
-                    className={`weight-btn${form.weight === w ? ' active' : ''}`}
-                    onClick={() => setForm(f => ({ ...f, weight: w }))}>
-                    {WEIGHT_LABELS[w]}
-                  </button>
-                ))}
-              </div>
-            )}
             <textarea
               className="overlay-input"
               placeholder="Notes (optional)"

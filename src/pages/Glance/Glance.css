@@ -5,12 +5,6 @@
    and the 7-day lookahead share the full-width left column; the bulletin
    board holds the full-height right column.
 
-   A 4th "Upcoming" tile used to sit next to Today/Hero (everything after
-   it, as a flat list) but it just duplicated the Lookahead grid in a
-   worse shape — a recurring event like weekly trash pickup shows up once
-   per grid day but once per LIST ROW, so it drowned out everything else.
-   Removed rather than replaced.
-
        ┌─────────────────────┬─────────┐
        │        today        │         │
        ├──────────────────── ┤ bulletin│
@@ -104,10 +98,7 @@
   font-size: var(--fs-md);
 }
 
-/* Small uppercase tile label, shared by Sports + Lookahead. cqw/cqh
-   resolves against whichever tile it's actually sitting in (Today vs
-   Lookahead have different container boxes), so this scales correctly
-   in both places without needing a per-tile override. */
+/* Small uppercase tile label ("TODAY", "FURTHER OUT", "NEXT 7 DAYS") */
 .glance-card-label {
   font-size: var(--fs-xs);
   font-weight: 700;
@@ -117,12 +108,8 @@
   flex-shrink: 0;
 }
 
-/* Urgency tint classes (.urgency-today/-tomorrow/-later) now live in
-   global.css — And Stuff's Upcoming Events list uses them too. */
-
 /* ══════════════════════════════════════════
-   TODAY CARD — today's events (left) + a peek beyond today (right)
-   Replaces the old single-event Hero (see 2026-08-21 note up top).
+   TODAY CARD — today's events (left) + Further Out (right)
 ══════════════════════════════════════════ */
 
 .glance-today-card {
@@ -130,7 +117,7 @@
   flex-direction: row;
   background: linear-gradient(165deg, var(--surface) 0%, var(--surface2) 100%);
   /* The one size everything else in the tile ranks off of — the
-     center-stage title. Stack rows and Coming Up rows both key their
+     center-stage title. Stack rows and Further Out rows both key their
      own title size off this (see below) so the tile always reads as
      "one main event, everything else clearly secondary."
      cqw/cqh here resolve against the viewport (this card isn't a size
@@ -364,7 +351,7 @@
 .glance-upcoming-row:last-child { border-bottom: none; }
 
 /* Sports get the same green edge treatment as the Lookahead pills and
-   And Stuff's list, so they're pickable out of the Coming Up list too. */
+   And Stuff's list, so they're pickable out of Further Out too. */
 .glance-upcoming-row.is-sport {
   border-left: 2px solid var(--accent6);
   padding-left: 8px;
@@ -664,7 +651,7 @@
   .glance-today-divider { width: auto; height: 1px; margin: 4px 18px; }
   /* Once stacked, the desktop flex:1.5/1 (0 basis) split would divide the
      card's fixed height between the halves instead of letting each grow
-     to its content — that squeezed Coming Up into an inner scroll. Size
+     to its content — that squeezed Further Out into an inner scroll. Size
      both halves (and the list) to their content so the tile grows. */
   .glance-today-left,
   .glance-today-right { flex: none; }
@@ -696,13 +683,7 @@
 .glance-tappable { cursor: pointer; }
 .glance-tappable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
-.glance-event-modal { position: relative; width: min(420px, calc(100vw - 32px)); }
-.glance-event-modal-close {
-  position: absolute; top: 8px; right: 8px;
-  min-width: 40px; min-height: 40px;
-  background: none; border: none; color: var(--muted);
-  font-size: var(--fs-lg); cursor: pointer;
-}
+.glance-event-modal { width: min(420px, calc(100vw - 32px)); }
 .glance-event-modal-kicker {
   font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em;
   color: var(--accent5); font-weight: 700;

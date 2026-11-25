@@ -204,15 +204,10 @@ export default function Unwind() {
       <div className="un-todo">
         <ChoresList
           title="To Do"
-          whoInputMode="freeform"
           namePlaceholder="e.g. Vacuum living room"
           whoPlaceholder="Assigned to (optional)"
           whoLabel="Assigned"
-          showFrequency
           frequencyOptions={FREQUENCY_OPTIONS}
-          showWeight={false}
-          showPoints={false}
-          showHideCompletedToggle
           hideCompletedStorageKey="family_chores_hide_completed"
         />
       </div>

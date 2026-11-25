@@ -19,7 +19,7 @@
 //    Apps Script editor → Services → + → Google Calendar API → Add
 //
 //  Tab names (case-sensitive):
-//    Chores           A=Name  B=Who  C=Frequency  D=DueDate  E=Done  F=Weight(1-3, blank=1)  G=Notes  H=CompletedAt
+//    Chores           A=Name  B=Who  C=Frequency  D=DueDate  E=Done  F=(unused, was Weight — keep the column)  G=Notes  H=CompletedAt
 //    Reminders        A=Name  B=Date
 //    Movies           A=Title  B=Type(movie/show)  C=Status
 //    Books            A=Title  B=Author  C=Category
@@ -260,8 +260,6 @@ function doGet(e) {
           ? Utilities.formatDate(dd, Session.getScriptTimeZone(), 'yyyy-MM-dd')
           : String(dueDateVal);
       }
-      var weightVal = parseInt(r[5], 10);
-      if (!(weightVal >= 1 && weightVal <= 3)) weightVal = 1;
       result.push({
         id:        i + 1,
         name:      r[0] || '',
@@ -269,7 +267,6 @@ function doGet(e) {
         frequency: r[2] || '',
         dueDate:   dueDateStr,
         done:      r[4] === true || r[4] === 'TRUE' || r[4] === 1,
-        weight:    weightVal,
         notes:     r[6] || '',
         completedAt: r[7] || ''
       });
@@ -606,9 +603,8 @@ function doPost(e) {
   if (type === 'chores') {
     var sheet = getSheet('Chores');
     if (action === 'add') {
-      var addWeight = parseInt(p.weight, 10);
-      if (!(addWeight >= 1 && addWeight <= 3)) addWeight = 1;
-      sheet.appendRow([p.name || '', p.who || '', p.frequency || '', p.dueDate || '', false, addWeight, p.notes || '', '']);
+      // Column F (old Weight) is left blank so Notes/CompletedAt stay in G/H
+      sheet.appendRow([p.name || '', p.who || '', p.frequency || '', p.dueDate || '', false, '', p.notes || '', '']);
       return json({ status: 'ok' });
     }
     if (action === 'update') {
@@ -618,11 +614,6 @@ function doPost(e) {
         sheet.getRange(row, 2).setValue(p.who       || '');
         sheet.getRange(row, 3).setValue(p.frequency || '');
         if (p.dueDate !== undefined) sheet.getRange(row, 4).setValue(p.dueDate || '');
-        if (p.weight  !== undefined) {
-          var updWeight = parseInt(p.weight, 10);
-          if (!(updWeight >= 1 && updWeight <= 3)) updWeight = 1;
-          sheet.getRange(row, 6).setValue(updWeight);
-        }
         if (p.notes !== undefined) sheet.getRange(row, 7).setValue(p.notes || '');
       }
       return json({ status: 'ok' });
@@ -835,7 +826,7 @@ function listMyCalendars() {
 //  See the header comment at the top of this file for one-time setup.
 // ═══════════════════════════════════════════════════════════════
 
-// Mirrors src/pages/Home/homeUtils.js on the frontend (EVENT_PEOPLE,
+// Mirrors src/utils/calendar.js on the frontend (EVENT_PEOPLE,
 // SPORTS_KEYWORDS, ERRAND_RE, parsePersonEvent, classifyEvent) so a "Tori - Dentist
 // Appointment" event reads the same way in the email as it does on the
 // At A Glance page — kid name pulled out as a badge, sport keyword
@@ -852,7 +843,7 @@ var DIGEST_SPORTS_RE = new RegExp(
 );
 
 // Errands for a sports event ("Pick up Tori from practice") aren't the
-// event itself — see homeUtils.js's ERRAND_RE.
+// event itself — see calendar.js's ERRAND_RE.
 var DIGEST_ERRAND_RE = /^\s*(?:pick[\s-]*up|drop[\s-]*off|drive|take|bring|get)\b/i;
 
 function digestHasSportsKeyword(text) {
@@ -867,12 +858,12 @@ function digestParsePersonEvent(summary, name) {
 }
 
 // Kid's name anywhere in the title, as a whole word ("Pick up Tori",
-// "Meet - Tori") — see homeUtils.js's mentionsPerson.
+// "Meet - Tori") — see calendar.js's mentionsPerson.
 function digestMentionsPerson(summary, name) {
   return new RegExp('\\b' + name + '\\b', 'i').test(String(summary || ''));
 }
 
-// Returns { isSports, person, title } — see homeUtils.js's classifyEvent.
+// Returns { isSports, person, title } — see calendar.js's classifyEvent.
 // Exactly one person named anywhere → their badge; none or several (a
 // joint event) → no badge, full title.
 function digestClassifyEvent(summary) {
@@ -886,7 +877,7 @@ function digestClassifyEvent(summary) {
   // "Mom's birthday" → "Birthday"
   var stripped = digestParsePersonEvent(raw, person);
   var title = stripped ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : raw;
-  // Errand check on both the full and the stripped title — see homeUtils.js
+  // Errand check on both the full and the stripped title — see calendar.js
   return { isSports: digestHasSportsKeyword(raw) && !DIGEST_ERRAND_RE.test(title), person: person, title: title };
 }
 
@@ -904,7 +895,7 @@ var DIGEST_COLORS = {
   surface: '#181c27',
   border:  '#2a3045',
   accent:  '#e8b86d',
-  accent6: '#88c9a8', // sports green — matches the Lookahead grid's sport pills
+  accent6: '#88c9a8', // sports green — matches the 7-day strip's sport pills
   text:    '#e8eaf0',
   muted:   '#8891a8'
 };
@@ -946,9 +937,7 @@ function getDigestChores() {
     var dd = new Date(dueDateVal);
     if (isNaN(dd.getTime())) continue;
     var dueStr = Utilities.formatDate(dd, tz, 'yyyy-MM-dd');
-    var weightVal = parseInt(r[5], 10);
-    if (!(weightVal >= 1 && weightVal <= 3)) weightVal = 1;
-    var item = { name: r[0] || '', who: r[1] || '', weight: weightVal };
+    var item = { name: r[0] || '', who: r[1] || '' };
     if (dueStr <= todayStr) today.push(item);            // overdue folds into today
     else if (dueStr === tomorrowStr) tomorrow.push(item);
   }
@@ -982,7 +971,7 @@ function getDigestFamilyReminders() {
 }
 
 // One <tr> per event — time, kid badge, sport medal (with the same
-// green accent-edge treatment the Lookahead grid and Coming Up rows use
+// green accent-edge treatment the 7-day strip and Further Out rows use
 // for sports), title, location. The last row in a section drops its
 // bottom border, matching .glance-today-row:last-child in the app.
 function digestEventRowHtml(ev, i, arr) {
@@ -1044,7 +1033,7 @@ function digestDaySectionHtml(label, day) {
 
 // One row in the chores/reminders tile — checkbox glyph for a chore
 // (with its kid badge, reusing the same DIGEST_PERSON_COLOR map as
-// events, and a ★ weight indicator matching ChoresList's star display),
+// events),
 // pushpin glyph for a family reminder. Combined into one flat list per
 // day (rather than two separately-bordered mini-lists) so the last-row
 // border logic reads as one clean list, not two stacked with an odd gap
@@ -1068,13 +1057,11 @@ function digestTaskRowHtml(item, i, arr) {
       'text-transform:uppercase;letter-spacing:0.04em;color:' + whoColor +
       ';margin-right:6px;">' + digestEscapeHtml(item.who) + '</span>'
     : '';
-  var stars = new Array((item.weight || 1) + 1).join('★'); // GAS/ES5 — no String.prototype.repeat
   return '' +
     '<tr>' +
       '<td style="padding:9px 0;' + rowBorder + 'width:22px;font-size:13px;color:' + c.muted + ';vertical-align:top;">☐</td>' +
       '<td style="padding:9px 0 9px 6px;' + rowBorder + 'font-size:14px;color:' + c.text + ';">' +
         badge + digestEscapeHtml(item.name) +
-        ' <span style="font-size:11px;color:' + c.muted + ';">' + stars + '</span>' +
       '</td>' +
     '</tr>';
 }
@@ -1088,7 +1075,7 @@ function digestTasksSectionHtml(label, chores, reminders) {
   var c = DIGEST_COLORS;
   var items = [];
   chores.forEach(function(ch) {
-    items.push({ kind: 'chore', name: ch.name, who: ch.who, weight: ch.weight });
+    items.push({ kind: 'chore', name: ch.name, who: ch.who });
   });
   reminders.forEach(function(r) {
     items.push({ kind: 'reminder', text: r.text });

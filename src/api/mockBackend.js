@@ -1,20 +1,20 @@
 // ── Local-only mock backend (VITE_SKIP_AUTH dev mode) ────────────────
 // Stands in for every Google Apps Script endpoint the app normally talks
-// to (chores, bulletin, movies/books, wishlists, Tori/Nova events &
-// reminders, meals, grocery, and the calendar's "upcoming" feed), so
+// to (chores, bulletin, movies/books, wishlists, recipes, meals, grocery,
+// and the calendar's "upcoming" feed), so
 // layout/framework work can happen fully offline with data that looks
 // real instead of empty panels. Everything below lives in memory only —
 // it resets on every page reload and never touches a real spreadsheet,
 // calendar, or network. Wired in from apiFetch() in scripts.js, which is
 // the only caller; nothing else should import this directly.
 
-function pad2(n) { return String(n).padStart(2, '0') }
+import { dateParts } from '../utils/calendar'
 
 function daysFromToday(offset) {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   d.setDate(d.getDate() + offset)
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+  return dateParts(d)
 }
 
 function shortDate(offset) {
@@ -36,24 +36,24 @@ function nextIdFor(store, key = 'id') {
 // ── Seed data ──────────────────────────────────────────────────────
 
 let choresStore = [
-  { id: 1, name: 'Take out recycling',       who: '',     frequency: 'Weekly',   dueDate: daysFromToday(0),  done: false, weight: 1, notes: '', completedAt: '' },
-  { id: 2, name: 'Vacuum living room',       who: '',     frequency: '',         dueDate: daysFromToday(2),  done: false, weight: 2, notes: '', completedAt: '' },
-  { id: 3, name: 'Clean fish tank',          who: 'dad',  frequency: 'Monthly',  dueDate: daysFromToday(5),  done: false, weight: 2, notes: 'Filter needs replacing too', completedAt: '' },
-  { id: 4, name: 'Feed the cat',             who: 'tori', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  weight: 1, notes: '', completedAt: hoursAgo(2) },
-  { id: 5, name: 'Clean room',               who: 'tori', frequency: '',         dueDate: daysFromToday(-1), done: false, weight: 2, notes: '', completedAt: '' },
-  { id: 6, name: 'Homework check-in',        who: 'tori', frequency: 'Weekdays', dueDate: daysFromToday(1),  done: false, weight: 1, notes: '', completedAt: '' },
-  { id: 7, name: 'Unload dishwasher',        who: 'nova', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  weight: 1, notes: '', completedAt: hoursAgo(5) },
-  { id: 8, name: 'Practice piano',           who: 'nova', frequency: '',         dueDate: daysFromToday(3),  done: false, weight: 2, notes: '30 minutes', completedAt: '' },
-  { id: 9, name: 'Pack backpack for school', who: 'nova', frequency: 'Weekdays', dueDate: daysFromToday(0),  done: false, weight: 1, notes: '', completedAt: '' },
+  { id: 1, name: 'Take out recycling',       who: '',     frequency: 'Weekly',   dueDate: daysFromToday(0),  done: false, notes: '', completedAt: '' },
+  { id: 2, name: 'Vacuum living room',       who: '',     frequency: '',         dueDate: daysFromToday(2),  done: false, notes: '', completedAt: '' },
+  { id: 3, name: 'Clean fish tank',          who: 'dad',  frequency: 'Monthly',  dueDate: daysFromToday(5),  done: false, notes: 'Filter needs replacing too', completedAt: '' },
+  { id: 4, name: 'Feed the cat',             who: 'tori', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  notes: '', completedAt: hoursAgo(2) },
+  { id: 5, name: 'Clean room',               who: 'tori', frequency: '',         dueDate: daysFromToday(-1), done: false, notes: '', completedAt: '' },
+  { id: 6, name: 'Homework check-in',        who: 'tori', frequency: 'Weekdays', dueDate: daysFromToday(1),  done: false, notes: '', completedAt: '' },
+  { id: 7, name: 'Unload dishwasher',        who: 'nova', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  notes: '', completedAt: hoursAgo(5) },
+  { id: 8, name: 'Practice piano',           who: 'nova', frequency: '',         dueDate: daysFromToday(3),  done: false, notes: '30 minutes', completedAt: '' },
+  { id: 9, name: 'Pack backpack for school', who: 'nova', frequency: 'Weekdays', dueDate: daysFromToday(0),  done: false, notes: '', completedAt: '' },
   // Shared chore — "Tori & Nova" in Who shows on both kids' To Do lists
-  { id: 10, name: 'Tidy the playroom',       who: 'Tori & Nova', frequency: '', dueDate: daysFromToday(2),  done: false, weight: 2, notes: '', completedAt: '' },
+  { id: 10, name: 'Tidy the playroom',       who: 'Tori & Nova', frequency: '', dueDate: daysFromToday(2),  done: false, notes: '', completedAt: '' },
 ]
 
 let bulletinStore = [
-  { row: 4, text: 'Car pool swap — I have pickup Thursday',                who: 'Dad', date: shortDate(0),  color: 'blue'  },
-  { row: 3, text: 'Grandma is visiting this weekend 🎉',                    who: 'Mom', date: shortDate(-3), color: 'teal'  },
-  { row: 2, text: "Don't forget the permission slip for the field trip",   who: 'Dad', date: shortDate(-1), color: 'rose'  },
-  { row: 1, text: 'Picture day is the 14th — wear something nice!',        who: 'Mom', date: shortDate(2),  color: 'amber' },
+  { row: 4, text: 'Car pool swap — I have pickup Thursday',                who: 'Dad', date: shortDate(0) },
+  { row: 3, text: 'Grandma is visiting this weekend 🎉',                    who: 'Mom', date: shortDate(-3) },
+  { row: 2, text: "Don't forget the permission slip for the field trip",   who: 'Dad', date: shortDate(-1) },
+  { row: 1, text: 'Picture day is the 14th — wear something nice!',        who: 'Mom', date: shortDate(2) },
 ]
 
 let moviesStore = [
@@ -82,23 +82,6 @@ const wishlistStores = {
   ],
   dad_wishlist: [],
 }
-
-let toriEventsStore = [
-  { id: 1, name: 'Regional Wrestling Qualifier', type: 'Tournament', date: daysFromToday(9), location: 'Central High School' },
-]
-
-let toriRemindersStore = [
-  { id: 1, text: 'Turn in permission slip', date: daysFromToday(2) },
-  { id: 2, text: 'Return library books',    date: daysFromToday(6) },
-]
-
-let novaEventsStore = [
-  { id: 1, name: 'Spring Piano Recital', type: 'Recital', date: daysFromToday(12), location: 'Community Center' },
-]
-
-let novaRemindersStore = [
-  { id: 1, text: 'Bring show-and-tell item', date: daysFromToday(1) },
-]
 
 const mealStore = {
   Sunday:    'Roast chicken & veggies',
@@ -206,18 +189,6 @@ function handleGet(base, params) {
     return { error: 'unknown mock type: ' + type }
   }
 
-  if (base === 'mock://tori') {
-    if (type === 'events')    return [...toriEventsStore]
-    if (type === 'reminders') return [...toriRemindersStore]
-    return { error: 'unknown mock type: ' + type }
-  }
-
-  if (base === 'mock://nova') {
-    if (type === 'events')    return [...novaEventsStore]
-    if (type === 'reminders') return [...novaRemindersStore]
-    return { error: 'unknown mock type: ' + type }
-  }
-
   if (base === 'mock://meal')    return { ...mealStore }
   if (base === 'mock://grocery') return [...groceryStore]
 
@@ -235,7 +206,7 @@ function handlePost(base, fields) {
         choresStore.push({
           id: nextIdFor(choresStore), name: fields.name || '', who: fields.who || '',
           frequency: fields.frequency || '', dueDate: fields.dueDate || '',
-          done: false, weight: Number(fields.weight) || 1, notes: fields.notes || '', completedAt: '',
+          done: false, notes: fields.notes || '', completedAt: '',
         })
         return { status: 'ok' }
       }
@@ -246,7 +217,6 @@ function handlePost(base, fields) {
           c.who       = fields.who ?? c.who
           c.frequency = fields.frequency ?? c.frequency
           c.dueDate   = fields.dueDate ?? c.dueDate
-          c.weight    = fields.weight !== undefined ? (Number(fields.weight) || 1) : c.weight
           c.notes     = fields.notes ?? c.notes
         }
         return { status: 'ok' }
@@ -270,7 +240,7 @@ function handlePost(base, fields) {
         bulletinStore.unshift({
           row: nextIdFor(bulletinStore, 'row'),
           text: fields.text || '', who: fields.who || 'Someone',
-          date: fields.date || shortDate(0), color: fields.color || 'amber',
+          date: fields.date || shortDate(0),
         })
         return { status: 'ok' }
       }
@@ -338,39 +308,6 @@ function handlePost(base, fields) {
       if (action === 'update') {
         const item = store.find(i => i.id === Number(fields.idx))
         if (item) item.text = fields.text || ''
-        return { status: 'ok' }
-      }
-      if (action === 'delete') {
-        setStore(store.filter(i => i.id !== Number(fields.idx)))
-        return { status: 'ok' }
-      }
-    }
-  }
-
-  if (base === 'mock://tori' || base === 'mock://nova') {
-    const isTori = base === 'mock://tori'
-    if (type === 'events') {
-      const store = isTori ? toriEventsStore : novaEventsStore
-      const setStore = (next) => { if (isTori) toriEventsStore = next; else novaEventsStore = next }
-      if (action === 'add') {
-        store.push({ id: nextIdFor(store), name: fields.name || '', type: fields.evtType || '', date: fields.date || '', location: fields.location || '' })
-        return { status: 'ok' }
-      }
-      if (action === 'delete') {
-        setStore(store.filter(i => i.id !== Number(fields.idx)))
-        return { status: 'ok' }
-      }
-    }
-    if (type === 'reminders') {
-      const store = isTori ? toriRemindersStore : novaRemindersStore
-      const setStore = (next) => { if (isTori) toriRemindersStore = next; else novaRemindersStore = next }
-      if (action === 'add') {
-        store.push({ id: nextIdFor(store), text: fields.text || '', date: fields.date || '' })
-        return { status: 'ok' }
-      }
-      if (action === 'update') {
-        const item = store.find(i => i.id === Number(fields.idx))
-        if (item) { item.text = fields.text || ''; item.date = fields.date || '' }
         return { status: 'ok' }
       }
       if (action === 'delete') {

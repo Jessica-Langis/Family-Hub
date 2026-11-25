@@ -4,3 +4,5 @@ dist/
 *.local
 .env
 .env.local
+# Claude Code's per-machine permissions — local paths, not project config
+.claude/settings.local.json

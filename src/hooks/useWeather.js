@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { WEATHER_CONFIG } from '../api/scripts'
 import { cacheGet, cacheSet } from '../utils/cache'
+import { dateParts, DAY_ABBR } from '../utils/calendar'
 
 const NWS_HEADERS = { 'User-Agent': 'FamilyHubApp (family-hub)' }
-const DAY_LABELS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
 // The NWS "points" lookup just resolves lat/lon → forecast office grid —
 // for a fixed home location that answer never changes, so there's no
@@ -43,10 +43,6 @@ function nwsToIcon(shortForecast) {
   if (f.includes('sunny')        || f.includes('clear'))                return '☀️'
   return '🌡️'
 }
-
-// Local yyyy-mm-dd (toISOString would give the UTC date)
-const localDate = d =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 // One forecast request at a time for the whole app — the top bar and At a
 // Glance's 7-day strip both use this hook, and on a cold cache they'd
@@ -116,7 +112,7 @@ async function fetchForecast() {
   for (let i = 0; result.length < FORECAST_DAYS && i < 8; i++) {
     const d       = new Date(today)
     d.setDate(d.getDate() + i)
-    const dateStr = localDate(d)
+    const dateStr = dateParts(d)
     const entry   = byDate.get(dateStr)
     if (!entry) continue
 
@@ -126,7 +122,7 @@ async function fetchForecast() {
 
     result.push({
       date:      dateStr,
-      name:      i === 0 ? 'Today' : DAY_LABELS[d.getDay()],
+      name:      i === 0 ? 'Today' : DAY_ABBR[d.getDay()],
       high:      entry.high ?? null,
       low:       entry.low  ?? null,
       icon:      entry.icon      ?? '🌡️',

@@ -5,74 +5,35 @@ import useAutoFit from '../../hooks/useAutoFit'
 import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale, byDateThenTime, shortTime, countdownWhen,
-} from '../Home/homeUtils'
+  centerStageCountdown, isCenterStageStale, byDateThenTime, shortTime, countdownWhen, DAY_ABBR,
+} from '../../utils/calendar'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
 import Icon from '../../components/Icon/Icon'
 import FitList from '../../components/FitList/FitList'
 
 // ── At a Glance — walk-by kiosk screen near the front door ──────────
-// This screen is visible to guests, not just the family, which rules out
-// anything personal (chores, who's-home) — so it stays purely calendar +
-// bulletin. Three tiles, nothing rotating, everything visible at once:
-//   • Today (top-left)  split tile: any all-day events sit in a small
-//                       banner above everything (see 2026-08-26 below),
-//                       then today's timed events stack on the left
-//                       (closest one gets the center-stage countdown,
-//                       already-passed ones stay in the stack but dim
-//                       out), events from beyond the 7-day strip on the
-//                       right ("Further Out", see 2026-10-28 below)
-//   • Lookahead (bottom) compact 7-day strip of everything, sports
-//                       visually distinct, with each day's forecast
-//   • Bulletin (right)  compact strip, full height
-//
-// A 4th "Upcoming" tile (a flat list of everything after Today) used to
-// sit next to it, but it just duplicated the Lookahead grid in a
-// different shape — worse, actually, since a recurring event (e.g. a
-// weekly "Garbage to street") shows up as one line per occurrence in a
-// flat list, but only once per day in the grid. Removed rather than
-// replaced; Today and Lookahead take the full width instead.
-//
-// 2026-08-21: replaced the old single-event Hero (biggest countdown =
-// the very next event, full stop) with this split Today tile. Hero's
-// "next event of any kind" pick meant a same-day all-day entry (e.g.
-// "Family Movie Night") could occupy the spotlight ahead of a still-
-// upcoming timed event later that same day, and its day-level countdown
-// ("TODAY") had no granularity once something was actually close. See
-// design-session-log.md for the fuller writeup.
-//
-// 2026-08-26: all-day events pulled out of center-stage contention
-// entirely — they now render as their own small (~16pt) banner above
-// the stack instead of sorting first and grabbing the spotlight. The
-// first still-relevant *timed* event today always gets center stage
-// with its minutes/hours countdown; the rest of the stack, plus the
-// Coming Up rows on the right, are sized at ~40% of that center-stage
-// title (via the --main-event-title-size custom property in Glance.css)
-// so everything visibly ranks off the one event that matters most.
-//
-// 2026-10-28: three changes from a review of the page as a walk-by screen.
-//   • Once today's timed events are all over (using their end times, so
-//     a long game still in progress keeps today up), the Today tile
-//     spotlights Tomorrow instead of a dimmed list of what already
-//     happened — evenings are when tomorrow matters. A day with no timed
-//     events at all switches at noon. Today's all-day items stay up as a
-//     small "Also today" line.
-//   • "Coming Up" duplicated the 7-day strip right below it. It's now
-//     "Further Out": the next few events *after* the 7-day window, with
-//     their dates, so big things show up early. Recurring events already
-//     in the strip (weekly trash, practices) are skipped.
-//   • The 7-day strip shows each day's forecast, kid names in their own
-//     colors on their own line, and start times only, so titles get the
-//     whole column width instead of breaking mid-word.
-//   • The calendar refreshes every 15 min (was hourly) and right away when
-//     the screen wakes up. A small "Updated 4:12 PM" note in the 7-day
-//     header turns into a warning when loads fail or the data is over 2h
-//     old, and a failed load keeps the last good calendar on screen
-//     instead of wiping it to "Nothing today".
+// Visible to guests, not just the family, so it stays calendar + bulletin
+// only (no chores, nothing personal). Three tiles, nothing rotating:
+//   • Today (top-left)   all-day events in a small banner on top; timed
+//                        events stack below, the next one gets a big
+//                        center-stage countdown and finished ones dim.
+//                        Once today's timed events are over (by their end
+//                        times), it spotlights Tomorrow instead, keeping
+//                        today's all-day items as an "Also today" line.
+//                        The right half, "Further Out", lists the next few
+//                        events after the 7-day strip, skipping anything
+//                        recurring that the strip already shows.
+//   • Next 7 days        one column per day with that day's forecast
+//     (bottom)           and events; sports get a green edge.
+//   • Bulletin (right)   notes plus tonight's dinner.
+// Every event opens a details pop-up on tap. The calendar refreshes every
+// 15 minutes and when the screen wakes; the strip's "Updated 4:12 PM" note
+// turns into a warning if loads fail or the data is over 2 hours old, and a
+// failed load keeps the last good calendar on screen.
+// History of how the page got here: design-session-log.md.
 
 const LOOKAHEAD_DAYS = 7
-const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
 // Capped so the tile's height stays predictable even on a packed day —
 // same "+N more" pattern Bulletin already uses.
@@ -253,7 +214,7 @@ class GlanceErrorBoundary extends Component {
   }
 }
 
-// ── Today tile — replaces the old single-event Hero. Left side stacks
+// ── Today tile. Left side stacks
 // everything happening today (or tomorrow, once today is done — closest
 // still-relevant one gets center stage, already-passed ones stay in the
 // stack but dim out); right side shows what's coming after the 7-day
@@ -410,7 +371,7 @@ function EventDetailModal({ ev, onClose }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box glance-event-modal" role="dialog" aria-modal="true" aria-label="Event details">
-        <button className="glance-event-modal-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
+        <button className="overlay-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
         <div className="glance-event-modal-kicker">
           <Icon name={ev.isSports ? 'medal' : 'calendar'} size="1em" /> {countdownLabel(ev.date)}
         </div>
@@ -563,11 +524,7 @@ export default function Glance() {
         <TodayTile spotlight={spotlight} furtherOut={furtherOut} loaded={!!lastUpdated} loadFailed={loadFailed} onOpen={setSelected} />
         <LookaheadCard days={lookahead} status={{ lastUpdated, loadFailed }} onOpen={setSelected} />
         <div className="glance-col-bulletin">
-          <BulletinPanel
-            compact
-            bodyClassName="bulletin-strip-compact"
-            style={{ height: '100%' }}
-          />
+          <BulletinPanel style={{ height: '100%' }} />
         </div>
       </div>
       {selected && <EventDetailModal ev={selected} onClose={() => setSelected(null)} />}

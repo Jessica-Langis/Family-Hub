@@ -3,17 +3,14 @@ import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import {
   evSummary, dateParts, classifyEvent, urgencyClass, countdownWhen, isStale, byDateThenTime,
-} from '../../pages/Home/homeUtils'
+} from '../../utils/calendar'
 import './UpcomingEventsList.css'
 import Icon from '../Icon/Icon'
 import FitList from '../FitList/FitList'
 
 // ── Upcoming Events — And Stuff's "sit and plan" tile ────────────────
-// Replaces the old 2-week day-grid with a flat, ranked list — same shape
-// as At a Glance's Hero+Lookahead source list, just uncapped to the next
-// 20 events instead of "next" + "next 7 days". A day grid is glanceable
-// at a distance; here there's room to just list things out with a
-// countdown per row, same as Glance's now-removed Upcoming tile did.
+// A flat list of the next 20 calendar events, each with its countdown,
+// date and time. What doesn't fit sits behind "+N more" (FitList).
 
 const EVENT_LIMIT = 20
 

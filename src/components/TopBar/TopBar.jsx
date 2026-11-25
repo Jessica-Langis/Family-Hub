@@ -11,8 +11,10 @@ import './TopBar.css'
 export default function TopBar({ tab, compact = false }) {
   const { clock, date }      = useClock()
   const { days, loading }    = useWeather()
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-  const visibleDays = days.slice(0, compact ? 1 : isMobile ? 3 : 5)
+  // At a Glance (compact) shows today only; otherwise up to 5 days, and
+  // TopBar.css hides the later ones as the screen narrows — CSS, so it
+  // follows a resize or rotation, which a width check here wouldn't
+  const visibleDays = days.slice(0, compact ? 1 : 5)
 
   return (
     <div className={`topbar${compact ? ' compact' : ''}`}>

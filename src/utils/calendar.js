@@ -1,5 +1,13 @@
+// ── Calendar & date helpers ──────────────────────────────────────
+// Shared by every page: date formatting, countdown wording, calendar
+// event classification (who it's for, sports or not) and US holidays.
+
 // ── Date helpers ────────────────────────────────────────────
-export const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+export const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+export const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+export const DAY_ABBR  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+
+const pad2 = n => String(n).padStart(2, '0')
 
 export function normalizeDate(dateStr) {
   if (!dateStr) return null
@@ -45,15 +53,14 @@ export function mentionsPerson(summary, name) {
 }
 
 // ── Shared calendar-event shape helpers ────────────────────────
-// Calendar payloads come back either as bare strings or as objects, so
-// every consumer needs these two. They used to be redefined in Glance,
-// TwoWeekCalendar and Unwind independently.
+// Calendar payloads come back either as bare strings or as objects.
 export function evSummary(ev) {
   return typeof ev === 'string' ? ev : (ev.summary || ev.name || '')
 }
 
+// Local yyyy-mm-dd for a Date (toISOString would give the UTC date)
 export function dateParts(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
 // "9:30 AM" → 570, "12:15 PM" → 735, for sorting. Times are strings like
@@ -98,8 +105,8 @@ export function hasSportsKeyword(text) {
 }
 
 // Everyone whose name on a calendar event earns a colored name tag
-// (colors: --person-* in tokens.css). Mirrored in the GAS digest
-// (DIGEST_PEOPLE) — keep the two in sync.
+// (colors: --person-* in tokens.css). PersonTag uses the same list.
+// Mirrored in the GAS digest (DIGEST_PEOPLE) — keep the two in sync.
 export const EVENT_PEOPLE = ['Tori', 'Nova', 'Mom', 'Dad']
 
 // Returns { isSports, person, title } for a raw calendar summary.
@@ -132,9 +139,8 @@ export function urgencyClass(dateStr) {
   return 'later'
 }
 
-// "TODAY" / "TOMORROW" / "N DAYS" — shared between At a Glance's Hero tile
-// and And Stuff's Upcoming Events list so the two can't drift out of sync
-// on wording.
+// "TODAY" / "TOMORROW" / "N DAYS" — the day-level countdown wording used
+// across the app (event pop-ups, Further Out, Upcoming Events).
 export function countdownLabel(dateStr) {
   const d = getDayDiff(dateStr)
   if (isNaN(d)) return ''
@@ -155,7 +161,7 @@ export function countdownWhen(dateStr, timeStr) {
   const parts = [label]
   if (getDayDiff(dateStr) >= 2) {
     const d = normalizeDate(dateStr)
-    if (d) parts.push(`${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`)
+    if (d) parts.push(`${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}`)
   }
   if (timeStr) parts.push(shortTime(timeStr))
   return parts.filter(Boolean)
@@ -210,18 +216,6 @@ export function isCenterStageStale(dateStr, timeStr) {
   if (isNaN(start.getTime())) return false
   const minutesPast = (new Date() - start) / 60000
   return minutesPast >= 20
-}
-
-export function formatReminderDate(dateStr) {
-  if (!dateStr?.trim()) return ''
-  const today = new Date(); today.setHours(0,0,0,0)
-  const parsed = normalizeDate(dateStr)
-  if (!parsed) return ''
-  const diff = Math.round((parsed - today) / 86400000)
-  if (diff === 0)  return 'Today'
-  if (diff === 1)  return 'Tomorrow'
-  if (diff < 0)   return `${Math.abs(diff)}d ago`
-  return `${MONTHS[parsed.getMonth()]} ${parsed.getDate()}`
 }
 
 // ── US Holidays ──────────────────────────────────────────────
