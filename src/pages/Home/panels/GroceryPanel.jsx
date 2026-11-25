@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Panel, { PanelHeader } from '../../../components/Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../../api/scripts'
 import Icon from '../../../components/Icon/Icon'
+import FitList from '../../../components/FitList/FitList'
 import EmptyState from '../../../components/EmptyState/EmptyState'
 
 // Bought state lives in localStorage so it persists across refreshes
@@ -122,7 +123,7 @@ export default function GroceryPanel() {
         <span className={`quick-add-spinner${saving ? ' active' : ''}`}><Icon name="spinner" /></span>
       </div>
 
-      <div className="grocery-grid" id="grocery-list">
+      <FitList className="grocery-grid" id="grocery-list" title="Grocery List">
         {status === 'loading' && <div className="grocery-item" style={{ gridColumn: '1/-1', color: 'var(--muted)' }}>Loading…</div>}
         {status === 'error'   && <div className="grocery-item" style={{ gridColumn: '1/-1', color: 'var(--muted)' }}>Unavailable</div>}
         {status === 'ok' && sorted.length === 0 && (
@@ -144,7 +145,7 @@ export default function GroceryPanel() {
             ><Icon name="x" /></button>
           </div>
         ))}
-      </div>
+      </FitList>
     </Panel>
   )
 }

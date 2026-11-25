@@ -33,7 +33,7 @@ export default function TopBar({ tab, compact = false }) {
           <span className="weather-loading">Weather unavailable</span>
         ) : (
           visibleDays.map((d, i) => (
-            <div className="weather-day" key={i}>
+            <div className="weather-day" key={i} title={d.condition}>
               <div className="day-name">{d.name}</div>
               <WeatherIcon emoji={d.icon} className="weather-icon" />
               <div className="weather-text">

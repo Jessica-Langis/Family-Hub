@@ -1,0 +1,55 @@
+/* ── FitList — rows useAutoFit trimmed, and the "+N more" button ── */
+
+[data-fit-hidden] { display: none !important; }
+
+/* Lists never scroll on a fitted screen — anything that doesn't fit is
+   trimmed behind "+N more" instead. (Doubled attribute: outranks each
+   list's own `overflow-y: auto` whatever order the stylesheets load in.)
+   Phones scroll the whole page and show every row, so they keep theirs. */
+@media (min-width: 641px) {
+  [data-fit-list][data-fit-list] { overflow: hidden; }
+}
+
+.fit-more {
+  /* Spans every column when the list is a grid (Grocery) */
+  grid-column: 1 / -1;
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: var(--tap);
+  margin-top: 4px;
+  padding: 6px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--accent2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+.fit-more:hover { border-color: var(--accent2); }
+.fit-more:not([data-shown]):not([data-extra]) { display: none; }
+
+/* Popup with every row. Sits under the other pop-ups (z-index 100), so a
+   row that opens its own details (an event, a chore) shows on top. */
+.fit-list-overlay {
+  z-index: 90;
+  /* Clear of the bottom nav, which sits above every pop-up */
+  padding: 12px 0 calc(var(--nav-h) + 12px);
+  box-sizing: border-box;
+}
+.overlay-box.fit-list-box {
+  width: min(520px, 92vw);
+  max-height: 100%;
+  box-sizing: border-box;
+}
+.fit-list-all {
+  /* The popup's list is the one place a long list may still scroll */
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.fit-list-all > .fit-more { display: none; }

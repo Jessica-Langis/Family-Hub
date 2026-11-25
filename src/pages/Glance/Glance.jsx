@@ -5,11 +5,12 @@ import useAutoFit from '../../hooks/useAutoFit'
 import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale, byDateThenTime,
+  centerStageCountdown, isCenterStageStale, byDateThenTime, shortTime, countdownWhen,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
 import Icon from '../../components/Icon/Icon'
+import FitList from '../../components/FitList/FitList'
 
 // ── At a Glance — walk-by kiosk screen near the front door ──────────
 // This screen is visible to guests, not just the family, which rules out
@@ -86,16 +87,6 @@ const REFRESH_MS = 15 * 60 * 1000
 // Older than this and the status note turns into a warning
 const STALE_MS = 2 * 60 * 60 * 1000
 
-// "5:00 PM" → "5 PM"; "5:30 PM" stays as is. Saves width in tight spots.
-const shortTime = t => String(t || '').replace(':00', '')
-
-// "Thu, Nov 5" for a yyyy-mm-dd string
-function shortDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return isNaN(d.getTime())
-    ? dateStr
-    : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
 
 // True once a timed event has finished. Uses its end time when the
 // calendar gives one (an event running past midnight ends the next day);
@@ -137,6 +128,8 @@ function buildStack(timed) {
       }
     }),
     overflow: Math.max(0, visible.length - TODAY_CAP),
+    // Past the cap — only shown in the "+N more" popup
+    rest: visible.slice(TODAY_CAP).map(e => ({ ...e, isPast: isOver(e), inProgress: isInProgress(e) })),
   }
 }
 
@@ -193,6 +186,7 @@ function useGlanceEvents(calDays, loaded, tick) {
       allDay:    spotRaw.filter(e => !e.time),
       events:    stack.events,
       overflow:  stack.overflow,
+      rest:      stack.rest,
       // Today's all-day items ("Garbage to street") still matter tonight
       alsoToday: isTomorrow ? todayAllDay : [],
     }
@@ -265,11 +259,43 @@ class GlanceErrorBoundary extends Component {
 // stack but dim out); right side shows what's coming after the 7-day
 // strip, so the two tiles never repeat each other.
 function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
-  const { label, allDay, events, overflow, alsoToday } = spotlight
+  const { label, allDay, events, overflow, rest, alsoToday } = spotlight
   // Before the first load lands, "Nothing today" would be a lie
   const emptyMsg = msg => loaded ? msg : loadFailed ? "Couldn't load the calendar" : 'Loading calendar…'
   const hasTimed = events.length > 0
   const fitRef = useAutoFit()
+
+  // One event row in the stack (center stage gets the big countdown)
+  const todayRow = (ev, i) => (
+    <div
+      key={i}
+      className={`glance-today-row glance-tappable${ev.isCenterStage ? ' is-center' : ''}${ev.isPast ? ' is-past' : ''}`}
+      {...tapProps(() => onOpen(ev))}
+    >
+      {ev.isCenterStage ? (
+        <>
+          <div className="glance-today-center-countdown">{ev.countdown}</div>
+          <div className="glance-today-center-title">
+            {ev.person && (
+              <span className="glance-today-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+            )}
+            {ev.title}
+          </div>
+          {ev.time && !ev.timeAsCountdown && <div className="glance-today-center-time">{ev.time}</div>}
+        </>
+      ) : (
+        <>
+          {ev.person && (
+            <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
+          )}
+          <span className="glance-today-row-title">{ev.title}</span>
+          <span className={`glance-today-row-time${ev.inProgress ? ' is-now' : ''}`}>
+            {ev.inProgress ? 'Now' : (ev.time || 'All day')}
+          </span>
+        </>
+      )}
+    </div>
+  )
 
   return (
     <div ref={fitRef} className="glance-today-card fit-scope">
@@ -303,41 +329,16 @@ function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
         {!hasTimed && allDay.length === 0 ? (
           <div className="glance-card-empty"><span className="glance-empty-msg">{emptyMsg(`Nothing ${label.toLowerCase()}`)}</span></div>
         ) : !hasTimed ? null : (
-          <div className="glance-today-stack">
-            {events.map((ev, i) => (
-              <div
-                key={i}
-                className={`glance-today-row glance-tappable${ev.isCenterStage ? ' is-center' : ''}${ev.isPast ? ' is-past' : ''}`}
-                {...tapProps(() => onOpen(ev))}
-              >
-                {ev.isCenterStage ? (
-                  <>
-                    <div className="glance-today-center-countdown">{ev.countdown}</div>
-                    <div className="glance-today-center-title">
-                      {ev.person && (
-                        <span className="glance-today-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
-                      )}
-                      {ev.title}
-                    </div>
-                    {ev.time && !ev.timeAsCountdown && <div className="glance-today-center-time">{ev.time}</div>}
-                  </>
-                ) : (
-                  <>
-                    {ev.person && (
-                      <span className="glance-today-row-person" data-person={ev.person.toLowerCase()}>{ev.person}</span>
-                    )}
-                    <span className="glance-today-row-title">{ev.title}</span>
-                    <span className={`glance-today-row-time${ev.inProgress ? ' is-now' : ''}`}>
-                      {ev.inProgress ? 'Now' : (ev.time || 'All day')}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
-            {overflow > 0 && (
-              <div className="glance-today-more">+{overflow} more {label.toLowerCase()}</div>
-            )}
-          </div>
+          <FitList
+            className="glance-today-stack"
+            title={label}
+            extra={overflow}
+            moreLabel={n => `+${n} more ${label.toLowerCase()}`}
+            // The popup lists every event as a plain row — no countdown
+            allChildren={[...events, ...rest].map((ev, i) => todayRow({ ...ev, isCenterStage: false }, i))}
+          >
+            {events.map((ev, i) => todayRow(ev, i))}
+          </FitList>
         )}
       </div>
 
@@ -348,7 +349,7 @@ function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
         {furtherOut.length === 0 ? (
           <div className="glance-card-empty"><span className="glance-empty-msg">{emptyMsg('Nothing else on the calendar')}</span></div>
         ) : (
-          <div className="glance-upcoming-list">
+          <FitList className="glance-upcoming-list" title="Further Out">
             {furtherOut.map((ev, i) => (
               <div
                 key={i}
@@ -365,12 +366,15 @@ function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
                   {ev.title}
                 </span>
                 <span className="glance-upcoming-when">
-                  {shortDate(ev.date)}
-                  {ev.time && <span className="glance-upcoming-time">{shortTime(ev.time)}</span>}
+                  {countdownWhen(ev.date, ev.time).map((part, j) => (
+                    <span key={j} className={j === 0 ? 'glance-upcoming-countdown' : 'glance-upcoming-time'}>
+                      {j > 0 && <span className="glance-upcoming-sep"> · </span>}{part}
+                    </span>
+                  ))}
                 </span>
               </div>
             ))}
-          </div>
+          </FitList>
         )}
       </div>
     </div>
@@ -475,7 +479,7 @@ function LookaheadCard({ days, status, onOpen }) {
               {d.label} <span className="glance-look-daynum">{d.dayNum}</span>
             </div>
             <DayWeather day={forecastByDate[d.dateStr]} />
-            <div className="glance-look-events">
+            <FitList className="glance-look-events" title={d.isToday ? 'Today' : `${d.label} ${d.dayNum}`}>
               {d.events.length === 0
                 ? <span className="glance-look-none">—</span>
                 : d.events.map((ev, i) => (
@@ -495,7 +499,7 @@ function LookaheadCard({ days, status, onOpen }) {
                     </span>
                   ))
               }
-            </div>
+            </FitList>
           </div>
         ))}
       </div>
@@ -562,7 +566,6 @@ export default function Glance() {
           <BulletinPanel
             compact
             bodyClassName="bulletin-strip-compact"
-            limit={4}
             style={{ height: '100%' }}
           />
         </div>

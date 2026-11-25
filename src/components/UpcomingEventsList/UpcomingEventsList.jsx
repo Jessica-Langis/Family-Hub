@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import {
-  evSummary, dateParts, classifyEvent, urgencyClass, countdownLabel, isStale, byDateThenTime,
+  evSummary, dateParts, classifyEvent, urgencyClass, countdownWhen, isStale, byDateThenTime,
 } from '../../pages/Home/homeUtils'
 import './UpcomingEventsList.css'
 import Icon from '../Icon/Icon'
+import FitList from '../FitList/FitList'
 
 // ── Upcoming Events — And Stuff's "sit and plan" tile ────────────────
 // Replaces the old 2-week day-grid with a flat, ranked list — same shape
@@ -61,7 +62,7 @@ export default function UpcomingEventsList() {
       {events.length === 0 ? (
         <div className="uel-empty">Nothing on the calendar</div>
       ) : (
-        <div className="uel-list">
+        <FitList className="uel-list" title="Upcoming Events">
           {events.map((ev, i) => (
             <div
               key={`${ev.date}-${ev.title}-${i}`}
@@ -75,12 +76,11 @@ export default function UpcomingEventsList() {
               )}
               <span className="uel-title">{ev.title}</span>
               <span className="uel-when">
-                {countdownLabel(ev.date)}
-                {ev.time ? ` · ${ev.time}` : ''}
+                {countdownWhen(ev.date, ev.time).join(' · ')}
               </span>
             </div>
           ))}
-        </div>
+        </FitList>
       )}
     </Panel>
   )

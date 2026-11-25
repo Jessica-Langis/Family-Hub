@@ -3,6 +3,7 @@ import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import './WishlistPanel.css'
 import Icon from '../Icon/Icon'
+import FitList from '../FitList/FitList'
 import EmptyState from '../EmptyState/EmptyState'
 
 // ── Normalize API response → array ───────────────────────────
@@ -101,7 +102,7 @@ export default function WishlistPanel({ type, person }) {
           ? <div className="reminder-empty">Loading…</div>
           : items.length === 0
             ? <EmptyState icon="gift">Nothing on the list yet — tap Add</EmptyState>
-            : <div className="reminder-list">
+            : <FitList className="reminder-list" title={title}>
                 {items.map(item => (
                   <div key={item.id} className="reminder-item">
                     <span className="reminder-dot" />
@@ -110,7 +111,7 @@ export default function WishlistPanel({ type, person }) {
                     <button className="reminder-delete" onClick={() => deleteItem(item.id)} title="Remove" aria-label="Remove"><Icon name="x" /></button>
                   </div>
                 ))}
-              </div>
+              </FitList>
         }
       </Panel>
 

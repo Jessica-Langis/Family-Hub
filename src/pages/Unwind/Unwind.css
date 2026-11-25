@@ -17,7 +17,9 @@
    actual element order. */
 .unwind-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  /* minmax(0, …) so a column's width never depends on its tile's
+     content — see the note in Glance.css */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   /* The page never scrolls: rows split the screen, and useAutoFit scales
      each tile's text to fit its share (see tokens.css). */
   grid-template-rows: repeat(3, minmax(0, 1fr));
