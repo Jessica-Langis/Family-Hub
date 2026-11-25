@@ -382,7 +382,7 @@
   overflow-wrap: break-word;
 }
 
-/* One line: "7 DAYS – Wed, Dec 2 – 4 PM" — countdown in the accent,
+/* One line: "7 DAYS · 12/02 · 4 PM" — countdown in the accent,
    date and time quieter after it. */
 .glance-upcoming-when {
   font-size: var(--fs-sm);

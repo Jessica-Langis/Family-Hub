@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Panel, { PanelHeader } from '../Panel/Panel'
 import { SCRIPTS, apiFetch } from '../../api/scripts'
 import {
-  evSummary, dateParts, classifyEvent, urgencyClass, countdownLabel, isStale, byDateThenTime,
+  evSummary, dateParts, classifyEvent, urgencyClass, countdownWhen, isStale, byDateThenTime,
 } from '../../pages/Home/homeUtils'
 import './UpcomingEventsList.css'
 import Icon from '../Icon/Icon'
@@ -75,8 +75,7 @@ export default function UpcomingEventsList() {
               )}
               <span className="uel-title">{ev.title}</span>
               <span className="uel-when">
-                {countdownLabel(ev.date)}
-                {ev.time ? ` · ${ev.time}` : ''}
+                {countdownWhen(ev.date, ev.time).join(' · ')}
               </span>
             </div>
           ))}

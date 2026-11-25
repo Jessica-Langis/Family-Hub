@@ -5,7 +5,7 @@ import useAutoFit from '../../hooks/useAutoFit'
 import WeatherIcon from '../../components/WeatherIcon/WeatherIcon'
 import {
   getNextUSHolidays, evSummary, dateParts, classifyEvent, countdownLabel, isStale,
-  centerStageCountdown, isCenterStageStale, byDateThenTime,
+  centerStageCountdown, isCenterStageStale, byDateThenTime, shortTime, countdownWhen,
 } from '../Home/homeUtils'
 import BulletinPanel from '../Home/panels/BulletinPanel'
 import './Glance.css'
@@ -86,27 +86,6 @@ const REFRESH_MS = 15 * 60 * 1000
 // Older than this and the status note turns into a warning
 const STALE_MS = 2 * 60 * 60 * 1000
 
-// "5:00 PM" → "5 PM"; "5:30 PM" stays as is. Saves width in tight spots.
-const shortTime = t => String(t || '').replace(':00', '')
-
-// "Thu, Nov 5" for a yyyy-mm-dd string
-function shortDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return isNaN(d.getTime())
-    ? dateStr
-    : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
-// Further Out's "when" line: "7 DAYS – Wed, Dec 2 – 4 PM". Today and
-// tomorrow keep their TODAY / TOMORROW label in place of the date, since a
-// date there just makes people work out which day it is.
-function upcomingWhen(ev) {
-  const label = countdownLabel(ev.date)
-  const parts = [label]
-  if (label !== 'TODAY' && label !== 'TOMORROW') parts.push(shortDate(ev.date))
-  if (ev.time) parts.push(shortTime(ev.time))
-  return parts.filter(Boolean)
-}
 
 // True once a timed event has finished. Uses its end time when the
 // calendar gives one (an event running past midnight ends the next day);
@@ -376,9 +355,9 @@ function TodayTile({ spotlight, furtherOut, loaded, loadFailed, onOpen }) {
                   {ev.title}
                 </span>
                 <span className="glance-upcoming-when">
-                  {upcomingWhen(ev).map((part, j) => (
+                  {countdownWhen(ev.date, ev.time).map((part, j) => (
                     <span key={j} className={j === 0 ? 'glance-upcoming-countdown' : 'glance-upcoming-time'}>
-                      {j > 0 && <span className="glance-upcoming-sep"> – </span>}{part}
+                      {j > 0 && <span className="glance-upcoming-sep"> · </span>}{part}
                     </span>
                   ))}
                 </span>

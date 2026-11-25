@@ -143,6 +143,24 @@ export function countdownLabel(dateStr) {
   return `${d} DAYS`
 }
 
+// "5:00 PM" → "5 PM"; "5:30 PM" stays as is. Saves width in tight spots.
+export const shortTime = t => String(t || '').replace(':00', '')
+
+// An event's "when" as parts, shown joined by dots: "7 DAYS · 12/02 ·
+// 4 PM". Today and tomorrow keep their TODAY / TOMORROW label in place of
+// the date ("TOMORROW · 4 PM"); all-day events have no time part. Shared
+// by At a Glance's Further Out and And Stuff's Upcoming Events.
+export function countdownWhen(dateStr, timeStr) {
+  const label = countdownLabel(dateStr)
+  const parts = [label]
+  if (getDayDiff(dateStr) >= 2) {
+    const d = normalizeDate(dateStr)
+    if (d) parts.push(`${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`)
+  }
+  if (timeStr) parts.push(shortTime(timeStr))
+  return parts.filter(Boolean)
+}
+
 // A timed event drops off a "what's happening" board 2h after it started;
 // all-day events stay up for the whole day. Shared for the same reason as
 // countdownLabel above.
