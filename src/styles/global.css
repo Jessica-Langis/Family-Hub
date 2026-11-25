@@ -212,39 +212,6 @@ button {
   flex-shrink: 0;
 }
 
-.chore-item-weight {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-  font-size: var(--fs-xs);
-  color: #f5c842;
-  flex-shrink: 0;
-}
-/* Reminder bell sits in the same slot as the stars, in a quieter color */
-.chore-item-weight[title="Reminder"] { color: var(--accent2); }
-
-.weight-picker {
-  display: flex;
-  gap: 6px;
-}
-
-.weight-btn {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  padding: 6px 0;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-.weight-btn.active {
-  color: var(--text);
-  border-color: var(--accent);
-  background: var(--surface);
-}
-
 .chore-empty {
   padding: 8px 14px;
   color: var(--muted);
@@ -619,7 +586,6 @@ button.overlay-close {
 button.overlay-btn,
 button.fun-overlay-btn,
 button.rc-btn,
-button.weight-btn,
 .overlay-input,
 .fun-overlay-input,
 .rc-input,

@@ -12,8 +12,6 @@ const whoColorKey = (who, isDinner) => {
   return isDinner || k === 'other' ? undefined : k
 }
 
-const NOTE_COLORS = ['amber','rose','teal','blue','lavender']
-
 // ── Note detail popup (matches the calendar day-detail modal style) ──
 // Also the only place a note can be deleted. Delete lives here rather than
 // as an × on each row because At a Glance is a walk-by kiosk screen — an
@@ -76,7 +74,6 @@ function BulletinNoteModal({ item, isDinner, onClose, onDelete }) {
 function AddNoteModal({ onClose, onAdded }) {
   const [who,     setWho]     = useState('')
   const [text,    setText]    = useState('')
-  const [color,   setColor]   = useState('amber')
   const [saving,  setSaving]  = useState(false)
 
   async function submit() {
@@ -87,7 +84,6 @@ function AddNoteModal({ onClose, onAdded }) {
       fd.append('type', 'bulletin'); fd.append('action', 'add')
       fd.append('who', who.trim() || 'Someone')
       fd.append('text', text.trim())
-      fd.append('color', color)
       fd.append('date', new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
       await apiFetch(SCRIPTS.CHORES, { method: 'POST', body: fd })
       onAdded(); onClose()
@@ -110,17 +106,6 @@ function AddNoteModal({ onClose, onAdded }) {
           autoFocus
           style={{ resize: 'none' }}
         />
-        <div style={{ display: 'flex', gap: 8, padding: '2px 0' }}>
-          {NOTE_COLORS.map(c => (
-            <button
-              key={c}
-              title={c}
-              className={`note-color-swatch${color === c ? ' selected' : ''}`}
-              data-color={c}
-              onClick={() => setColor(c)}
-            />
-          ))}
-        </div>
         <div className="fun-overlay-actions">
           <button className="fun-overlay-btn cancel" onClick={onClose}>Cancel</button>
           <button className="fun-overlay-btn submit" onClick={submit} disabled={saving}>

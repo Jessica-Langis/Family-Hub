@@ -303,18 +303,6 @@
 }
 .clear-btn:hover { color: var(--text); border-color: var(--text); }
 
-.note-color-swatch {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid transparent; cursor: pointer;
-  flex-shrink: 0; transition: border-color 0.15s;
-}
-.note-color-swatch[data-color="amber"]    { background: rgba(232,184,109,0.7); }
-.note-color-swatch[data-color="rose"]     { background: rgba(220,120,140,0.7); }
-.note-color-swatch[data-color="teal"]     { background: rgba(100,200,180,0.7); }
-.note-color-swatch[data-color="blue"]     { background: rgba(100,160,220,0.7); }
-.note-color-swatch[data-color="lavender"] { background: rgba(170,130,220,0.7); }
-.note-color-swatch.selected { border-color: var(--text); }
-
 /* ── Mobile — stacked order: Grocery, To Do, Watch, Events. Kept
    independent of the desktop 3×3 grid above via its own
    grid-template-areas. ── */

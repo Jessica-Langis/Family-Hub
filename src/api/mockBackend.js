@@ -36,24 +36,24 @@ function nextIdFor(store, key = 'id') {
 // ── Seed data ──────────────────────────────────────────────────────
 
 let choresStore = [
-  { id: 1, name: 'Take out recycling',       who: '',     frequency: 'Weekly',   dueDate: daysFromToday(0),  done: false, weight: 1, notes: '', completedAt: '' },
-  { id: 2, name: 'Vacuum living room',       who: '',     frequency: '',         dueDate: daysFromToday(2),  done: false, weight: 2, notes: '', completedAt: '' },
-  { id: 3, name: 'Clean fish tank',          who: 'dad',  frequency: 'Monthly',  dueDate: daysFromToday(5),  done: false, weight: 2, notes: 'Filter needs replacing too', completedAt: '' },
-  { id: 4, name: 'Feed the cat',             who: 'tori', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  weight: 1, notes: '', completedAt: hoursAgo(2) },
-  { id: 5, name: 'Clean room',               who: 'tori', frequency: '',         dueDate: daysFromToday(-1), done: false, weight: 2, notes: '', completedAt: '' },
-  { id: 6, name: 'Homework check-in',        who: 'tori', frequency: 'Weekdays', dueDate: daysFromToday(1),  done: false, weight: 1, notes: '', completedAt: '' },
-  { id: 7, name: 'Unload dishwasher',        who: 'nova', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  weight: 1, notes: '', completedAt: hoursAgo(5) },
-  { id: 8, name: 'Practice piano',           who: 'nova', frequency: '',         dueDate: daysFromToday(3),  done: false, weight: 2, notes: '30 minutes', completedAt: '' },
-  { id: 9, name: 'Pack backpack for school', who: 'nova', frequency: 'Weekdays', dueDate: daysFromToday(0),  done: false, weight: 1, notes: '', completedAt: '' },
+  { id: 1, name: 'Take out recycling',       who: '',     frequency: 'Weekly',   dueDate: daysFromToday(0),  done: false, notes: '', completedAt: '' },
+  { id: 2, name: 'Vacuum living room',       who: '',     frequency: '',         dueDate: daysFromToday(2),  done: false, notes: '', completedAt: '' },
+  { id: 3, name: 'Clean fish tank',          who: 'dad',  frequency: 'Monthly',  dueDate: daysFromToday(5),  done: false, notes: 'Filter needs replacing too', completedAt: '' },
+  { id: 4, name: 'Feed the cat',             who: 'tori', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  notes: '', completedAt: hoursAgo(2) },
+  { id: 5, name: 'Clean room',               who: 'tori', frequency: '',         dueDate: daysFromToday(-1), done: false, notes: '', completedAt: '' },
+  { id: 6, name: 'Homework check-in',        who: 'tori', frequency: 'Weekdays', dueDate: daysFromToday(1),  done: false, notes: '', completedAt: '' },
+  { id: 7, name: 'Unload dishwasher',        who: 'nova', frequency: 'Daily',    dueDate: daysFromToday(0),  done: true,  notes: '', completedAt: hoursAgo(5) },
+  { id: 8, name: 'Practice piano',           who: 'nova', frequency: '',         dueDate: daysFromToday(3),  done: false, notes: '30 minutes', completedAt: '' },
+  { id: 9, name: 'Pack backpack for school', who: 'nova', frequency: 'Weekdays', dueDate: daysFromToday(0),  done: false, notes: '', completedAt: '' },
   // Shared chore — "Tori & Nova" in Who shows on both kids' To Do lists
-  { id: 10, name: 'Tidy the playroom',       who: 'Tori & Nova', frequency: '', dueDate: daysFromToday(2),  done: false, weight: 2, notes: '', completedAt: '' },
+  { id: 10, name: 'Tidy the playroom',       who: 'Tori & Nova', frequency: '', dueDate: daysFromToday(2),  done: false, notes: '', completedAt: '' },
 ]
 
 let bulletinStore = [
-  { row: 4, text: 'Car pool swap — I have pickup Thursday',                who: 'Dad', date: shortDate(0),  color: 'blue'  },
-  { row: 3, text: 'Grandma is visiting this weekend 🎉',                    who: 'Mom', date: shortDate(-3), color: 'teal'  },
-  { row: 2, text: "Don't forget the permission slip for the field trip",   who: 'Dad', date: shortDate(-1), color: 'rose'  },
-  { row: 1, text: 'Picture day is the 14th — wear something nice!',        who: 'Mom', date: shortDate(2),  color: 'amber' },
+  { row: 4, text: 'Car pool swap — I have pickup Thursday',                who: 'Dad', date: shortDate(0) },
+  { row: 3, text: 'Grandma is visiting this weekend 🎉',                    who: 'Mom', date: shortDate(-3) },
+  { row: 2, text: "Don't forget the permission slip for the field trip",   who: 'Dad', date: shortDate(-1) },
+  { row: 1, text: 'Picture day is the 14th — wear something nice!',        who: 'Mom', date: shortDate(2) },
 ]
 
 let moviesStore = [
@@ -206,7 +206,7 @@ function handlePost(base, fields) {
         choresStore.push({
           id: nextIdFor(choresStore), name: fields.name || '', who: fields.who || '',
           frequency: fields.frequency || '', dueDate: fields.dueDate || '',
-          done: false, weight: Number(fields.weight) || 1, notes: fields.notes || '', completedAt: '',
+          done: false, notes: fields.notes || '', completedAt: '',
         })
         return { status: 'ok' }
       }
@@ -217,7 +217,6 @@ function handlePost(base, fields) {
           c.who       = fields.who ?? c.who
           c.frequency = fields.frequency ?? c.frequency
           c.dueDate   = fields.dueDate ?? c.dueDate
-          c.weight    = fields.weight !== undefined ? (Number(fields.weight) || 1) : c.weight
           c.notes     = fields.notes ?? c.notes
         }
         return { status: 'ok' }
@@ -241,7 +240,7 @@ function handlePost(base, fields) {
         bulletinStore.unshift({
           row: nextIdFor(bulletinStore, 'row'),
           text: fields.text || '', who: fields.who || 'Someone',
-          date: fields.date || shortDate(0), color: fields.color || 'amber',
+          date: fields.date || shortDate(0),
         })
         return { status: 'ok' }
       }
