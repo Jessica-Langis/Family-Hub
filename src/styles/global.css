@@ -506,6 +506,92 @@ button {
 .overlay-close:hover { color: var(--text); }
 
 /* ══════════════════════════════════════════
+   ACCENT POP-UP — same shape as the generic overlay above, with a pink
+   title. Used by Watch/Read's add form, the Bulletin pop-ups and At a
+   Glance's event details, so it lives here rather than in one page's
+   stylesheet.
+══════════════════════════════════════════ */
+.fun-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.fun-overlay-box {
+  /* Anchors the corner close button (.overlay-close) to the box */
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px 20px;
+  width: min(360px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fun-overlay-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--accent5);
+  margin-bottom: 4px;
+}
+
+.fun-overlay-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: var(--fs-md);
+  color: var(--text);
+  font-family: inherit;
+  width: 100%;
+}
+.fun-overlay-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.fun-overlay-status {
+  font-size: var(--fs-sm);
+  color: var(--accent3);
+  min-height: 1rem;
+  text-align: center;
+}
+
+.fun-overlay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.fun-overlay-btn {
+  padding: 7px 18px;
+  border-radius: 7px;
+  font-size: var(--fs-md);
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.fun-overlay-btn:hover { opacity: 0.85; }
+.fun-overlay-btn.cancel {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.fun-overlay-btn.submit {
+  background: var(--accent);
+  color: #0f1117;
+}
+.fun-overlay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════
    URGENCY TINTS — shared by At a Glance's Hero tile and And Stuff's
    Upcoming Events list. today = warm amber · tomorrow = blue · 2+ days = muted
    ══════════════════════════════════════════ */

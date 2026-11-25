@@ -410,7 +410,7 @@ function EventDetailModal({ ev, onClose }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box glance-event-modal" role="dialog" aria-modal="true" aria-label="Event details">
-        <button className="glance-event-modal-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
+        <button className="overlay-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
         <div className="glance-event-modal-kicker">
           <Icon name={ev.isSports ? 'medal' : 'calendar'} size="1em" /> {countdownLabel(ev.date)}
         </div>

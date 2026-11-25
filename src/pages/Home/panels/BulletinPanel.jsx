@@ -38,7 +38,7 @@ function BulletinNoteModal({ item, isDinner, onClose, onDelete }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
-        <button onClick={onClose} aria-label="Close" style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize: 'var(--fs-lg)', cursor:'pointer' }}><Icon name="x" /></button>
+        <button className="overlay-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
         <div style={{ fontSize: 'var(--fs-xs)', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:6, fontWeight:700 }}>
           <Icon name="pin" size="1em" /> {isDinner ? "Tonight's Dinner" : 'Bulletin Note'}
         </div>
@@ -136,7 +136,7 @@ function AllNotesModal({ dinner, bulletins, onClose, onOpenNote }) {
   return (
     <div className="fun-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fun-overlay-box" style={{ maxWidth: 380 }}>
-        <button onClick={onClose} aria-label="Close" style={{ position:'absolute', top:14, right:16, background:'none', border:'none', color:'var(--muted)', fontSize: 'var(--fs-lg)', cursor:'pointer' }}><Icon name="x" /></button>
+        <button className="overlay-close" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
         <div style={{ fontSize: 'var(--fs-xs)', textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent5)', marginBottom:12, fontWeight:700 }}><Icon name="pin" size="1em" /> All Notes</div>
         <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:4 }}>
           <BulletinLine item={{ text: dinner }} isDinner onOpen={onOpenNote} />
